@@ -24,8 +24,18 @@ public class SquishMove : MonoBehaviour
     public bool enforceXYConstraints = true;
     public bool addRigidbodyIfMissing = true;
 
+    [Header("Physics Coupling")]
+    [Tooltip("If true, mouse drag drives the Rigidbody (so joints feel the tug).")]
+    public bool driveRigidbodyFromDrag = true;
+
+    [Tooltip("How fast the Rigidbody can accelerate toward the drag velocity (units/s^2).")]
+    public float dragAcceleration = 40f;
+
+    [Tooltip("Absolute safety cap on speed to prevent 'jettison'.")]
+    public float hardMaxSpeed = 20f;
+
     private Mesh originalMesh, meshClone;
-    private MeshRenderer meshRenderer;  // ← renamed (no collision with Component.renderer)
+    private MeshRenderer meshRenderer;
     private JellyVertex[] jv;
     private Vector3[] vertexArray;
 
@@ -44,13 +54,20 @@ public class SquishMove : MonoBehaviour
 
     private Rigidbody rb;
 
+    // Track last world position so jelly vertices can follow physics motion
+    private Vector3 lastWorldPos;
+
+    // NEW: desired velocity from dragging, applied in FixedUpdate (XY only)
+    private Vector3 desiredDragVelocityXY = Vector3.zero;
+
     void Awake()
     {
         cam = Camera.main;
 
         if (!TryGetComponent(out rb))
         {
-            if (addRigidbodyIfMissing) rb = gameObject.AddComponent<Rigidbody>();
+            if (addRigidbodyIfMissing)
+                rb = gameObject.AddComponent<Rigidbody>();
         }
 
         if (rb != null)
@@ -75,11 +92,13 @@ public class SquishMove : MonoBehaviour
         meshClone = Instantiate(originalMesh);
         GetComponent<MeshFilter>().sharedMesh = meshClone;
 
-        meshRenderer = GetComponent<MeshRenderer>(); // ← fixed name
+        meshRenderer = GetComponent<MeshRenderer>();
 
         jv = new JellyVertex[meshClone.vertices.Length];
         for (int i = 0; i < meshClone.vertices.Length; i++)
             jv[i] = new JellyVertex(i, transform.TransformPoint(meshClone.vertices[i]));
+
+        lastWorldPos = transform.position;
     }
 
     void Update()
@@ -103,7 +122,7 @@ public class SquishMove : MonoBehaviour
                     lastDragPoint = currentDragPoint;
                     dragVelocity = Vector3.zero;
 
-                    // collect vertices within radius (XY distance)
+                    // Collect vertices within radius (XY distance)
                     draggedVertices.Clear();
                     dragOffsets.Clear();
                     for (int i = 0; i < jv.Length; i++)
@@ -153,7 +172,7 @@ public class SquishMove : MonoBehaviour
                     jv[i].velocity = Vector3.zero;
                 }
 
-                // Whole-object XY translation
+                // Whole-object XY translation "intent"
                 float startMoveAt = dragRadius * moveThreshold;
                 float outside = Mathf.Max(0f, Vector2.Distance(ToXY(currentDragPoint), ToXY(initialDragCenter)) - startMoveAt);
 
@@ -165,22 +184,32 @@ public class SquishMove : MonoBehaviour
                 }
                 moveStep += new Vector3(dragVelocity.x, dragVelocity.y, 0f) * (velocityMoveGain * dt);
 
+                // Clamp the *intent* step length
                 float maxStep = maxMoveSpeed * dt;
                 if (moveStep.sqrMagnitude > maxStep * maxStep)
                     moveStep = moveStep.normalized * maxStep;
 
                 if (moveStep.sqrMagnitude > 0f)
                 {
-                    if (rb != null && !rb.isKinematic)
-                        rb.MovePosition(rb.position + new Vector3(moveStep.x, moveStep.y, 0f));
+                    if (rb != null && !rb.isKinematic && driveRigidbodyFromDrag)
+                    {
+                        // NEW: store a desired velocity (XY only), let physics ease toward it in FixedUpdate
+                        Vector3 desiredVel = moveStep / Mathf.Max(Time.fixedDeltaTime, 1e-5f);
+                        desiredVel.z = 0f;
+
+                        // Clamp desired velocity to maxMoveSpeed
+                        if (desiredVel.magnitude > maxMoveSpeed)
+                            desiredVel = desiredVel.normalized * maxMoveSpeed;
+
+                        desiredDragVelocityXY = desiredVel;
+                    }
                     else
+                    {
+                        // Fallback: directly move transform (no physics coupling)
                         transform.position += new Vector3(moveStep.x, moveStep.y, 0f);
+                    }
 
-                    // shift world-space jelly anchors by same XY step
-                    for (int i = 0; i < jv.Length; i++)
-                        jv[i].Position += new Vector3(moveStep.x, moveStep.y, 0f);
-
-                    // keep reference center in sync
+                    // Keep reference center in sync with our intent
                     initialDragCenter += new Vector3(moveStep.x, moveStep.y, 0f);
                 }
 
@@ -194,11 +223,46 @@ public class SquishMove : MonoBehaviour
             isDragging = false;
             draggedVertices.Clear();
             dragOffsets.Clear();
+
+            // Let body slow down naturally when we stop dragging
+            desiredDragVelocityXY = Vector3.zero;
         }
     }
 
     void FixedUpdate()
     {
+        // 1) Drive the Rigidbody toward the desired drag velocity (XY only)
+        if (rb != null && !rb.isKinematic && driveRigidbodyFromDrag)
+        {
+            float fdt = Time.fixedDeltaTime;
+
+            Vector3 currentVel = rb.linearVelocity;
+            Vector3 currentXY = new Vector3(currentVel.x, currentVel.y, 0f);
+
+            // Smoothly move XY velocity toward desiredDragVelocityXY
+            Vector3 targetXY = desiredDragVelocityXY;
+            Vector3 newXY = Vector3.MoveTowards(currentXY, targetXY, dragAcceleration * fdt);
+
+            // Hard cap absolute speed to avoid jettison
+            float speed = newXY.magnitude;
+            if (speed > hardMaxSpeed)
+                newXY = newXY.normalized * hardMaxSpeed;
+
+            rb.linearVelocity = new Vector3(newXY.x, newXY.y, currentVel.z);
+        }
+
+        // 2) Make jelly vertices follow actual body motion caused by physics/joints
+        Vector3 worldDelta = transform.position - lastWorldPos;
+        if (worldDelta.sqrMagnitude > 0f)
+        {
+            for (int i = 0; i < jv.Length; i++)
+            {
+                jv[i].Position += worldDelta;
+            }
+        }
+        lastWorldPos = transform.position;
+
+        // 3) Jelly spring step
         vertexArray = originalMesh.vertices;
 
         for (int i = 0; i < jv.Length; i++)
