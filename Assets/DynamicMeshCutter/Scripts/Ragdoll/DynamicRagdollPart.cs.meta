@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e892d961103cb054089efcee88b94672
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208384
+  packageName: Dynamic Mesh Cutter
+  packageVersion: 1.2.6
+  assetPath: Assets/DynamicMeshCutter/Scripts/Ragdoll/DynamicRagdollPart.cs
+  uploadId: 712616

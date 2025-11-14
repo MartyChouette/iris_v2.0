@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: bcfc14655b11d9a45ad0226ec8399353
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208384
+  packageName: Dynamic Mesh Cutter
+  packageVersion: 1.2.6
+  assetPath: Assets/DynamicMeshCutter/Content/Cube/CubeAnimation.anim
+  uploadId: 712616

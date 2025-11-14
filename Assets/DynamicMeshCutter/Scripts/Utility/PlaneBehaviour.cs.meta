@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: a7da90c7c25b7364d8bb2164631559c4
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208384
+  packageName: Dynamic Mesh Cutter
+  packageVersion: 1.2.6
+  assetPath: Assets/DynamicMeshCutter/Scripts/Utility/PlaneBehaviour.cs
+  uploadId: 712616

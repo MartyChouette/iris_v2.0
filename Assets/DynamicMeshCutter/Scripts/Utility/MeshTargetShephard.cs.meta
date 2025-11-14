@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c770be37f2897f84f9b1ac18e43ee73d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208384
+  packageName: Dynamic Mesh Cutter
+  packageVersion: 1.2.6
+  assetPath: Assets/DynamicMeshCutter/Scripts/Utility/MeshTargetShephard.cs
+  uploadId: 712616

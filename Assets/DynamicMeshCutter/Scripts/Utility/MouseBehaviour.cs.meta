@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 330c67727d97cbe47a189b06c754ae87
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208384
+  packageName: Dynamic Mesh Cutter
+  packageVersion: 1.2.6
+  assetPath: Assets/DynamicMeshCutter/Scripts/Utility/MouseBehaviour.cs
+  uploadId: 712616

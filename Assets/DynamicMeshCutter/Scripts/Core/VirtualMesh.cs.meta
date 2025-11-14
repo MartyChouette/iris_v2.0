@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: df3cb629dc8bd6f4ab4d2fbcde41bfbd
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208384
+  packageName: Dynamic Mesh Cutter
+  packageVersion: 1.2.6
+  assetPath: Assets/DynamicMeshCutter/Scripts/Core/VirtualMesh.cs
+  uploadId: 712616

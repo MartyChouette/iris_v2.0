@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3699cf108589c7349bc8634ff6befd0e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208384
+  packageName: Dynamic Mesh Cutter
+  packageVersion: 1.2.6
+  assetPath: Assets/DynamicMeshCutter/ExampleScene/LightingData.asset
+  uploadId: 712616

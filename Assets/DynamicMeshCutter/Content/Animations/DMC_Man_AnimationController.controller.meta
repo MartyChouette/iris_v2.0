@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c519166df6c38dd4c95ef89310ef589f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208384
+  packageName: Dynamic Mesh Cutter
+  packageVersion: 1.2.6
+  assetPath: Assets/DynamicMeshCutter/Content/Animations/DMC_Man_AnimationController.controller
+  uploadId: 712616

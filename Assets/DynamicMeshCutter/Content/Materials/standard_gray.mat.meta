@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c714cd149559a2d4eb7b27500506154e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 208384
+  packageName: Dynamic Mesh Cutter
+  packageVersion: 1.2.6
+  assetPath: Assets/DynamicMeshCutter/Content/Materials/standard_gray.mat
+  uploadId: 712616
