@@ -970,8 +970,8 @@ MonoBehaviour:
   grabKey: 323
   grabSpring: 120
   grabDamper: 18
-  maxAccel: 60
-  maxSpeed: 12
+  maxAccel: 80
+  maxSpeed: 20
 --- !u!54 &794488541
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -995,7 +995,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 1
+  m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -5655,6 +5655,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 289ebad491f2e85438a8c3660a595360, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LeafElasticBreak
+  armedBreakForce: 40
+  armDelay: 0.1
+  useHexNotches: 1
+  notchCount: 6
+  notchForgiveness: 24
+  notchForceScale: 1
   reboundBoost: 1
   audioSource: {fileID: 1109005137}
   breakSound: {fileID: 8300000, guid: 56f6e5276ef021a45aa4ae198492cd4d, type: 3}
@@ -5694,8 +5700,8 @@ HingeJoint:
     bounciness: 0
     bounceMinVelocity: 0
     contactDistance: 0
-  m_BreakForce: 50
-  m_BreakTorque: 200
+  m_BreakForce: 10
+  m_BreakTorque: 20
   m_EnableCollision: 0
   m_EnablePreprocessing: 0
   m_MassScale: 1
