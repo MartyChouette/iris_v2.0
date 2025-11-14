@@ -14,7 +14,11 @@ public class GrabPull : MonoBehaviour
     bool grabbing;
     Vector3 grabWorld;
 
-    void Awake() { rb = GetComponent<Rigidbody>(); if (!cam) cam = Camera.main; }
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        if (!cam) cam = Camera.main;
+    }
 
     void Update()
     {
@@ -27,14 +31,15 @@ public class GrabPull : MonoBehaviour
                 grabWorld = hit.point; // start at hit
             }
         }
-        if (Input.GetKeyUp(grabKey)) grabbing = false;
+        if (Input.GetKeyUp(grabKey))
+            grabbing = false;
     }
 
     void FixedUpdate()
     {
         if (!grabbing) return;
 
-        // project cursor onto object plane for a stable target
+        // project cursor onto a plane through the object COM
         var ray = cam.ScreenPointToRay(Input.mousePosition);
         var plane = new Plane(-cam.transform.forward, rb.worldCenterOfMass);
         if (plane.Raycast(ray, out float enter))
@@ -46,10 +51,9 @@ public class GrabPull : MonoBehaviour
         if (accel.sqrMagnitude > maxAccel * maxAccel)
             accel = accel.normalized * maxAccel;
 
-        // physics-friendly pull
         rb.AddForce(accel, ForceMode.Acceleration);
 
-        // optional speed cap to avoid tunneling
+        // speed cap
         if (rb.linearVelocity.sqrMagnitude > maxSpeed * maxSpeed)
             rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
     }

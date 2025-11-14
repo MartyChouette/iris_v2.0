@@ -17,7 +17,7 @@ namespace DynamicMeshCutter
         {
             base.Update();
 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(1))
             {
                 _isDragging = true;
 

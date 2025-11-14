@@ -1,5 +1,4 @@
 using UnityEngine;
-using DynamicMeshCutter;
 
 namespace DynamicMeshCutter
 {
@@ -25,7 +24,7 @@ namespace DynamicMeshCutter
                 var targets = root.GetComponentsInChildren<MeshTarget>();
                 foreach (var target in targets)
                 {
-                    // This is the standard DynamicMeshCutter call you already use:
+                    // Standard DynamicMeshCutter call:
                     Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreated);
                 }
             }
@@ -33,11 +32,11 @@ namespace DynamicMeshCutter
 
         void OnCreated(Info info, MeshCreationData cData)
         {
-            // First let the library do its usual translation
+            // Let DMC move/offset the created objects first
             MeshCreation.TranslateCreatedObjects(info, cData.CreatedObjects, cData.CreatedTargets, Separation);
 
-            // Then handle component copying, including joints
-            var sourceGO = info.Source.gameObject; // adjust if your Info type uses a different name
+            // Correct source object (the thing that was cut)
+            GameObject sourceGO = info.MeshTarget.gameObject;
 
             foreach (var createdTarget in cData.CreatedTargets)
             {
@@ -48,96 +47,32 @@ namespace DynamicMeshCutter
 
         void CopyComponentsFromSource(GameObject source, GameObject piece, Vector3 planePoint, Vector3 planeNormal)
         {
-            var sourceRb = source.GetComponent<Rigidbody>();
-
             foreach (var comp in source.GetComponents<Component>())
             {
+                // Skip core components already handled by DMC
                 if (comp is Transform || comp is MeshFilter || comp is MeshRenderer || comp is MeshTarget)
-                    continue; // skip core components already handled
+                    continue;
 
                 // SPECIAL CASE: joints
                 if (comp is Joint joint)
                 {
-                    TryAttachJointToPiece(joint, source, piece, planePoint, planeNormal, sourceRb);
+                    TryHandleJointOnCut(joint, source, piece, planePoint, planeNormal);
                     continue;
                 }
 
-                // Generic component copy: easiest is to add a new one of the same type
+                // Generic component copy – add as needed
                 var type = comp.GetType();
                 var newComp = piece.AddComponent(type);
-
-                // Option A: you manually copy the fields you care about.
-                // Option B (editor only): use UnityEditorInternal.ComponentUtility to copy all.
-                // (For runtime builds, you'd do manual / reflection-based copy.)
+                // You can manually copy specific fields here if needed.
             }
         }
 
-        void TryAttachJointToPiece(
+        void TryHandleJointOnCut(
             Joint original,
             GameObject source,
             GameObject piece,
             Vector3 planePoint,
-            Vector3 planeNormal,
-            Rigidbody sourceRb)
-        {
-            var pieceCollider = piece.GetComponent<Collider>();
-            if (pieceCollider == null)
-                return;
-
-            // World position of the joint’s anchor on the source mesh
-            Vector3 anchorWorld = original.transform.TransformPoint(original.anchor);
-
-            // Simple heuristic: which piece's collider bounds contains the anchor?
-            if (!pieceCollider.bounds.Contains(anchorWorld))
-                return;
-
-            // At this point we decided: this piece should own the joint.
-            var cloned = piece.AddComponent(original.GetType()) as Joint;
-            if (cloned == null)
-                return;
-
-            // Copy basic joint settings (add more as needed)
-            cloned.anchor = original.anchor;
-            cloned.autoConfigureConnectedAnchor = original.autoConfigureConnectedAnchor;
-            cloned.connectedAnchor = original.connectedAnchor;
-            cloned.breakForce = original.breakForce;
-            cloned.breakTorque = original.breakTorque;
-            cloned.enableCollision = original.enableCollision;
-
-            // Connected body logic:
-            if (original.connectedBody != null && original.connectedBody != sourceRb)
-            {
-                // The joint was attached to some other rigidbody in the scene (e.g., ceiling).
-                // Keep that connection.
-                cloned.connectedBody = original.connectedBody;
-            }
-            else
-            {
-                // If it was self-connected (or to the cut body), decide what to do:
-                //  - null = let it hang freely from this anchor
-                //  - or assign some new body if you have one
-                cloned.connectedBody = null;
-            }
-
-            // For specific joint types you can copy extra fields, e.g. hinge limits:
-            if (original is HingeJoint origHinge && cloned is HingeJoint newHinge)
-            {
-                newHinge.axis = origHinge.axis;
-                newHinge.useLimits = origHinge.useLimits;
-                newHinge.limits = origHinge.limits;
-                newHinge.useSpring = origHinge.useSpring;
-                newHinge.spring = origHinge.spring;
-            }
-
-            // Same idea for ConfigurableJoint, SpringJoint, etc.
-        }
-
-        void TryHandleJointOnCut(
-       Joint original,
-       GameObject source,
-       GameObject piece,
-       Vector3 planePoint,
-       Vector3 planeNormal)
+            Vector3 planeNormal)
         {
             var policy = original.GetComponent<JointCutPolicy>();
             var mode = policy != null ? policy.mode : JointSplitMode.KeepAnchorSideOnly;
@@ -182,7 +117,7 @@ namespace DynamicMeshCutter
             // connectedBody logic:
             var srcRb = source.GetComponent<Rigidbody>();
 
-            // If originally attached to some OTHER body (e.g., flower stalk)
+            // If originally attached to some OTHER body (e.g., stalk, ceiling)
             if (original.connectedBody != null && original.connectedBody != srcRb)
             {
                 cloned.connectedBody = original.connectedBody;
@@ -203,11 +138,7 @@ namespace DynamicMeshCutter
                 cH.spring = oH.spring;
             }
 
-            // Add similar blocks for SpringJoint, ConfigurableJoint, etc
+            // TODO: Add similar blocks for SpringJoint, ConfigurableJoint, etc. as needed.
         }
-
-
     }
-
-
 }
