@@ -31,15 +31,14 @@ public class GrabPull : MonoBehaviour
                 grabWorld = hit.point; // start at hit
             }
         }
-        if (Input.GetKeyUp(grabKey))
-            grabbing = false;
+        if (Input.GetKeyUp(grabKey)) grabbing = false;
     }
 
     void FixedUpdate()
     {
         if (!grabbing) return;
 
-        // project cursor onto a plane through the object COM
+        // project cursor onto object plane for a stable target
         var ray = cam.ScreenPointToRay(Input.mousePosition);
         var plane = new Plane(-cam.transform.forward, rb.worldCenterOfMass);
         if (plane.Raycast(ray, out float enter))
@@ -51,9 +50,10 @@ public class GrabPull : MonoBehaviour
         if (accel.sqrMagnitude > maxAccel * maxAccel)
             accel = accel.normalized * maxAccel;
 
+        // physics-friendly pull
         rb.AddForce(accel, ForceMode.Acceleration);
 
-        // speed cap
+        // optional speed cap to avoid tunneling
         if (rb.linearVelocity.sqrMagnitude > maxSpeed * maxSpeed)
             rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
     }

@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-
 [RequireComponent(typeof(Rigidbody))]
 public class XYTetherJoint : MonoBehaviour
 {
@@ -80,10 +79,11 @@ public class XYTetherJoint : MonoBehaviour
 
         if (enforceXYConstraints)
         {
-            rb.constraints = RigidbodyConstraints.FreezePositionZ
-                           | RigidbodyConstraints.FreezeRotationX
-                           | RigidbodyConstraints.FreezeRotationY
-                           | RigidbodyConstraints.FreezeRotationZ;
+            // ✅ don't overwrite constraints, only add freezes
+            rb.constraints |= RigidbodyConstraints.FreezePositionZ
+                            | RigidbodyConstraints.FreezeRotationX
+                            | RigidbodyConstraints.FreezeRotationY
+                            | RigidbodyConstraints.FreezeRotationZ;
         }
     }
 
@@ -117,7 +117,8 @@ public class XYTetherJoint : MonoBehaviour
             if (logTimer >= 0.2f)
             {
                 float stretch = Mathf.Max(0f, Dist(ApplySpace(a - b)) - Dist(restAB));
-                if (debugLogs) Debug.Log($"[XYTetherJoint] stretch={stretch:F3}  | absTravel={absoluteTravel:F2}  relTravel={relativeTravel:F2}", this);
+                if (debugLogs)
+                    Debug.Log($"[XYTetherJoint] stretch={stretch:F3}  | absTravel={absoluteTravel:F2}  relTravel={relativeTravel:F2}", this);
                 logTimer = 0f;
             }
         }
@@ -193,7 +194,11 @@ public class XYTetherJoint : MonoBehaviour
         onBroke?.Invoke();
     }
 
-    public void SetConnectedBody(Rigidbody body) { connectedBody = body; TryCreateJoint(); }
+    public void SetConnectedBody(Rigidbody body)
+    {
+        connectedBody = body;
+        TryCreateJoint();
+    }
 
     public void Retune(float newMaxDist, float newSpring, float newDamper, float newDriveMax = -1f)
     {
