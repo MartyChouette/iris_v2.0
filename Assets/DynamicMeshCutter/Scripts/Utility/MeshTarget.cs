@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace DynamicMeshCutter
 {
+
+    [RequireComponent(typeof(EnsureConvexCollider))]
     public class MeshTarget : MonoBehaviour
     {
         //basic both

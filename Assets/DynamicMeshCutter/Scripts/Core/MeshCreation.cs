@@ -17,11 +17,15 @@ namespace DynamicMeshCutter
             CreatedTargets = new MeshTarget[size];
         }
     }
+
     public static class MeshCreation
     {
         static float _ragdoll_vertex_threshold = 0.75f;
 
-     
+        /// <summary>
+        /// Creates the actual GameObjects (stone, ragdoll, animated) for each VirtualMesh
+        /// produced by the cut.
+        /// </summary>
         public static MeshCreationData CreateObjects(Info info, Material defaultMaterial, int vertexCreationThreshold)
         {
             if (info.MeshTarget == null)
@@ -32,46 +36,50 @@ namespace DynamicMeshCutter
             MeshCreationData cData = new MeshCreationData(createdMeshes.Length);
 
             MeshTarget target = info.MeshTarget as MeshTarget;
-            Material[] materials = MeshCreation.GetMaterials(target.gameObject);
+            Material[] materials = GetMaterials(target.gameObject);
             Material[] materialsNew = new Material[materials.Length + 1];
 
             materials.CopyTo(materialsNew, 0);
-            materialsNew[materialsNew.Length - 1] = (target.FaceMaterial != null) ? target.FaceMaterial : defaultMaterial;
+            materialsNew[materialsNew.Length - 1] =
+                (target.FaceMaterial != null) ? target.FaceMaterial : defaultMaterial;
             materials = materialsNew;
 
             for (int i = 0; i < createdMeshes.Length; i++)
             {
-                if (createdMeshes[i].Vertices.Length < vertexCreationThreshold)
+                VirtualMesh vMesh = createdMeshes[i];
+                if (vMesh.Vertices.Length < vertexCreationThreshold)
                     continue;
 
-                int bt = info.BT[i]; //is this meshtarget bottom or top ?
+                int bt = info.BT[i]; // bottom(0) / top(1) flag
 
                 Transform parent = null;
                 GameObject root = null;
 
+                // Build a Unity Mesh from the VirtualMesh
+                Mesh mesh = new Mesh
+                {
+                    vertices = vMesh.Vertices,
+                    triangles = vMesh.Triangles,
+                    normals = vMesh.Normals,
+                    uv = vMesh.UVs,
+                    subMeshCount = vMesh.SubMeshCount
+                };
 
-                VirtualMesh vMesh = createdMeshes[i];
-                Mesh mesh = new Mesh();
-                mesh.vertices = vMesh.Vertices;
-                mesh.triangles = vMesh.Triangles;
-                mesh.normals = vMesh.Normals;
-                mesh.uv = vMesh.UVs;
-                mesh.subMeshCount = vMesh.SubMeshCount;
                 for (int j = 0; j < vMesh.SubMeshCount; j++)
                 {
                     mesh.SetIndices(vMesh.GetIndices(j), MeshTopology.Triangles, j);
                 }
 
+                // Decide behaviour for this piece
                 Behaviour behaviour = target.DefaultBehaviour[bt];
 
                 if (vMesh.DynamicGroups != null)
                 {
                     int[] keys = new int[vMesh.DynamicGroups.Keys.Count];
                     int index = 0;
-                    foreach(var key in vMesh.DynamicGroups.Keys)
-                    {
+                    foreach (var key in vMesh.DynamicGroups.Keys)
                         keys[index++] = key;
-                    }
+
                     for (int j = 0; j < target.GroupBehaviours.Count; j++)
                     {
                         if (target.GroupBehaviours[j].Passes(keys))
@@ -82,12 +90,13 @@ namespace DynamicMeshCutter
                     }
                 }
 
-
+                // Create the actual object(s)
                 switch (behaviour)
                 {
                     case Behaviour.Stone:
                         CreateMesh(ref root, ref parent, target, mesh, vMesh, materials, bt);
                         break;
+
                     case Behaviour.Ragdoll:
                         DynamicRagdoll tRagdoll = target.DynamicRagdoll;
                         if (tRagdoll != null && vMesh.DynamicGroups.Count > 1)
@@ -102,6 +111,7 @@ namespace DynamicMeshCutter
                             CreateMesh(ref root, ref parent, target, mesh, vMesh, materials, bt, true);
                         }
                         break;
+
                     case Behaviour.Animation:
                         if (target.Animator != null)
                         {
@@ -109,29 +119,32 @@ namespace DynamicMeshCutter
                         }
                         else
                         {
-                            Debug.LogWarning("Beahviour is set to Animation, but there was no Animator found in parent!");
+                            Debug.LogWarning("Behaviour is set to Animation, but there was no Animator found in parent!");
                             CreateMesh(ref root, ref parent, target, mesh, vMesh, materials, bt, true);
                         }
                         break;
                 }
 
+                // Name the parent "(i/total)Stem" etc.
                 string prefix = $"({i}/{createdMeshes.Length})";
                 parent.name = prefix + parent.name;
                 parent.name = parent.name.Replace("(Clone)", "");
 
+                // Ensure a MeshTarget lives on the root
                 var nTarget = root.GetComponent<MeshTarget>();
                 if (nTarget == null)
                     nTarget = root.AddComponent<MeshTarget>();
+
                 nTarget.GameobjectRoot = parent.gameObject;
                 nTarget.OverrideFaceMaterial = target.OverrideFaceMaterial;
                 nTarget.SeparateMeshes = target.SeparateMeshes;
                 nTarget.ApplyTranslation = target.ApplyTranslation;
                 nTarget.GroupBehaviours = target.GroupBehaviours;
 
-                //target scale
+                // Match scale of original
                 nTarget.transform.localScale = target.transform.localScale;
 
-                //if inherting, both upper and lower side behaviour will remain the same. otherwise, both sides will have the same effect
+                // Inherit behaviour/settings or copy from bt side
                 if (target.Inherit[bt])
                 {
                     for (int j = 0; j < 2; j++)
@@ -149,8 +162,8 @@ namespace DynamicMeshCutter
                     {
                         nTarget.DefaultBehaviour[j] = target.DefaultBehaviour[bt];
                         nTarget.CreateRigidbody[j] = target.CreateRigidbody[bt];
-                        nTarget.Physics[j] = target.Physics[bt];
                         nTarget.CreateMeshCollider[j] = target.CreateMeshCollider[bt];
+                        nTarget.Physics[j] = target.Physics[bt];
                         nTarget.Inherit[j] = false;
                     }
                 }
@@ -162,69 +175,95 @@ namespace DynamicMeshCutter
             return cData;
         }
 
-        static void CreateMesh(ref GameObject root, ref Transform parent, MeshTarget target, Mesh mesh, VirtualMesh vMesh, Material[] materials, int bt, bool forcePhysics = false)
+        /// <summary>
+        /// Standard "stone" piece: parent has Rigidbody, child (root) has Mesh + collider.
+        /// </summary>
+        static void CreateMesh(ref GameObject root,
+                               ref Transform parent,
+                               MeshTarget target,
+                               Mesh mesh,
+                               VirtualMesh vMesh,
+                               Material[] materials,
+                               int bt,
+                               bool forcePhysics = false)
         {
+            // Parent: physics root
             parent = new GameObject($"{target.GameobjectRoot.name}").transform;
             parent.transform.rotation = target.transform.rotation;
             parent.transform.position = target.transform.position;
             parent.gameObject.tag = target.GameobjectRoot.tag;
 
+            // Child: actual render mesh
             root = new GameObject($"{target.gameObject.name}");
             root.transform.position = target.transform.position;
             root.transform.rotation = target.transform.rotation;
             root.gameObject.tag = target.transform.tag;
 
+            // Mesh + renderer
             var filter = root.AddComponent<MeshFilter>();
             var renderer = root.AddComponent<MeshRenderer>();
 
             filter.mesh = mesh;
             renderer.materials = materials;
 
+            // Center parent at mesh bounds center
             Vector3 worldCenter = renderer.bounds.center;
             parent.transform.position = worldCenter;
 
             root.transform.SetParent(parent, true);
-            //root.transform.localScale = target.transform.localScale; //test this
 
-            if (target.CreateRigidbody[bt])
+            // --- Rigidbody on parent ---
+            if (target.CreateRigidbody[bt] || forcePhysics)
             {
                 var rb = parent.gameObject.AddComponent<Rigidbody>();
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
                 rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
             }
+
+            // --- MeshCollider on root ---
             if (target.CreateMeshCollider[bt])
             {
-                //only create when more than or equal unique vertices. if we don't run floodfill algorithm, the uniquevertice amount will be unset and equals -1
-                if (vMesh.UniqueVerticesCount < 0 || vMesh.UniqueVerticesCount > 3 && vMesh.Vertices.Length > 20)
+                // Only create when mesh is "large enough".
+                bool validForCollider =
+                    vMesh.UniqueVerticesCount < 0 ||
+                    (vMesh.UniqueVerticesCount > 3 && vMesh.Vertices.Length > 20);
+
+                if (validForCollider)
                 {
+                    // Remove any stray colliders that might somehow exist
+                    RemoveAllColliders(root);
+                    RemoveAllColliders(parent.gameObject);
+
                     MeshCollider collider = root.AddComponent<MeshCollider>();
-                    //remark: BE CAREFUL ABOUT CONVEX MESH COLLIDER CREATION. THIS WILL THROW PHYSICS.PHYSX ERRORS IF MESH IS TOO SMALL.
+
+                    // IMPORTANT: set the sharedMesh and force convex so we never hit
+                    // "Concave Mesh Colliders are not supported with dynamic Rigidbody" errors.
+                    collider.sharedMesh = mesh;
                     collider.convex = true;
+                    //collider.inflateMesh = true; // small stability helper
                 }
             }
         }
 
         /// <summary>
-        /// will they ragdoll have any valid colliders left after considering the cutoff threshold?
+        /// will the ragdoll have any valid colliders left after considering the cutoff threshold?
         /// </summary>
-        /// <param name="ragdoll"></param>
-        /// <param name="vMesh"></param>
-        /// <returns></returns>
         static bool WillBeValidRagdoll(DynamicRagdoll ragdoll, VirtualMesh vMesh)
         {
-            foreach(int key in ragdoll.Parts.Keys)
+            foreach (int key in ragdoll.Parts.Keys)
             {
                 if (vMesh.DynamicGroups.ContainsKey(key))
                 {
                     DynamicRagdollPart part = ragdoll.Parts[key];
                     Vector3[] vertices = vMesh.DynamicGroups[key];
-                    float percent = ((float)vertices.Length / (float)part.Vertices.Length);
+                    float percent = (float)vertices.Length / (float)part.Vertices.Length;
                     if (part.Colliders.Length > 0 && percent > _ragdoll_vertex_threshold)
                         return true;
                 }
             }
             return false;
         }
+
         static void TrimRagdoll(DynamicRagdoll ragdoll, MeshTarget target, VirtualMesh vMesh)
         {
             ragdoll.Assignments = vMesh.Assignments;
@@ -232,29 +271,25 @@ namespace DynamicMeshCutter
             int[] keys = new int[ragdoll.Parts.Keys.Count];
             int index = 0;
             foreach (var key in ragdoll.Parts.Keys)
-            {
                 keys[index++] = key;
-            }
 
-            for(int i =0;i<keys.Length;i++)
+            for (int i = 0; i < keys.Length; i++)
             {
                 int key = keys[i];
                 DynamicRagdollPart part = ragdoll.Parts[key];
                 if (vMesh.DynamicGroups.ContainsKey(key))
                 {
                     Vector3[] vertices = vMesh.DynamicGroups[key];
-                    float percent = ((float)vertices.Length / (float)part.Vertices.Length);
+                    float percent = (float)vertices.Length / (float)part.Vertices.Length;
                     if (part.Colliders.Length > 0 && percent > _ragdoll_vertex_threshold)
                     {
-
+                        // keep
                     }
                     else
                     {
                         for (int k = 0; k < part.Colliders.Length; k++)
-                        {
                             GameObject.DestroyImmediate(part.Colliders[k]);
-                        }
-                        part.Colliders = new Collider[0] { };
+                        part.Colliders = new Collider[0];
                     }
 
                     part.Vertices = vertices;
@@ -268,16 +303,23 @@ namespace DynamicMeshCutter
                     if (part.Colliders != null)
                     {
                         for (int k = 0; k < part.Colliders.Length; k++)
-                        {
                             GameObject.DestroyImmediate(part.Colliders[k]);
-                        }
                     }
                     GameObject.DestroyImmediate(part);
                     ragdoll.Parts.Remove(key);
                 }
             }
         }
-        static void CreateRagdoll(ref GameObject root, ref Transform parent, Info info, MeshTarget target, Mesh mesh, VirtualMesh vMesh, Material[] materials, int bt, Behaviour behaviour)
+
+        static void CreateRagdoll(ref GameObject root,
+                                  ref Transform parent,
+                                  Info info,
+                                  MeshTarget target,
+                                  Mesh mesh,
+                                  VirtualMesh vMesh,
+                                  Material[] materials,
+                                  int bt,
+                                  Behaviour behaviour)
         {
             Transform rootBone = CreateSkinnedMeshRenderer(ref root, ref parent, info, target, mesh, vMesh, materials, bt, behaviour);
 
@@ -289,10 +331,10 @@ namespace DynamicMeshCutter
 
             if (parts.Count == 0)
             {
-                Debug.LogError("This shouldnt happen. (Bugreport: Parts of ragdoll is 0)");
+                Debug.LogError("This shouldn't happen. (Bugreport: Parts of ragdoll is 0)");
             }
 
-            //find outermost "root" parts
+            // find outermost "root" parts
             List<DynamicRagdollPart> roots = new List<DynamicRagdollPart>();
             List<DynamicRagdollPart> remainingPartsToCheck = ragdoll.Parts.Values.ToList();
             while (remainingPartsToCheck.Count > 0)
@@ -317,31 +359,28 @@ namespace DynamicMeshCutter
                 }
             }
 
-            //move all roots to top, aka. make them direct children of the parent. 
+            // move all roots to top, make them direct children of parent
             var allKids = rootBone.transform.GetComponentsInChildren<Transform>(true);
             List<Transform> childrenToMove = new List<Transform>();
-            for(int i = 0; i < allKids.Length; i++)
-            {
+            for (int i = 0; i < allKids.Length; i++)
                 childrenToMove.Add(allKids[i]);
-            }
 
             foreach (var r in roots)
             {
                 r.transform.SetParent(parent);
                 Transform[] rootChildren = r.transform.GetComponentsInChildren<Transform>(true);
                 for (int j = 0; j < rootChildren.Length; j++)
-                {
                     childrenToMove.Remove(rootChildren[j]);
-                }
             }
 
-            //flat hierarchy, move to closest root
+            // flat hierarchy, move to closest root
             for (int j = 0; j < childrenToMove.Count; j++)
             {
                 DynamicRagdollPart closestRoot = roots[0];
                 for (int i = 1; i < roots.Count; i++)
                 {
-                    if (Vector3.Distance(roots[i].transform.position, childrenToMove[j].position) < Vector3.Distance(closestRoot.transform.position, target.transform.position))
+                    if (Vector3.Distance(roots[i].transform.position, childrenToMove[j].position) <
+                        Vector3.Distance(closestRoot.transform.position, target.transform.position))
                     {
                         closestRoot = roots[i];
                     }
@@ -349,18 +388,16 @@ namespace DynamicMeshCutter
                 childrenToMove[j].SetParent(closestRoot.transform);
             }
 
-            //connect outer roots together (they need to be part of "one" ragdoll)
+            // connect outer roots together
             if (roots.Count > 1)
             {
                 for (int j = 0; j < roots.Count - 1; j++)
-                {
                     roots[j].Joint.connectedBody = roots[j + 1].Rigidbody;
-                }
             }
 
             bool hasCollider = false;
 
-            //ensure inner roots have connected rigibody
+            // ensure inner roots have connected rigidbody
             for (int j = 0; j < parts.Count; j++)
             {
                 if (!hasCollider && parts[j].Colliders.Length > 0)
@@ -368,10 +405,10 @@ namespace DynamicMeshCutter
 
                 if (parts[j].Joint == null)
                     continue;
+
                 if (parts[j].Joint.connectedBody == null)
                 {
                     var rb = parts[j].GetComponentInParentIgnoreSelf<Rigidbody>();
-
                     if (rb != null)
                     {
                         parts[j].Joint.connectedBody = rb;
@@ -379,9 +416,7 @@ namespace DynamicMeshCutter
                     else
                     {
                         if (!roots.Contains(parts[j]))
-                        {
-                            Debug.LogError("false");
-                        }
+                            Debug.LogError("DynamicRagdoll: joint with no connectedBody and no root found.");
                     }
                 }
             }
@@ -390,7 +425,8 @@ namespace DynamicMeshCutter
             {
                 Debug.LogError("Dynamic Ragdoll has no more collider");
             }
-            //active physics for the rigidbody
+
+            // activate physics for the rigidbody
             switch (target.Physics[bt])
             {
                 case RagdollPhysics.LeaveAsIs:
@@ -404,7 +440,15 @@ namespace DynamicMeshCutter
             }
         }
 
-        static void CreateAnimatedMesh(ref GameObject root, ref Transform parent, Info info, MeshTarget target, Mesh mesh, VirtualMesh vMesh, Material[] materials, int bt, Behaviour behaviour)
+        static void CreateAnimatedMesh(ref GameObject root,
+                                       ref Transform parent,
+                                       Info info,
+                                       MeshTarget target,
+                                       Mesh mesh,
+                                       VirtualMesh vMesh,
+                                       Material[] materials,
+                                       int bt,
+                                       Behaviour behaviour)
         {
             Animator tAnimator = target.Animator;
 
@@ -414,12 +458,7 @@ namespace DynamicMeshCutter
             }
             else
             {
-                //animator transform needs to match that of the original animator
-                //parent.transform.position = tAnimator.transform.position;
-                //parent.transform.rotation = tAnimator.transform.rotation;
-
                 parent = GameObject.Instantiate(target.Animator.gameObject).transform;
-                //parent.name = target.Animator.gameObject.name.Replace("(Clone)", "");
                 root = parent.GetComponentInChildren<MeshTarget>().gameObject;
 
                 var filter = root.GetComponent<MeshFilter>();
@@ -431,24 +470,31 @@ namespace DynamicMeshCutter
             parent.transform.position = tAnimator.transform.position;
             parent.transform.rotation = tAnimator.transform.rotation;
 
-            //copy animator data and play
-            AnimatorStateInfo tAnimatorStateInfo = tAnimator.GetCurrentAnimatorStateInfo(0);
-            Animator nAnimator = parent.gameObject.GetComponent<Animator>(); //animator will be added on parent, not the meshtargets gameobject
+            // copy animator data and play
+            AnimatorStateInfo tState = tAnimator.GetCurrentAnimatorStateInfo(0);
+            Animator nAnimator = parent.gameObject.GetComponent<Animator>();
+
             nAnimator.runtimeAnimatorController = tAnimator.runtimeAnimatorController;
             nAnimator.avatar = tAnimator.avatar;
             nAnimator.applyRootMotion = tAnimator.applyRootMotion;
             nAnimator.updateMode = tAnimator.updateMode;
             nAnimator.cullingMode = tAnimator.cullingMode;
 
-            nAnimator.Play(tAnimatorStateInfo.fullPathHash, 0, tAnimatorStateInfo.normalizedTime);
+            nAnimator.Play(tState.fullPathHash, 0, tState.normalizedTime);
         }
 
-
-
         /// <summary>
-        /// duplicates the armature and returns the rootbone
+        /// Duplicates the armature and returns the root bone.
         /// </summary>
-        public static Transform CreateSkinnedMeshRenderer(ref GameObject meshRoot, ref Transform parent, Info info, MeshTarget target, Mesh mesh, VirtualMesh vMesh, Material[] materials, int bt, Behaviour behaviour)
+        public static Transform CreateSkinnedMeshRenderer(ref GameObject meshRoot,
+                                                          ref Transform parent,
+                                                          Info info,
+                                                          MeshTarget target,
+                                                          Mesh mesh,
+                                                          VirtualMesh vMesh,
+                                                          Material[] materials,
+                                                          int bt,
+                                                          Behaviour behaviour)
         {
             parent = GameObject.Instantiate(target.GameobjectRoot).transform;
             var nRenderer = parent.GetComponentInChildren<SkinnedMeshRenderer>();
@@ -458,7 +504,6 @@ namespace DynamicMeshCutter
             if (target.DynamicRagdoll != null)
             {
                 DynamicRagdoll nRagdoll = parent.GetComponent<DynamicRagdoll>();
-                //keep but modifiy dynamic ragdoll component
                 TrimRagdoll(nRagdoll, target, vMesh);
             }
 
@@ -467,11 +512,10 @@ namespace DynamicMeshCutter
                 Animator nAnimator = parent.GetComponent<Animator>();
                 if (behaviour == Behaviour.Animation)
                 {
-                    //keep animator component
+                    // keep animator component
                 }
                 else
                 {
-                    //remove because no longer neeeded
                     GameObject.DestroyImmediate(nAnimator);
                 }
             }
@@ -484,9 +528,8 @@ namespace DynamicMeshCutter
             return rootbone;
         }
 
-
         /// <summary>
-        /// createdObjects/targerts can be NULL if the created object's vertices are below vertexCreationThreshold
+        /// Translate created objects away from the cutting plane by "separation".
         /// </summary>
         public static void TranslateCreatedObjects(Info info, GameObject[] createdObjects, MeshTarget[] targets, float separation)
         {
@@ -500,15 +543,12 @@ namespace DynamicMeshCutter
                 if (createdObjects[i] == null || targets[i] == null)
                     continue;
 
-                //int bt = info.BT[i];
                 if (!targets[i].ApplyTranslation)
                     continue;
 
                 GameObject createdObject = createdObjects[i];
 
-                int sign = 1;
-                if (info.Sides[i] == 1)
-                    sign = -1;
+                int sign = (info.Sides[i] == 1) ? -1 : 1;
 
                 Vector3 translation = sign * plane.WorldNormal.normalized * separation;
                 createdObject.transform.position += translation;
@@ -519,7 +559,7 @@ namespace DynamicMeshCutter
         {
             MeshRenderer renderer = target.GetComponent<MeshRenderer>();
             if (renderer != null)
-                return renderer.materials;// sharedMaterials;
+                return renderer.materials;
 
             SkinnedMeshRenderer sRenderer = target.GetComponent<SkinnedMeshRenderer>();
             if (sRenderer != null)
@@ -534,13 +574,10 @@ namespace DynamicMeshCutter
             foreach (var c in allComponents)
             {
                 if (c.transform.gameObject != target.transform.gameObject)
-                {
                     return c as T;
-                }
             }
             return null;
         }
-
 
         public static void GetMeshInfo(MeshTarget target, out Mesh outMesh, out Matrix4x4[] outBindposes)
         {
@@ -571,7 +608,8 @@ namespace DynamicMeshCutter
                         break;
                     }
 
-                    outBindposes[i] = renderer.bones[i].worldToLocalMatrix * target.transform.localToWorldMatrix * scale;
+                    outBindposes[i] = renderer.bones[i].worldToLocalMatrix *
+                                      target.transform.localToWorldMatrix * scale;
                 }
 
                 if (failed)
@@ -587,6 +625,22 @@ namespace DynamicMeshCutter
 
             outMesh = null;
             outBindposes = new Matrix4x4[0];
+        }
+
+        // ────────────────────────── helpers ──────────────────────────
+
+        static void RemoveAllColliders(GameObject go)
+        {
+            if (go == null) return;
+
+            var cols = go.GetComponents<Collider>();
+            for (int i = 0; i < cols.Length; i++)
+            {
+                if (Application.isPlaying)
+                    GameObject.Destroy(cols[i]);
+                else
+                    GameObject.DestroyImmediate(cols[i]);
+            }
         }
     }
 }
