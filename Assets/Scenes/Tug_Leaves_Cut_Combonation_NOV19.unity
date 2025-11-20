@@ -6433,7 +6433,7 @@ MonoBehaviour:
   maxSpringMultiplier: 1.5
   minDamperMultiplier: 0.25
   maxDamperMultiplier: 1.5
-  usePluckDwell: 1
+  usePluckDwell: 0
   pluckThresholdFraction: 0.8
   pluckDwellSeconds: 0.08
   breakOnReleaseFromHighStretch: 0
