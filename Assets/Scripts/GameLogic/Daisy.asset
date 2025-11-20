@@ -15,7 +15,7 @@ MonoBehaviour:
   idealStemLength: 1
   stemHardFailDelta: 0.5
   stemPerfectDelta: 0.05
-  stemScoreWeight: 0.3
+  stemScoreWeight: 0.253
   stemCanCauseGameOver: 1
   stemContributesToScore: 1
   idealCutAngleDeg: 45
@@ -27,7 +27,7 @@ MonoBehaviour:
   partRules:
   - partId: Daisy_Leaf_R
     kind: 0
-    idealCondition: 0
+    idealCondition: 2
     canCauseGameOver: 1
     isSpecial: 1
     contributesToScore: 0

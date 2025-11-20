@@ -45,11 +45,11 @@ public class FlowerGameBrain : MonoBehaviour
 
         foreach (var p in parts)
         {
-            if (p == null || string.IsNullOrEmpty(p.partId))
+            if (p == null || string.IsNullOrEmpty(p.PartId))
                 continue;
 
-            if (!partLookup.ContainsKey(p.partId))
-                partLookup.Add(p.partId, p);
+            if (!partLookup.ContainsKey(p.PartId))
+                partLookup.Add(p.PartId, p);
         }
     }
 
@@ -108,7 +108,7 @@ public class FlowerGameBrain : MonoBehaviour
                 reason = $"Stem length off by {delta:F2} (hard fail).";
             }
 
-            // Score contribution (if not game over yet or even if – up to you)
+            // Score contribution
             float stemScore = Mathf.Clamp01(1f - (delta / ideal.stemHardFailDelta));
             totalScoreWeight += ideal.stemScoreWeight;
             accumulatedScore += stemScore * ideal.stemScoreWeight;
@@ -193,12 +193,11 @@ public class FlowerGameBrain : MonoBehaviour
                     }
                     else if (cond == FlowerPartCondition.Withered && rule.allowedWithered)
                     {
-                        // Slight penality for allowed withering
                         partScore = 0.5f;
                     }
                     else
                     {
-                        partScore = 0.2f; // wrong condition
+                        partScore = 0.2f;
                     }
                 }
 

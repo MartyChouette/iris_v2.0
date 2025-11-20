@@ -1,112 +1,128 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
+/// <summary>
+/// Editor-side helper to "bake" the current runtime flower into:
+/// - an IdealFlowerDefinition (what the brain compares against)
+/// - a FlowerTypeDefinition (ID + display name + high-level tuning).
+/// Attach this to the root of a flower prefab in the scene.
+/// </summary>
 [DisallowMultipleComponent]
 public class FlowerTypeAuthoring : MonoBehaviour
 {
     [Header("Meta")]
+    [Tooltip("Pretty name for this flower (used for UI / default displayName).")]
     public string flowerName = "New Flower Type";
 
-    [Tooltip("If empty, we'll auto-gather from children.")]
+    [Tooltip("Short ID for this flower type (if empty, we'll generate from flowerName when baking).")]
+    public string flowerIdOverride;
+
+    [Header("Runtime Refs")]
+    [Tooltip("If empty, we'll auto-gather from children on bake.")]
     public FlowerStemRuntime stem;
 
-    [Header("Assets")]
-    [Tooltip("Ideal asset to create or overwrite. Leave null to auto-create in the same folder as prefab.")]
+    [Tooltip("Optional explicit list of parts; if empty, we auto-gather from children on bake.")]
+    public List<FlowerPartRuntime> parts = new List<FlowerPartRuntime>();
+
+    [Header("Assets To Bake Into")]
+    [Tooltip("Where the ideal stem/part rules get stored.")]
     public IdealFlowerDefinition idealAsset;
 
-    [Tooltip("High-level type asset that points to the ideal + prefab and holds meta data.")]
+    [Tooltip("High-level type definition asset (ID, display name, score mapping etc).")]
     public FlowerTypeDefinition flowerTypeAsset;
 
-    [Tooltip("If true, baking will auto-create a FlowerTypeDefinition if missing.")]
-    public bool autoCreateTypeAsset = true;
-
-    [Header("Default Tolerances When Baking Ideal")]
+    [Header("Default Stem Settings (for Ideal asset)")]
     public float defaultStemHardFailDelta = 0.5f;
     public float defaultStemPerfectDelta = 0.05f;
-    public float defaultStemScoreWeight = 0.3f;
+    [Range(0f, 1f)] public float defaultStemScoreWeight = 0.4f;
 
-    public float defaultCutAngleHardFailDelta = 20f;
+    [Header("Default Cut Angle Settings (for Ideal asset)")]
+    public float defaultCutAngleHardFailDelta = 15f;
     public float defaultCutAnglePerfectDelta = 3f;
-    public float defaultCutAngleScoreWeight = 0.2f;
+    [Range(0f, 1f)] public float defaultCutAngleScoreWeight = 0.4f;
 
 #if UNITY_EDITOR
 
-    [ContextMenu("Flower / Bake Ideal Definition From Current Pose")]
+    // ───────────────────── Editor Buttons ─────────────────────
+
+    [ContextMenu("Flower/Bake Ideal From Current Pose")]
+    public void BakeIdealFromCurrentPose_Context()
+    {
+        BakeIdealFromCurrentPose();
+        Debug.Log($"[FlowerTypeAuthoring] Baked IdealFlowerDefinition from '{name}'.", this);
+    }
+
+    [ContextMenu("Flower/Bake Type Asset From Settings")]
+    public void BakeToTypeAsset_Context()
+    {
+        BakeToTypeAsset();
+        Debug.Log($"[FlowerTypeAuthoring] Baked FlowerTypeDefinition from '{name}'.", this);
+    }
+
+#endif
+
+    // ───────────────────── Core Baking Logic ─────────────────────
+
+    /// <summary>
+    /// Reads the current scene instance (stem + parts) and writes rules into idealAsset.
+    /// </summary>
     public void BakeIdealFromCurrentPose()
     {
-        if (string.IsNullOrEmpty(flowerName))
-        {
-            flowerName = gameObject.name;
-        }
-
-        // Ensure we have a stem ref
-        if (stem == null)
-        {
-            stem = GetComponentInChildren<FlowerStemRuntime>();
-            if (stem == null)
-            {
-                Debug.LogError($"[{nameof(FlowerTypeAuthoring)}] No FlowerStemRuntime found on '{name}' or children.");
-                return;
-            }
-        }
-
-        // Find all parts
-        var parts = new List<FlowerPartRuntime>();
-        GetComponentsInChildren(true, parts);
-
-        if (parts.Count == 0)
-        {
-            Debug.LogWarning($"[{nameof(FlowerTypeAuthoring)}] No FlowerPartRuntime components found under '{name}'.");
-        }
-
-        // Create or reuse ideal asset
+#if UNITY_EDITOR
         if (idealAsset == null)
         {
-            idealAsset = CreateIdealAssetOnDisk();
-        }
-
-        if (idealAsset == null)
-        {
-            Debug.LogError($"[{nameof(FlowerTypeAuthoring)}] Failed to create IdealFlowerDefinition asset.");
+            Debug.LogWarning("[FlowerTypeAuthoring] No IdealFlowerDefinition asset assigned.", this);
             return;
         }
 
-        Undo.RecordObject(idealAsset, "Bake Ideal Flower Definition");
+        // Auto-gather if not wired.
+        if (stem == null)
+            stem = GetComponentInChildren<FlowerStemRuntime>();
 
-        // --- Stem values ---
-        idealAsset.idealStemLength = stem.CurrentLength;
+        if (parts == null)
+            parts = new List<FlowerPartRuntime>();
+        if (parts.Count == 0)
+            GetComponentsInChildren(true, parts);
+
+        // ── Stem rules ──
+        if (stem != null)
+        {
+            idealAsset.idealStemLength = stem.CurrentLength;
+        }
+
         idealAsset.stemHardFailDelta = defaultStemHardFailDelta;
         idealAsset.stemPerfectDelta = defaultStemPerfectDelta;
         idealAsset.stemScoreWeight = defaultStemScoreWeight;
-        idealAsset.stemCanCauseGameOver = true;
-        idealAsset.stemContributesToScore = true;
 
-        float currentCutAngle = stem.GetCurrentCutAngleDeg(Vector3.up);
-        idealAsset.idealCutAngleDeg = currentCutAngle;
+        // Cut-angle rules
         idealAsset.cutAngleHardFailDelta = defaultCutAngleHardFailDelta;
         idealAsset.cutAnglePerfectDelta = defaultCutAnglePerfectDelta;
         idealAsset.cutAngleScoreWeight = defaultCutAngleScoreWeight;
+
+        // Reasonable defaults; you can tweak in the asset later.
+        idealAsset.stemCanCauseGameOver = true;
+        idealAsset.stemContributesToScore = true;
         idealAsset.cutAngleCanCauseGameOver = true;
         idealAsset.cutAngleContributesToScore = true;
 
-        // --- Per-part rules ---
+        // ── Per-part rules ──
         idealAsset.partRules.Clear();
 
         foreach (var p in parts)
         {
-            if (p == null || string.IsNullOrEmpty(p.partId))
+            if (p == null || string.IsNullOrEmpty(p.PartId))
             {
-                Debug.LogWarning($"[{nameof(FlowerTypeAuthoring)}] Skipping part without partId on '{p?.name}'.");
+                Debug.LogWarning($"[{nameof(FlowerTypeAuthoring)}] Skipping part without PartId on '{p?.name}'.", this);
                 continue;
             }
 
             var rule = new IdealFlowerDefinition.PartRule
             {
-                partId = p.partId,
+                partId = p.PartId,
                 kind = p.kind,
                 idealCondition = p.condition, // current condition becomes 'ideal'
 
@@ -125,122 +141,45 @@ public class FlowerTypeAuthoring : MonoBehaviour
         }
 
         EditorUtility.SetDirty(idealAsset);
-        AssetDatabase.SaveAssets();
-
-        Debug.Log($"[{nameof(FlowerTypeAuthoring)}] Baked IdealFlowerDefinition for '{flowerName}' with {idealAsset.partRules.Count} parts. Asset: {AssetDatabase.GetAssetPath(idealAsset)}");
-
-        // Optionally create / update the FlowerTypeDefinition wrapper
-        if (autoCreateTypeAsset)
-        {
-            BakeOrUpdateFlowerTypeAsset();
-        }
+#endif
     }
 
-    [ContextMenu("Flower / Bake / Update Flower Type Asset Only")]
-    public void BakeOrUpdateFlowerTypeAsset()
+    /// <summary>
+    /// Writes identity / high-level settings into the FlowerTypeDefinition asset.
+    /// We keep this conservative and only touch fields we know exist (flowerId, displayName, description).
+    /// </summary>
+    public void BakeToTypeAsset()
     {
-        if (string.IsNullOrEmpty(flowerName))
-        {
-            flowerName = gameObject.name;
-        }
-
+#if UNITY_EDITOR
         if (flowerTypeAsset == null)
         {
-            flowerTypeAsset = CreateFlowerTypeAssetOnDisk();
-        }
-
-        if (flowerTypeAsset == null)
-        {
-            Debug.LogError($"[{nameof(FlowerTypeAuthoring)}] Failed to create FlowerTypeDefinition asset.");
+            Debug.LogWarning("[FlowerTypeAuthoring] No FlowerTypeDefinition asset assigned to bake into.", this);
             return;
         }
 
-        Undo.RecordObject(flowerTypeAsset, "Bake Flower Type Definition");
+        // Identity
+        string id = !string.IsNullOrEmpty(flowerIdOverride)
+            ? SanitizeId(flowerIdOverride)
+            : SanitizeId(flowerName);
 
-        flowerTypeAsset.displayName = flowerName;
-        if (string.IsNullOrEmpty(flowerTypeAsset.flowerId))
+        flowerTypeAsset.flowerId = id;
+        flowerTypeAsset.displayName = string.IsNullOrEmpty(flowerName) ? "Flower" : flowerName;
+
+        // Only touch description if it's empty so you can hand-write later.
+        if (string.IsNullOrEmpty(flowerTypeAsset.description))
         {
-            flowerTypeAsset.flowerId = MakeSafeIdentifier(flowerName);
+            flowerTypeAsset.description = $"A carefully trimmed {flowerTypeAsset.displayName}.";
         }
 
-        // Hook ideal + prefab
-        if (idealAsset == null)
-        {
-            idealAsset = CreateIdealAssetOnDisk();
-        }
+        // allowGameOver / curves / days mapping are tuned directly on the asset.
 
-        flowerTypeAsset.ideal = idealAsset;
-
-        var prefabRoot = PrefabUtility.GetNearestPrefabInstanceRoot(gameObject);
-        if (prefabRoot != null)
-        {
-            var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefabRoot);
-            var prefabObj = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-            flowerTypeAsset.flowerPrefab = prefabObj;
-        }
-
-        // You can tweak difficulty / base score per type in the inspector later.
         EditorUtility.SetDirty(flowerTypeAsset);
-        AssetDatabase.SaveAssets();
-
-        Debug.Log($"[{nameof(FlowerTypeAuthoring)}] Updated FlowerTypeDefinition for '{flowerName}'. Asset: {AssetDatabase.GetAssetPath(flowerTypeAsset)}");
+#endif
     }
 
-    private IdealFlowerDefinition CreateIdealAssetOnDisk()
+#if UNITY_EDITOR
+    private static string SanitizeId(string input)
     {
-        // Try to place it next to the prefab/file this component belongs to.
-        var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gameObject);
-        string folder = "Assets";
-
-        if (!string.IsNullOrEmpty(prefabPath))
-        {
-            folder = System.IO.Path.GetDirectoryName(prefabPath).Replace("\\", "/");
-        }
-
-        string safeName = MakeSafeFilename(flowerName);
-        string assetPath = AssetDatabase.GenerateUniqueAssetPath($"{folder}/{safeName}_Ideal.asset");
-
-        var asset = ScriptableObject.CreateInstance<IdealFlowerDefinition>();
-        AssetDatabase.CreateAsset(asset, assetPath);
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-
-        return asset;
-    }
-
-    private FlowerTypeDefinition CreateFlowerTypeAssetOnDisk()
-    {
-        var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gameObject);
-        string folder = "Assets";
-
-        if (!string.IsNullOrEmpty(prefabPath))
-        {
-            folder = System.IO.Path.GetDirectoryName(prefabPath).Replace("\\", "/");
-        }
-
-        string safeName = MakeSafeFilename(flowerName);
-        string assetPath = AssetDatabase.GenerateUniqueAssetPath($"{folder}/{safeName}_Type.asset");
-
-        var asset = ScriptableObject.CreateInstance<FlowerTypeDefinition>();
-        AssetDatabase.CreateAsset(asset, assetPath);
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-
-        return asset;
-    }
-
-    private string MakeSafeFilename(string input)
-    {
-        foreach (char c in System.IO.Path.GetInvalidFileNameChars())
-        {
-            input = input.Replace(c, '_');
-        }
-        return input;
-    }
-
-    private string MakeSafeIdentifier(string input)
-    {
-        input = input.Trim().ToLowerInvariant();
         if (string.IsNullOrEmpty(input))
             return "flower_type";
 
@@ -249,9 +188,9 @@ public class FlowerTypeAuthoring : MonoBehaviour
         {
             input = input.Replace(c, '_');
         }
-        input = input.Replace(' ', '_');
-        return input;
-    }
 
+        input = input.Replace(' ', '_');
+        return input.ToLowerInvariant();
+    }
 #endif
 }

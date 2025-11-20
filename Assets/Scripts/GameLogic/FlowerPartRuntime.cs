@@ -1,14 +1,42 @@
-// File: FlowerPartRuntime.cs
+﻿// File: FlowerPartRuntime.cs
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public class FlowerPartRuntime : MonoBehaviour
 {
-    [Header("Identity / Matching")]
-    [Tooltip("Unique ID for this part so the brain can match it to an ideal spec.")]
-    public string partId;
+    public enum FlowerPartSide
+    {
+        Center,
+        Left,
+        Right
+        // Add UpperLeft/UpperRight etc later if you want, the ID generation will still work.
+    }
 
+    public enum FlowerAttachmentTarget
+    {
+        None,   // for stem / crown
+        Stem,   // leaves attach to stem
+        Crown   // petals attach to crown
+    }
+
+    [Header("Identity / Matching")]
+    [Tooltip("What kind of part this is (stem, crown, leaf, petal).")]
     public FlowerPartKind kind = FlowerPartKind.Leaf;
+
+    [Tooltip("Which core piece this attaches to (None for stem/crown themselves).")]
+    public FlowerAttachmentTarget attachmentTarget = FlowerAttachmentTarget.Stem;
+
+    [Tooltip("Broad side classification to avoid hand-typing IDs.")]
+    public FlowerPartSide side = FlowerPartSide.Center;
+
+    [Tooltip("Index among parts of the same kind+attachment+side (0,1,2...).")]
+    public int indexInGroup = 0;
+
+    [SerializeField, HideInInspector]
+    [Tooltip("Auto-generated ID from kind/attachment/side/index. Used by the brain; do not edit.")]
+    private string partId = string.Empty;
+
+    public string PartId => partId;
 
     [Header("Runtime Condition")]
     public FlowerPartCondition condition = FlowerPartCondition.Normal;
@@ -16,9 +44,9 @@ public class FlowerPartRuntime : MonoBehaviour
     [Tooltip("If false, this part is considered 'missing' (plucked / broken).")]
     public bool isAttached = true;
 
-    [Tooltip("Optional: the joint that represents this being connected. " +
-             "If destroyed/disabled you can let this auto-mark as detached.")]
-    public Joint attachJoint;
+    [Tooltip("The custom XY tether joint that represents this being connected. " +
+             "When it breaks, this part will auto-mark as detached.")]
+    public XYTetherJoint attachJoint;
 
     [Header("Gameplay Flags (check boxes)")]
     [Tooltip("If true, bad treatment of this part can cause instant game over.")]
@@ -45,19 +73,71 @@ public class FlowerPartRuntime : MonoBehaviour
     public Vector3 idealLocalPosition;
     public Vector3 idealLocalEuler;
 
-    // Called by your joint-break / pluck logic when the joint snaps.
+    // ───────────────────── Lifecycle ─────────────────────
+
+    void OnValidate()
+    {
+        // Keep index non-negative
+        if (indexInGroup < 0) indexInGroup = 0;
+
+        // Auto-generate a stable ID from the dropdowns
+        partId = GeneratePartId(kind, attachmentTarget, side, indexInGroup);
+    }
+
+    void Awake()
+    {
+        if (attachJoint == null)
+            attachJoint = GetComponent<XYTetherJoint>();
+
+        // Ensure ID is generated at runtime too
+        if (string.IsNullOrEmpty(partId))
+            partId = GeneratePartId(kind, attachmentTarget, side, indexInGroup);
+    }
+
+    void OnEnable()
+    {
+        if (attachJoint != null)
+            attachJoint.onBroke.AddListener(OnJointBroke);
+    }
+
+    void OnDisable()
+    {
+        if (attachJoint != null)
+            attachJoint.onBroke.RemoveListener(OnJointBroke);
+    }
+
+    // ───────────────────── Connection logic ─────────────────────
+
     public void MarkDetached()
     {
         isAttached = false;
     }
 
+    private void OnJointBroke()
+    {
+        MarkDetached();
+    }
+
     private void Update()
     {
-        // Optional auto-detection if you destroy the joint on break:
+        // Safety: if the joint component is gone, treat as detached.
         if (attachJoint == null && isAttached)
-        {
-            // It used to be attached, but the joint is gone.
             isAttached = false;
-        }
+    }
+
+    // ───────────────────── ID helper ─────────────────────
+
+    private static string GeneratePartId(
+        FlowerPartKind kind,
+        FlowerAttachmentTarget attach,
+        FlowerPartSide side,
+        int index)
+    {
+        // Examples:
+        //  Stem_Center_0
+        //  Crown_Center_0
+        //  Leaf_Stem_Left_0
+        //  Petal_Crown_Right_2
+        return $"{kind}_{attach}_{side}_{Mathf.Max(0, index)}";
     }
 }
