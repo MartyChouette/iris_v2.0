@@ -21,13 +21,13 @@ MonoBehaviour:
     m_Value: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0.25
+    m_Value: 1.2
   scatter:
     m_OverrideState: 1
-    m_Value: 0.5
+    m_Value: 0.896
   clamp:
     m_OverrideState: 0
-    m_Value: 65472
+    m_Value: 2
   tint:
     m_OverrideState: 0
     m_Value: {r: 1, g: 1, b: 1, a: 1}
@@ -35,18 +35,18 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 1
   downscale:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0
   maxIterations:
-    m_OverrideState: 0
-    m_Value: 6
+    m_OverrideState: 1
+    m_Value: 3
   dirtTexture:
     m_OverrideState: 0
     m_Value: {fileID: 0}
     dimension: 1
   dirtIntensity:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 1398
 --- !u!114 &-3357603926938260329
 MonoBehaviour:
   m_ObjectHideFlags: 3
