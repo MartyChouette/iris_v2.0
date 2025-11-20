@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace DynamicMeshCutter
 {
@@ -10,12 +10,17 @@ namespace DynamicMeshCutter
         private Vector3 _lastPlanePoint;
         private Vector3 _lastPlaneNormal;
 
+        // ───────────────────── Public API ─────────────────────
+
         public void Cut()
         {
             _lastPlanePoint = transform.position;
             _lastPlaneNormal = transform.forward;
 
-            var roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+            var roots = UnityEngine.SceneManagement.SceneManager
+                               .GetActiveScene()
+                               .GetRootGameObjects();
+
             foreach (var root in roots)
             {
                 if (!root.activeInHierarchy)
@@ -24,16 +29,42 @@ namespace DynamicMeshCutter
                 var targets = root.GetComponentsInChildren<MeshTarget>();
                 foreach (var target in targets)
                 {
-                    // Standard DynamicMeshCutter call:
-                    Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreated);
+                    if (target == null)
+                        continue;
+
+                    // Optional sanity: make sure it has a mesh
+                    var mf = target.GetComponent<MeshFilter>();
+                    var smr = target.GetComponent<SkinnedMeshRenderer>();
+                    bool hasMesh =
+                        (mf != null && mf.sharedMesh != null) ||
+                        (smr != null && smr.sharedMesh != null);
+
+                    if (!hasMesh)
+                        continue;
+
+                    try
+                    {
+                        // Call into the plugin cutter. We keep onCut = null (original behavior),
+                        // but wrap it in try/catch so a bad target can't crash the whole update.
+                        Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreated);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogError($"[PlaneBehaviour] Exception while cutting '{target.name}': {e}", target);
+                    }
                 }
             }
         }
 
+        // ───────────────────── DMC callback ─────────────────────
+
         void OnCreated(Info info, MeshCreationData cData)
         {
             // Let DMC move/offset the created objects first
-            MeshCreation.TranslateCreatedObjects(info, cData.CreatedObjects, cData.CreatedTargets, Separation);
+            MeshCreation.TranslateCreatedObjects(info,
+                                                 cData.CreatedObjects,
+                                                 cData.CreatedTargets,
+                                                 Separation);
 
             // Correct source object (the thing that was cut)
             GameObject sourceGO = info.MeshTarget.gameObject;
@@ -45,7 +76,10 @@ namespace DynamicMeshCutter
             }
         }
 
-        void CopyComponentsFromSource(GameObject source, GameObject piece, Vector3 planePoint, Vector3 planeNormal)
+        void CopyComponentsFromSource(GameObject source,
+                                      GameObject piece,
+                                      Vector3 planePoint,
+                                      Vector3 planeNormal)
         {
             foreach (var comp in source.GetComponents<Component>())
             {
@@ -60,10 +94,10 @@ namespace DynamicMeshCutter
                     continue;
                 }
 
-                // Generic component copy � add as needed
+                // Generic component copy – add as needed
                 var type = comp.GetType();
                 var newComp = piece.AddComponent(type);
-                // You can manually copy specific fields here if needed.
+                // Manually copy specific fields here if needed.
             }
         }
 
@@ -124,7 +158,7 @@ namespace DynamicMeshCutter
             }
             else
             {
-                // If it was self-connected, you decide:
+                // If it was self-connected, we clear it
                 cloned.connectedBody = null;
             }
 
@@ -138,7 +172,7 @@ namespace DynamicMeshCutter
                 cH.spring = oH.spring;
             }
 
-            // TODO: Add similar blocks for SpringJoint, ConfigurableJoint, etc. as needed.
+            // TODO: add similar blocks for SpringJoint, ConfigurableJoint, etc. as needed.
         }
     }
 }

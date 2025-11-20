@@ -19,6 +19,11 @@ public class XYTetherJoint : MonoBehaviour
         RelativeTravel = 1 << 5
     }
 
+    [System.Serializable]
+    public class FloatEvent : UnityEvent<float> { }
+
+    // ───────────────────────── Connection ─────────────────────────
+
     [Header("Connection")]
     public Rigidbody connectedBody;
 
@@ -27,6 +32,8 @@ public class XYTetherJoint : MonoBehaviour
     public float maxDistance = 0.75f;
     public float spring = 1200f;
     public float damper = 60f;
+
+    // ───────────────────────── Break Conditions ─────────────────────────
 
     [Header("Break Conditions")]
     public BreakCriteria criteria = BreakCriteria.Force | BreakCriteria.Distance;
@@ -50,6 +57,52 @@ public class XYTetherJoint : MonoBehaviour
     [Header("Constraints")]
     public bool enforceXYConstraints = true;
 
+    // ───────────────────────── Feel / Nintendo-ish Stuff ─────────────────────────
+
+    [Header("Soft Zone / Adaptive Tension")]
+    [Tooltip("If true, spring/damper are scaled based on stretch/maxDistance using tensionCurve.")]
+    public bool useAdaptiveDrive = false;
+
+    [Tooltip("Portion of maxDistance that counts as 'soft zone'. 0.6 = first 60% is gentle.")]
+    [Range(0f, 1f)] public float softZoneFraction = 0.6f;
+
+    [Tooltip("X: normalized stretch (0..1), Y: tension (0..1).")]
+    public AnimationCurve tensionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    [Tooltip("Spring multiplier at tension=0 (completely slack).")]
+    public float minSpringMultiplier = 0.25f;
+
+    [Tooltip("Spring multiplier at tension=1 (max stretch).")]
+    public float maxSpringMultiplier = 1.5f;
+
+    [Tooltip("Damper multiplier at tension=0 (completely slack).")]
+    public float minDamperMultiplier = 0.25f;
+
+    [Tooltip("Damper multiplier at tension=1 (max stretch).")]
+    public float maxDamperMultiplier = 1.5f;
+
+    [Header("Pluck / Pop Feel")]
+    [Tooltip("If true, holding past a stretch fraction for dwell time will auto-break (pluck).")]
+    public bool usePluckDwell = false;
+
+    [Tooltip("Stretch fraction (0..1 of maxDistance) at which pluck dwell starts counting.")]
+    [Range(0f, 1f)] public float pluckThresholdFraction = 0.8f;
+
+    [Tooltip("Time we must stay above pluckThresholdFraction before auto-break.")]
+    public float pluckDwellSeconds = 0.08f;
+
+    [Tooltip("If true, break only when tension FALLS back below a threshold after being pulled high (pop on release).")]
+    public bool breakOnReleaseFromHighStretch = false;
+
+    [Tooltip("Stretch fraction (0..1) we must drop BELOW after having exceeded pluckThresholdFraction to pop.")]
+    [Range(0f, 1f)] public float releasePopThresholdFraction = 0.4f;
+
+    [Header("Feel Events")]
+    [Tooltip("Fired with normalized tension (0..1) each FixedUpdate. Use for audio, haptics, etc.")]
+    public FloatEvent onTensionChanged;
+
+    // ───────────────────────── Events / Debug ─────────────────────────
+
     [Header("Events")]
     public UnityEvent onBroke;
 
@@ -60,6 +113,8 @@ public class XYTetherJoint : MonoBehaviour
     public Color lineColor = new Color(0f, 1f, 1f, 0.9f);
     public Color limitColor = new Color(1f, 0.3f, 0f, 0.6f);
 
+    // ───────────────────────── Internals ─────────────────────────
+
     private Rigidbody rb;
     private ConfigurableJoint joint;
     private float armedAt = -999f;
@@ -69,6 +124,16 @@ public class XYTetherJoint : MonoBehaviour
     private float absoluteTravel, relativeTravel;
     private Vector3 restAB;
     private Vector3 vA_int, vB_int;
+
+    // for adaptive drive
+    private float baseSpring;
+    private float baseDamper;
+
+    // for pluck / pop
+    private float pluckTimer;
+    private bool wasAbovePluckThreshold;
+
+    private float lastTension; // for event sanity
 
     void Awake()
     {
@@ -105,43 +170,110 @@ public class XYTetherJoint : MonoBehaviour
         vA_int = Vector3.Lerp(vA_int, vA_frame, alpha);
         vB_int = Vector3.Lerp(vB_int, vB_frame, alpha);
 
+        // travel accumulation once armed
         if (Time.time >= armedAt)
         {
             absoluteTravel += Dist(ApplySpace(a - prevA));
             relativeTravel += Dist(ApplySpace((a - b) - (prevA - prevB)));
         }
 
+        prevA = a;
+        prevB = b;
+
+        // Compute stretch and normalized tension for feel logic.
+        float restDistance = Dist(restAB);
+        float currentDistance = Dist(ApplySpace(a - b));
+        float stretch = Mathf.Max(0f, currentDistance - restDistance);
+        float stretchNorm = 0f;
+        if (maxDistance > 0.0001f)
+            stretchNorm = Mathf.Clamp01(stretch / maxDistance);
+
+        // ───── Nintendo-ish feel: adaptive tension & pluck / pop ─────
+
+        if (useAdaptiveDrive && joint != null)
+        {
+            float tension = tensionCurve != null ? tensionCurve.Evaluate(stretchNorm) : stretchNorm;
+            tension = Mathf.Clamp01(tension);
+
+            float springMult = Mathf.Lerp(minSpringMultiplier, maxSpringMultiplier, tension);
+            float damperMult = Mathf.Lerp(minDamperMultiplier, maxDamperMultiplier, tension);
+
+            var drive = joint.xDrive;
+            drive.positionSpring = baseSpring * springMult;
+            drive.positionDamper = baseDamper * damperMult;
+            joint.xDrive = drive;
+            joint.yDrive = drive;
+
+            // push tension out for audio/haptics
+            if (onTensionChanged != null)
+            {
+                // You can add a small threshold if you want to avoid micro-jitter:
+                // if (Mathf.Abs(tension - lastTension) > 0.001f)
+                onTensionChanged.Invoke(tension);
+                lastTension = tension;
+            }
+        }
+
+        if (Time.time >= armedAt)
+        {
+            if (usePluckDwell)
+            {
+                if (stretchNorm >= pluckThresholdFraction)
+                {
+                    pluckTimer += dt;
+                    if (pluckTimer >= pluckDwellSeconds)
+                    {
+                        ForceBreak($"Pluck dwell (stretchNorm={stretchNorm:F2})");
+                        return;
+                    }
+                }
+                else
+                {
+                    pluckTimer = 0f;
+                }
+            }
+
+            if (breakOnReleaseFromHighStretch)
+            {
+                if (stretchNorm >= pluckThresholdFraction)
+                {
+                    wasAbovePluckThreshold = true;
+                }
+                else if (wasAbovePluckThreshold && stretchNorm <= releasePopThresholdFraction)
+                {
+                    ForceBreak($"Release pop (stretchNorm={stretchNorm:F2})");
+                    return;
+                }
+            }
+        }
+
+        // Optional live distance logs
         if (logLiveDistance)
         {
             logTimer += dt;
             if (logTimer >= 0.2f)
             {
-                float stretch = Mathf.Max(0f, Dist(ApplySpace(a - b)) - Dist(restAB));
                 if (debugLogs)
                     Debug.Log($"[XYTetherJoint] stretch={stretch:F3}  | absTravel={absoluteTravel:F2}  relTravel={relativeTravel:F2}", this);
                 logTimer = 0f;
             }
         }
 
-        prevA = a;
-        prevB = b;
-
         if (Time.time < armedAt) return;
+
+        // choose velocity sources
+        Vector3 vA = velocityMode == VelocityMode.Rigidbody ? rb.linearVelocity : vA_int;
+        Vector3 vB = velocityMode == VelocityMode.Rigidbody ? connectedBody.linearVelocity : vB_int;
 
         // (1) Stretch-from-rest
         if ((criteria & BreakCriteria.Distance) != 0)
         {
-            float stretch = Mathf.Max(0f, Dist(ApplySpace(a - b)) - Dist(restAB));
             if (stretch > Mathf.Max(0.0001f, maxDistance))
             {
                 ForceBreak($"Stretch {stretch:F3} > {maxDistance:F3}");
                 return;
             }
         }
-
-        // choose velocity sources
-        Vector3 vA = velocityMode == VelocityMode.Rigidbody ? rb.linearVelocity : vA_int;
-        Vector3 vB = velocityMode == VelocityMode.Rigidbody ? connectedBody.linearVelocity : vB_int;
 
         // (2) Relative speed
         if ((criteria & BreakCriteria.RelativeSpeed) != 0)
@@ -194,6 +326,8 @@ public class XYTetherJoint : MonoBehaviour
         onBroke?.Invoke();
     }
 
+    // ───────────────────────── Public API ─────────────────────────
+
     public void SetConnectedBody(Rigidbody body)
     {
         connectedBody = body;
@@ -231,6 +365,8 @@ public class XYTetherJoint : MonoBehaviour
         onBroke?.Invoke();
     }
 
+    // ───────────────────────── Joint Setup ─────────────────────────
+
     void TryCreateJoint()
     {
         DestroyJoint();
@@ -245,6 +381,9 @@ public class XYTetherJoint : MonoBehaviour
         spring = Mathf.Max(0f, spring);
         damper = Mathf.Max(0f, damper);
         driveMaxForce = Mathf.Max(0f, driveMaxForce);
+
+        baseSpring = spring;
+        baseDamper = damper;
 
         joint = gameObject.AddComponent<ConfigurableJoint>();
         joint.connectedBody = connectedBody;
@@ -263,8 +402,8 @@ public class XYTetherJoint : MonoBehaviour
 
         JointDrive drive = new JointDrive
         {
-            positionSpring = spring,
-            positionDamper = damper,
+            positionSpring = baseSpring,
+            positionDamper = baseDamper,
             maximumForce = driveMaxForce
         };
         joint.xDrive = drive;
@@ -292,6 +431,9 @@ public class XYTetherJoint : MonoBehaviour
         prevA = a; prevB = b;
         absoluteTravel = 0f; relativeTravel = 0f;
         vA_int = vB_int = Vector3.zero;
+
+        pluckTimer = 0f;
+        wasAbovePluckThreshold = false;
 
         armedAt = Time.time + Mathf.Max(0f, armDelay);
 
