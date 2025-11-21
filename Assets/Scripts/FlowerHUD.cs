@@ -42,7 +42,7 @@ public class FlowerHUD : MonoBehaviour
             if (brain == null)
                 brain = session.brain;
             if (flowerType == null)
-                flowerType = session.flowerType;
+                flowerType = session.FlowerType;
         }
     }
 
@@ -50,7 +50,8 @@ public class FlowerHUD : MonoBehaviour
     {
         if (session != null)
         {
-            session.onResult.AddListener(OnResult);
+            // NOTE: event name is OnResult (capital O)
+            session.OnResult.AddListener(OnResult);
         }
     }
 
@@ -58,7 +59,8 @@ public class FlowerHUD : MonoBehaviour
     {
         if (session != null)
         {
-            session.onResult.RemoveListener(OnResult);
+            // NOTE: event name is OnResult (capital O)
+            session.OnResult.RemoveListener(OnResult);
         }
     }
 
@@ -79,6 +81,7 @@ public class FlowerHUD : MonoBehaviour
 
     /// <summary>
     /// Called by FlowerSessionController when the player finishes a flower.
+    /// Signature must match UnityEvent<EvaluationResult,int,int>.
     /// </summary>
     public void OnResult(FlowerGameBrain.EvaluationResult eval, int finalScore, int daysAlive)
     {
@@ -91,49 +94,37 @@ public class FlowerHUD : MonoBehaviour
             }
             else
             {
-                // You can get fancier if you want (e.g., "PERFECT" if eval.scoreNormalized > 0.95)
-                if (eval.scoreNormalized >= 0.95f)
-                {
-                    statusLabel.text = "PERFECT";
-                }
-                else if (eval.scoreNormalized >= 0.7f)
-                {
-                    statusLabel.text = "GOOD";
-                }
-                else
-                {
-                    statusLabel.text = "OK";
-                }
+                statusLabel.text = "OK";
                 statusLabel.color = successColor;
             }
         }
 
         if (scoreLabel != null)
         {
-            if (eval.isGameOver)
-                scoreLabel.text = "Score: 0";
-            else
-                scoreLabel.text = $"Score: {finalScore}";
+            scoreLabel.text = $"Score: {finalScore}";
         }
 
         if (daysLabel != null)
         {
-            if (eval.isGameOver)
-                daysLabel.text = "Days: 0";
-            else
-                daysLabel.text = $"Days: {daysAlive}";
+            daysLabel.text = $"Days: {daysAlive}";
         }
 
         if (reasonLabel != null)
         {
             if (eval.isGameOver && !string.IsNullOrEmpty(eval.gameOverReason))
+            {
                 reasonLabel.text = eval.gameOverReason;
-            else if (!eval.isGameOver)
-                reasonLabel.text = ""; // or something like "Nice trim."
+                reasonLabel.gameObject.SetActive(true);
+            }
+            else
+            {
+                reasonLabel.text = "";
+                reasonLabel.gameObject.SetActive(false);
+            }
         }
     }
 
-    // ───────────────────────── Live Stats UI ─────────────────────────
+    // ───────────────────────── Live Debug ─────────────────────────
 
     private void UpdateLiveStats()
     {
@@ -142,50 +133,44 @@ public class FlowerHUD : MonoBehaviour
 
         var sb = new StringBuilder();
 
-        // Stem stats if available
-        if (brain.stem != null)
+        // Stem
+        if (brain.stem != null && brain.ideal != null)
         {
-            float currentLen = brain.stem.CurrentLength;
-            float idealLen = (flowerType != null && flowerType.ideal != null)
-                ? flowerType.ideal.idealStemLength
-                : 0f;
+            float stemLen = brain.stem.CurrentLength;
+            float idealLen = brain.ideal.idealStemLength;
+            float deltaLen = stemLen - idealLen;
 
-            float lenDelta = idealLen > 0f ? currentLen - idealLen : 0f;
+            sb.AppendLine($"Stem length: {stemLen:0.###}");
+            sb.AppendLine($"(ideal {idealLen:0.###}, Δ {deltaLen:+0.###;-0.###;0.000})");
 
-            float currentAngle = brain.stem.GetCurrentCutAngleDeg(Vector3.up);
-            float idealAngle = (flowerType != null && flowerType.ideal != null)
-                ? flowerType.ideal.idealCutAngleDeg
-                : 0f;
-            float angleDelta = currentAngle - idealAngle;
+            float cutAngle = brain.stem.GetCurrentCutAngleDeg(Vector3.up);
+            float idealAngle = brain.ideal.idealCutAngleDeg;
+            float deltaAngle = cutAngle - idealAngle;
 
-            sb.AppendLine($"Stem length: {currentLen:F3} (ideal {idealLen:F3}, Δ {lenDelta:+0.000;-0.000;0.000})");
-            sb.AppendLine($"Cut angle:   {currentAngle:F1}° (ideal {idealAngle:F1}°, Δ {angleDelta:+0.0;-0.0;0.0})");
+            sb.AppendLine($"Cut angle:   {cutAngle:0.#}° (ideal {idealAngle:0.#}°, Δ {deltaAngle:+0.#;-0.#;0})");
         }
 
-        // Leaf / petal stats
+        // Parts
         int totalParts = 0;
         int attachedParts = 0;
-        int witheredParts = 0;
         int perfectParts = 0;
+        int witheredParts = 0;
 
-        if (brain.parts != null)
+        foreach (var part in brain.parts)
         {
-            foreach (var p in brain.parts)
-            {
-                if (p == null) continue;
-                totalParts++;
+            if (part == null) continue;
+            totalParts++;
 
-                if (p.isAttached) attachedParts++;
-                if (p.condition == FlowerPartCondition.Withered) witheredParts++;
-                if (p.condition == FlowerPartCondition.Perfect) perfectParts++;
-            }
+            if (part.isAttached) attachedParts++;
+            if (part.condition == FlowerPartCondition.Perfect) perfectParts++;
+            if (part.condition == FlowerPartCondition.Withered) witheredParts++;
         }
 
         sb.AppendLine($"Parts attached: {attachedParts}/{totalParts}");
         sb.AppendLine($"Perfect parts:  {perfectParts}");
         sb.AppendLine($"Withered parts: {witheredParts}");
 
-        // If you want, show the last evaluation snapshot:
+        // Last evaluation snapshot:
         sb.AppendLine($"Last score: {brain.lastScoreNormalized * 100f:0.#}%");
         if (brain.lastWasGameOver && !string.IsNullOrEmpty(brain.lastGameOverReason))
         {

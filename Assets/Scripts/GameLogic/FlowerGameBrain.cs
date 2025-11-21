@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class FlowerGameBrain : MonoBehaviour
 {
     [Header("Design Data")]
     public IdealFlowerDefinition ideal;
     public FlowerStemRuntime stem;
 
-    [Header("Runtime Parts (auto-populated if empty)")]
+    [Header("Runtime Parts")]
     public List<FlowerPartRuntime> parts = new List<FlowerPartRuntime>();
 
     [Header("Debug Output")]
@@ -22,9 +23,20 @@ public class FlowerGameBrain : MonoBehaviour
     private Dictionary<string, FlowerPartRuntime> partLookup =
         new Dictionary<string, FlowerPartRuntime>();
 
+    public bool IsPartMarkedPerfect(string partId)
+    {
+        if (ruleLookup.TryGetValue(partId, out var rule))
+            return rule.idealCondition == FlowerPartCondition.Perfect;
+        return false;
+    }
+
     private void Awake()
     {
         BuildLookups();
+        // inject brain reference into all parts
+        foreach (var p in parts)
+            if (p != null)
+                p.brain = this;
     }
 
     private void OnValidate()
@@ -39,15 +51,12 @@ public class FlowerGameBrain : MonoBehaviour
 
         partLookup.Clear();
         if (parts.Count == 0)
-        {
             GetComponentsInChildren(true, parts);
-        }
 
         foreach (var p in parts)
         {
             if (p == null || string.IsNullOrEmpty(p.PartId))
                 continue;
-
             if (!partLookup.ContainsKey(p.PartId))
                 partLookup.Add(p.PartId, p);
         }
@@ -62,32 +71,20 @@ public class FlowerGameBrain : MonoBehaviour
         {
             if (rule == null || string.IsNullOrEmpty(rule.partId))
                 continue;
-
             if (!ruleLookup.ContainsKey(rule.partId))
                 ruleLookup.Add(rule.partId, rule);
         }
     }
 
-    // ────────────────── Evaluation API ──────────────────
-
     public struct EvaluationResult
     {
         public bool isGameOver;
         public string gameOverReason;
-        public float scoreNormalized; // 0..1
+        public float scoreNormalized;
     }
 
-    /// <summary>
-    /// Call this when the player "finishes" the trimming step.
-    /// </summary>
     public EvaluationResult EvaluateFlower()
     {
-        if (ideal == null)
-        {
-            Debug.LogWarning("FlowerGameBrain has no IdealFlowerDefinition assigned.");
-            return default;
-        }
-
         BuildLookups();
 
         bool gameOver = false;
@@ -95,128 +92,112 @@ public class FlowerGameBrain : MonoBehaviour
         float totalScoreWeight = 0f;
         float accumulatedScore = 0f;
 
-        // 1) Stem length
+        // --- 1) Stem length ---
         if (stem != null && ideal.stemContributesToScore)
         {
             float currentLen = stem.CurrentLength;
             float delta = Mathf.Abs(currentLen - ideal.idealStemLength);
+            float signedDelta = currentLen - ideal.idealStemLength;
 
-            // Hard fail?
-            if (ideal.stemCanCauseGameOver && delta > ideal.stemHardFailDelta)
+            if (ideal.stemCanCauseGameOver &&
+                delta > ideal.stemHardFailDelta)
             {
                 gameOver = true;
-                reason = $"Stem length off by {delta:F2} (hard fail).";
+                reason = signedDelta < 0f ?
+                    "Crown decapitated (cut too high)" :
+                    $"Stem length off by {delta:F2} (hard fail)";
             }
 
-            // Score contribution
-            float stemScore = Mathf.Clamp01(1f - (delta / ideal.stemHardFailDelta));
+            float score = Mathf.Clamp01(1f - delta / ideal.stemHardFailDelta);
             totalScoreWeight += ideal.stemScoreWeight;
-            accumulatedScore += stemScore * ideal.stemScoreWeight;
+            accumulatedScore += score * ideal.stemScoreWeight;
         }
 
-        // 2) Cut angle
+        // --- 2) Cut angle ---
         if (!gameOver && stem != null && ideal.cutAngleContributesToScore)
         {
             float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
             float delta = Mathf.Abs(angle - ideal.idealCutAngleDeg);
 
-            if (ideal.cutAngleCanCauseGameOver && delta > ideal.cutAngleHardFailDelta)
+            if (ideal.cutAngleCanCauseGameOver &&
+                delta > ideal.cutAngleHardFailDelta)
             {
                 gameOver = true;
-                reason = $"Cut angle off by {delta:F1}° (hard fail).";
+                reason = $"Cut angle off by {delta:F1}° (hard fail)";
             }
 
-            float angleScore = Mathf.Clamp01(1f - (delta / ideal.cutAngleHardFailDelta));
+            float score = Mathf.Clamp01(1f - delta / ideal.cutAngleHardFailDelta);
             totalScoreWeight += ideal.cutAngleScoreWeight;
-            accumulatedScore += angleScore * ideal.cutAngleScoreWeight;
+            accumulatedScore += score * ideal.cutAngleScoreWeight;
         }
 
-        // 3) Leaves / petals
+        // --- 3) Leaves & Petals ---
         if (!gameOver)
         {
             foreach (var kvp in ruleLookup)
             {
                 var rule = kvp.Value;
-                FlowerPartRuntime runtime = null;
-                partLookup.TryGetValue(rule.partId, out runtime);
+                partLookup.TryGetValue(rule.partId, out var runtime);
 
                 bool exists = runtime != null;
                 bool attached = exists && runtime.isAttached;
-                FlowerPartCondition cond = exists ? runtime.condition : FlowerPartCondition.Withered;
+                FlowerPartCondition cond =
+                    exists ? runtime.condition : FlowerPartCondition.Withered;
 
-                // ------- Hard fail logic per-part -------
-                if (rule.canCauseGameOver)
+                // Critical part removed
+                if (rule.canCauseGameOver && !attached)
                 {
-                    // Example 1: perfect part must not be pulled or damaged
-                    if (rule.idealCondition == FlowerPartCondition.Perfect)
-                    {
-                        if (!attached)
-                        {
-                            gameOver = true;
-                            reason = $"Perfect {rule.kind} '{rule.partId}' was removed.";
-                            break;
-                        }
-
-                        if (cond != FlowerPartCondition.Perfect)
-                        {
-                            gameOver = true;
-                            reason = $"Perfect {rule.kind} '{rule.partId}' was damaged.";
-                            break;
-                        }
-                    }
-
-                    // Example 2: part must exist at all
-                    if (!rule.allowedMissing && !attached)
-                    {
-                        gameOver = true;
-                        reason = $"{rule.kind} '{rule.partId}' was removed and is not allowed to be missing.";
-                        break;
-                    }
+                    gameOver = true;
+                    reason = $"{rule.kind} '{rule.partId}' is missing";
+                    break;
                 }
 
-                // ------- Scoring logic per-part -------
                 if (!rule.contributesToScore)
                     continue;
 
                 float partScore = 0f;
 
-                if (!exists || !attached)
-                {
-                    // Missing part
+                if (!attached)
                     partScore = rule.allowedMissing ? 1f : 0f;
-                }
+                else if (cond == rule.idealCondition)
+                    partScore = 1f;
+                else if (cond == FlowerPartCondition.Withered && rule.allowedWithered)
+                    partScore = 0.5f;
                 else
-                {
-                    if (cond == rule.idealCondition)
-                    {
-                        partScore = 1f;  // perfect match
-                    }
-                    else if (cond == FlowerPartCondition.Withered && rule.allowedWithered)
-                    {
-                        partScore = 0.5f;
-                    }
-                    else
-                    {
-                        partScore = 0.2f;
-                    }
-                }
+                    partScore = 0.2f;
 
                 totalScoreWeight += rule.scoreWeight;
                 accumulatedScore += partScore * rule.scoreWeight;
             }
         }
 
-        float normalized = 0f;
-        if (totalScoreWeight > 0.0001f)
+        // --- 4) Global: All parts detached = instant fail ---
+        if (!gameOver)
         {
-            normalized = Mathf.Clamp01(accumulatedScore / totalScoreWeight);
+            int totalParts = partLookup.Count;
+            int attachedParts = 0;
+
+            foreach (var p in partLookup.Values)
+                if (p != null && p.isAttached)
+                    attachedParts++;
+
+            if (totalParts > 0 && attachedParts == 0)
+            {
+                gameOver = true;
+                reason = "All parts removed – flower is dead.";
+            }
         }
+
+        float normalizedScore =
+            totalScoreWeight > 0.001f ?
+            Mathf.Clamp01(accumulatedScore / totalScoreWeight) :
+            0f;
 
         var result = new EvaluationResult
         {
             isGameOver = gameOver,
             gameOverReason = gameOver ? reason : "",
-            scoreNormalized = gameOver ? 0f : normalized
+            scoreNormalized = gameOver ? 0f : normalizedScore
         };
 
         lastWasGameOver = result.isGameOver;

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -14,9 +14,40 @@ public class SquishMove : MonoBehaviour
     public float dragRadius = 0.5f;
     public float dragStrength = 1f;
 
-    [Header("Rigidbody/Constraints (optional)")]
+    [Header("Object Motion (XY-only)")]
+    [Range(0f, 1f)] public float moveThreshold = 0.6f;
+    public float moveGain = 0.35f;
+    public float velocityMoveGain = 0.02f;
+    public float maxMoveSpeed = 6f;
+
+    [Header("Rigidbody / Constraints")]
     public bool enforceXYConstraints = true;
     public bool addRigidbodyIfMissing = true;
+
+    [Header("Physics Coupling")]
+    [Tooltip("If true, mouse drag drives the Rigidbody (so joints feel the tug).")]
+    public bool driveRigidbodyFromDrag = true;
+
+    [Tooltip("How fast the Rigidbody is allowed to accelerate toward drag intent.")]
+    public float dragAcceleration = 40f;
+
+    [Tooltip("Absolute cap on Rigidbody speed to prevent 'jettison'.")]
+    public float hardMaxSpeed = 15f;
+
+    [Header("Stem Coupling (optional)")]
+    [Tooltip("If set, this jelly will also tug on another jelly (e.g. stem) when dragged.")]
+    public SquishMove coupledStem;
+
+    [Tooltip("World-space point where this jelly is attached to the stem (the small sphere in the stem).")]
+    public Transform stemAttachPoint;
+
+    [Tooltip("Radius around the attach point that the stem jelly will be deformed.")]
+    public float stemTugRadius = 0.35f;
+
+    [Tooltip("How strongly we deform the stem jelly per drag step.")]
+    public float stemTugStrength = 0.7f;
+
+    // ────────────────────────── Private state ──────────────────────────
 
     private Mesh originalMesh, meshClone;
     private MeshRenderer meshRenderer;
@@ -29,6 +60,7 @@ public class SquishMove : MonoBehaviour
     private float planeZ;
     private Vector3 currentDragPoint;
 
+    private Vector3 initialDragCenter;
     private Vector3 lastDragPoint;
     private Vector3 dragVelocity;
 
@@ -37,11 +69,18 @@ public class SquishMove : MonoBehaviour
 
     private Rigidbody rb;
 
+    // Track last world position so jelly vertices can follow physics motion
+    private Vector3 lastWorldPos;
+
+    // The "intent" movement per frame from mouse drag (XY only)
+    private Vector3 dragMoveStep = Vector3.zero;
+
+    // ────────────────────────── Unity lifecycle ──────────────────────────
+
     void Awake()
     {
         cam = Camera.main;
 
-        // Optional Rigidbody setup – but this script no longer moves it.
         if (!TryGetComponent(out rb))
         {
             if (addRigidbodyIfMissing)
@@ -56,11 +95,10 @@ public class SquishMove : MonoBehaviour
 
             if (enforceXYConstraints)
             {
-                // ✅ don't overwrite constraints, only add freezes
-                rb.constraints |= RigidbodyConstraints.FreezePositionZ
-                                | RigidbodyConstraints.FreezeRotationX
-                                | RigidbodyConstraints.FreezeRotationY
-                                | RigidbodyConstraints.FreezeRotationZ;
+                rb.constraints = RigidbodyConstraints.FreezePositionZ
+                                 | RigidbodyConstraints.FreezeRotationX
+                                 | RigidbodyConstraints.FreezeRotationY
+                                 | RigidbodyConstraints.FreezeRotationZ;
             }
         }
     }
@@ -76,11 +114,16 @@ public class SquishMove : MonoBehaviour
         jv = new JellyVertex[meshClone.vertices.Length];
         for (int i = 0; i < meshClone.vertices.Length; i++)
             jv[i] = new JellyVertex(i, transform.TransformPoint(meshClone.vertices[i]));
+
+        lastWorldPos = transform.position;
     }
 
     void Update()
     {
-        // Begin drag (only affects vertices now)
+        // default: no intent if we're not dragging this frame
+        dragMoveStep = Vector3.zero;
+
+        // ───── Begin drag ─────
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -95,10 +138,11 @@ public class SquishMove : MonoBehaviour
                     currentDragPoint = ray.GetPoint(enter);
                     currentDragPoint.z = planeZ;
 
+                    initialDragCenter = currentDragPoint;
                     lastDragPoint = currentDragPoint;
                     dragVelocity = Vector3.zero;
 
-                    // collect vertices within radius (XY distance)
+                    // Collect vertices within radius (XY distance) from hit point
                     draggedVertices.Clear();
                     dragOffsets.Clear();
                     for (int i = 0; i < jv.Length; i++)
@@ -118,7 +162,7 @@ public class SquishMove : MonoBehaviour
             }
         }
 
-        // Dragging – deform vertices only
+        // ───── Dragging ─────
         if (Input.GetMouseButton(0) && isDragging)
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -128,7 +172,7 @@ public class SquishMove : MonoBehaviour
                 newPoint.z = planeZ;
                 float dt = Mathf.Max(Time.deltaTime, 1e-5f);
 
-                // XY velocity only (for smoother dragging)
+                // XY velocity only
                 Vector3 frameDelta = newPoint - lastDragPoint;
                 frameDelta.z = 0f;
                 Vector3 instVel = frameDelta / dt;
@@ -136,7 +180,7 @@ public class SquishMove : MonoBehaviour
 
                 currentDragPoint = newPoint;
 
-                // Deform vertices (XY only; keep Z)
+                // Deform this mesh's jelly verts (XY only; keep Z)
                 foreach (int i in draggedVertices)
                 {
                     float distXY = Vector2.Distance(ToXY(jv[i].Position), ToXY(currentDragPoint));
@@ -148,26 +192,105 @@ public class SquishMove : MonoBehaviour
                     jv[i].velocity = Vector3.zero;
                 }
 
+                // Whole-object XY translation "intent"
+                float startMoveAt = dragRadius * moveThreshold;
+                float outside = Mathf.Max(0f, Vector2.Distance(ToXY(currentDragPoint), ToXY(initialDragCenter)) - startMoveAt);
+
+                Vector3 moveStep = Vector3.zero;
+                if (outside > 0f)
+                {
+                    Vector2 dirXY = (ToXY(currentDragPoint) - ToXY(initialDragCenter)).normalized;
+                    moveStep = new Vector3(dirXY.x, dirXY.y, 0f) * (outside * moveGain);
+                }
+                moveStep += new Vector3(dragVelocity.x, dragVelocity.y, 0f) * (velocityMoveGain * dt);
+
+                // Clamp the *intent* step length
+                float maxStep = maxMoveSpeed * dt;
+                if (moveStep.sqrMagnitude > maxStep * maxStep)
+                    moveStep = moveStep.normalized * maxStep;
+
+                dragMoveStep = moveStep; // store for FixedUpdate / AddForce
+
+                // ───── Stem coupling: tug the stem jelly around the attach point ─────
+                if (coupledStem != null && stemAttachPoint != null)
+                {
+                    // Use the same step as a tug vector (XY only).
+                    Vector3 tugVec = new Vector3(moveStep.x, moveStep.y, 0f);
+
+                    // Center the tug at the attach point (your small joint sphere in the stem).
+                    Vector3 stemCenter = stemAttachPoint.position;
+
+                    coupledStem.ApplyExternalTug(stemCenter, tugVec, stemTugRadius, stemTugStrength);
+                }
+
+                // Keep reference center in sync with our intent
+                initialDragCenter += new Vector3(moveStep.x, moveStep.y, 0f);
+
                 lastDragPoint = newPoint;
             }
         }
 
-        // End drag
+        // ───── End drag ─────
         if (Input.GetMouseButtonUp(0))
         {
             isDragging = false;
             draggedVertices.Clear();
             dragOffsets.Clear();
+
+            dragMoveStep = Vector3.zero; // no more drive intent
         }
     }
 
     void FixedUpdate()
     {
-        // ✅ Only squish / spring sim in FixedUpdate; no Rigidbody movement here.
+        // 1) Drive the Rigidbody with forces (not teleport / hard velocity)
+        if (rb != null && !rb.isKinematic && driveRigidbodyFromDrag)
+        {
+            float fdt = Time.fixedDeltaTime;
 
-        if (originalMesh == null || meshClone == null || jv == null)
-            return;
+            if (dragMoveStep.sqrMagnitude > 0f)
+            {
+                // Turn intent step into desired velocity
+                Vector3 desiredVel = dragMoveStep / Mathf.Max(fdt, 1e-5f);
+                desiredVel.z = 0f;
 
+                // Clamp to a soft max speed
+                if (desiredVel.magnitude > maxMoveSpeed)
+                    desiredVel = desiredVel.normalized * maxMoveSpeed;
+
+                Vector3 currentVel = rb.linearVelocity;
+                Vector3 currentXY = new Vector3(currentVel.x, currentVel.y, 0f);
+
+                Vector3 neededAccel = (desiredVel - currentXY) / Mathf.Max(fdt, 1e-5f);
+
+                // Clamp acceleration
+                if (neededAccel.magnitude > dragAcceleration)
+                    neededAccel = neededAccel.normalized * dragAcceleration;
+
+                // Apply force to drive toward desired velocity (XY only)
+                Vector3 force = neededAccel * rb.mass;
+                rb.AddForce(new Vector3(force.x, force.y, 0f), ForceMode.Force);
+
+                // Final safety cap on absolute speed so we don't yeet into infinity
+                Vector3 v = rb.linearVelocity;
+                float speed = v.magnitude;
+                if (speed > hardMaxSpeed)
+                    rb.linearVelocity = v.normalized * hardMaxSpeed;
+            }
+        }
+
+        // 2) Make jelly vertices follow actual body motion caused by physics/joints
+        Vector3 worldDelta = transform.position - lastWorldPos;
+        if (worldDelta.sqrMagnitude > 0f)
+        {
+            for (int i = 0; i < jv.Length; i++)
+            {
+                jv[i].Position += worldDelta;
+            }
+        }
+        lastWorldPos = transform.position;
+
+        // 3) Jelly spring step into mesh vertices
         vertexArray = originalMesh.vertices;
 
         for (int i = 0; i < jv.Length; i++)
@@ -186,6 +309,37 @@ public class SquishMove : MonoBehaviour
         meshClone.vertices = vertexArray;
         meshClone.RecalculateNormals();
     }
+
+    // ────────────────────────── External tug API ──────────────────────────
+
+    /// <summary>
+    /// External tug: deform this jelly around a world-space center by a tug vector.
+    /// Used so a leaf can tug on the stem's jelly verts.
+    /// </summary>
+    public void ApplyExternalTug(Vector3 worldCenter, Vector3 tugVector, float radius, float strength)
+    {
+        if (jv == null || jv.Length == 0)
+            return;
+
+        if (tugVector.sqrMagnitude < 1e-8f || radius <= 0f || strength <= 0f)
+            return;
+
+        for (int i = 0; i < jv.Length; i++)
+        {
+            float distXY = Vector2.Distance(ToXY(jv[i].Position), ToXY(worldCenter));
+            if (distXY <= radius)
+            {
+                float weight = Mathf.Clamp01(1f - distXY / radius) * strength;
+
+                // Tug in XY only, keep Z as-is
+                Vector3 tugXY = new Vector3(tugVector.x, tugVector.y, 0f);
+                jv[i].Position += tugXY * weight;
+                jv[i].velocity = Vector3.zero;
+            }
+        }
+    }
+
+    // ────────────────────────── Helpers / nested type ──────────────────────────
 
     static Vector2 ToXY(Vector3 v) => new Vector2(v.x, v.y);
 

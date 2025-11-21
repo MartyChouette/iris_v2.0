@@ -116,7 +116,9 @@ public class FlowerTypeAuthoring : MonoBehaviour
         {
             if (p == null || string.IsNullOrEmpty(p.PartId))
             {
-                Debug.LogWarning($"[{nameof(FlowerTypeAuthoring)}] Skipping part without PartId on '{p?.name}'.", this);
+                Debug.LogWarning(
+                    $"[{nameof(FlowerTypeAuthoring)}] Skipping part without PartId on '{p?.name}'.",
+                    this);
                 continue;
             }
 
@@ -124,15 +126,19 @@ public class FlowerTypeAuthoring : MonoBehaviour
             {
                 partId = p.PartId,
                 kind = p.kind,
-                idealCondition = p.condition, // current condition becomes 'ideal'
 
-                canCauseGameOver = p.canCauseGameOver,
-                isSpecial = p.isSpecial,
-                contributesToScore = p.contributesToScore,
-                allowedWithered = p.allowedWithered,
-                allowedMissing = p.allowedMissing,
-                scoreWeight = p.scoreWeight,
+                // The CURRENT runtime condition becomes the IDEAL condition.
+                idealCondition = p.condition,
 
+                // ---------- NEW: Default rule settings ----------
+                canCauseGameOver = false,
+                isSpecial = false,
+                contributesToScore = true,
+                allowedWithered = false,
+                allowedMissing = false,
+                scoreWeight = 0.1f,
+
+                // ---------- Pose ----------
                 idealLocalPosition = p.transform.localPosition,
                 idealLocalEuler = p.transform.localEulerAngles
             };
@@ -141,6 +147,7 @@ public class FlowerTypeAuthoring : MonoBehaviour
         }
 
         EditorUtility.SetDirty(idealAsset);
+
 #endif
     }
 
