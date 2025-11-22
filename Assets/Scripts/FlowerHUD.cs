@@ -15,11 +15,11 @@ public class FlowerHUD : MonoBehaviour
     public FlowerTypeDefinition flowerType;
 
     [Header("UI Text Elements (TMP)")]
-    public TMP_Text statusLabel;   // e.g. "PERFECT", "OK", "GAME OVER"
-    public TMP_Text scoreLabel;    // e.g. "Score: 83"
-    public TMP_Text daysLabel;     // e.g. "Days: 5"
-    public TMP_Text reasonLabel;   // e.g. "Stem length off by 0.63 (hard fail)."
-    public TMP_Text liveStatsLabel; // debug info while playing
+    public TMP_Text statusLabel;
+    public TMP_Text scoreLabel;
+    public TMP_Text daysLabel;
+    public TMP_Text reasonLabel;
+    public TMP_Text liveStatsLabel;
 
     [Header("Status Colors")]
     public Color neutralColor = Color.white;
@@ -31,7 +31,7 @@ public class FlowerHUD : MonoBehaviour
     public bool showLiveStats = true;
 
     [Tooltip("How often to update live stats, in seconds.")]
-    public float liveStatsUpdateInterval = 0.2f;
+    public float liveStatsUpdateInterval = 0.1f;
 
     private float _liveStatsTimer;
 
@@ -49,19 +49,13 @@ public class FlowerHUD : MonoBehaviour
     void OnEnable()
     {
         if (session != null)
-        {
-            // NOTE: event name is OnResult (capital O)
             session.OnResult.AddListener(OnResult);
-        }
     }
 
     void OnDisable()
     {
         if (session != null)
-        {
-            // NOTE: event name is OnResult (capital O)
             session.OnResult.RemoveListener(OnResult);
-        }
     }
 
     void Update()
@@ -79,10 +73,6 @@ public class FlowerHUD : MonoBehaviour
 
     // ───────────────────────── Result UI ─────────────────────────
 
-    /// <summary>
-    /// Called by FlowerSessionController when the player finishes a flower.
-    /// Signature must match UnityEvent<EvaluationResult,int,int>.
-    /// </summary>
     public void OnResult(FlowerGameBrain.EvaluationResult eval, int finalScore, int daysAlive)
     {
         if (statusLabel != null)
@@ -100,14 +90,10 @@ public class FlowerHUD : MonoBehaviour
         }
 
         if (scoreLabel != null)
-        {
             scoreLabel.text = $"Score: {finalScore}";
-        }
 
         if (daysLabel != null)
-        {
             daysLabel.text = $"Days: {daysAlive}";
-        }
 
         if (reasonLabel != null)
         {
@@ -133,15 +119,14 @@ public class FlowerHUD : MonoBehaviour
 
         var sb = new StringBuilder();
 
-        // Stem
+        // ───────── STEM READOUT (LIVE ON SCREEN) ─────────
         if (brain.stem != null && brain.ideal != null)
         {
             float stemLen = brain.stem.CurrentLength;
             float idealLen = brain.ideal.idealStemLength;
             float deltaLen = stemLen - idealLen;
 
-            sb.AppendLine($"Stem length: {stemLen:0.###}");
-            sb.AppendLine($"(ideal {idealLen:0.###}, Δ {deltaLen:+0.###;-0.###;0.000})");
+            sb.AppendLine($"Stem length: {stemLen:0.###} (ideal {idealLen:0.###}, Δ {deltaLen:+0.###;-0.###;0})");
 
             float cutAngle = brain.stem.GetCurrentCutAngleDeg(Vector3.up);
             float idealAngle = brain.ideal.idealCutAngleDeg;
@@ -150,7 +135,7 @@ public class FlowerHUD : MonoBehaviour
             sb.AppendLine($"Cut angle:   {cutAngle:0.#}° (ideal {idealAngle:0.#}°, Δ {deltaAngle:+0.#;-0.#;0})");
         }
 
-        // Parts
+        // ───────── PARTS READOUT ─────────
         int totalParts = 0;
         int attachedParts = 0;
         int perfectParts = 0;
@@ -170,12 +155,11 @@ public class FlowerHUD : MonoBehaviour
         sb.AppendLine($"Perfect parts:  {perfectParts}");
         sb.AppendLine($"Withered parts: {witheredParts}");
 
-        // Last evaluation snapshot:
+        // ───────── LATEST SCORE SNAPSHOT ─────────
         sb.AppendLine($"Last score: {brain.lastScoreNormalized * 100f:0.#}%");
+
         if (brain.lastWasGameOver && !string.IsNullOrEmpty(brain.lastGameOverReason))
-        {
-            sb.AppendLine($"Last fail: {brain.lastGameOverReason}");
-        }
+            sb.AppendLine($"Fail: {brain.lastGameOverReason}");
 
         liveStatsLabel.text = sb.ToString();
     }

@@ -1,25 +1,72 @@
-﻿using UnityEngine;
+﻿// File: PlaneBehaviour.cs
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace DynamicMeshCutter
 {
     public class PlaneBehaviour : CutterBehaviour
     {
-        public float DebugPlaneLength = 2;
+        [Header("Debug")]
+        public float DebugPlaneLength = 2f;
+        public bool debugLogs = true;
 
-        // Cache these so OnCreated knows which plane we used
+        [Header("Angle Preview")]
+        [Tooltip("If true, the current plane (position + forward) will be pushed to the flower stem every frame, so the HUD shows cut angle BEFORE you cut.")]
+        public bool previewBeforeCut = false;
+
+        [Tooltip("Optional explicit stem to preview against. If null, the first FlowerStemRuntime in the scene is used.")]
+        public FlowerStemRuntime previewStemOverride;
+
+        [Tooltip("Optional explicit session to use for instant fail checks. If null, taken from stem's parent.")]
+        public FlowerSessionController previewSessionOverride;
+
+        // Cache these so we can debug plane pose
         private Vector3 _lastPlanePoint;
         private Vector3 _lastPlaneNormal;
 
+        // ───────────────────── Unity ─────────────────────
+
+        private void Update()
+        {
+            // Stage 1: Live preview while you position/rotate the plane.
+            if (previewBeforeCut)
+            {
+                _lastPlanePoint = transform.position;
+                _lastPlaneNormal = transform.forward;
+
+                PreviewAgainstFlower();
+            }
+
+            // Let CutterBehaviour process async work
+            base.Update();
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            // Simple visual for the plane
+            Gizmos.color = Color.cyan;
+            Vector3 center = transform.position;
+            Vector3 dir = transform.forward;
+            Vector3 right = transform.right * DebugPlaneLength;
+            Gizmos.DrawLine(center - right, center + right);
+            Gizmos.DrawRay(center, dir * 0.5f);
+        }
+
         // ───────────────────── Public API ─────────────────────
 
+        /// <summary>
+        /// Stage 2: Call this from UI / input to actually perform the cut
+        /// with the current plane pose.
+        /// </summary>
         public void Cut()
         {
             _lastPlanePoint = transform.position;
             _lastPlaneNormal = transform.forward;
 
-            var roots = UnityEngine.SceneManagement.SceneManager
-                               .GetActiveScene()
-                               .GetRootGameObjects();
+            if (debugLogs)
+                Debug.Log($"[PlaneBehaviour] Cutting with plane point:{_lastPlanePoint}, normal:{_lastPlaneNormal}", this);
+
+            var roots = SceneManager.GetActiveScene().GetRootGameObjects();
 
             foreach (var root in roots)
             {
@@ -32,7 +79,7 @@ namespace DynamicMeshCutter
                     if (target == null)
                         continue;
 
-                    // Optional sanity: make sure it has a mesh
+                    // Make sure it has a mesh
                     var mf = target.GetComponent<MeshFilter>();
                     var smr = target.GetComponent<SkinnedMeshRenderer>();
                     bool hasMesh =
@@ -44,8 +91,7 @@ namespace DynamicMeshCutter
 
                     try
                     {
-                        // Call into the plugin cutter. We keep onCut = null (original behavior),
-                        // but wrap it in try/catch so a bad target can't crash the whole update.
+                        // Call into the plugin cutter.
                         Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreated);
                     }
                     catch (System.Exception e)
@@ -56,8 +102,35 @@ namespace DynamicMeshCutter
             }
         }
 
+        /// <summary>
+        /// Stage 1: preview – call this manually or just enable previewBeforeCut
+        /// so Update() does it every frame.
+        /// </summary>
+        public void PreviewAgainstFlower()
+        {
+            FlowerStemRuntime stem = previewStemOverride;
+            if (stem == null)
+                stem = Object.FindObjectOfType<FlowerStemRuntime>();
+
+            if (stem == null)
+                return;
+
+            Vector3 planePoint = transform.position;
+            Vector3 planeNormal = transform.forward;
+
+            stem.ApplyCutFromPlane(planePoint, planeNormal);
+
+            if (debugLogs)
+            {
+                float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
+                float len = stem.CurrentLength;
+                Debug.Log($"[PlaneBehaviour] PREVIEW angle:{angle:F1}°, length:{len:F3}", stem);
+            }
+        }
+
         // ───────────────────── DMC callback ─────────────────────
 
+        // This is called once for each MeshTarget that was cut
         void OnCreated(Info info, MeshCreationData cData)
         {
             // Let DMC move/offset the created objects first
@@ -71,15 +144,46 @@ namespace DynamicMeshCutter
 
             foreach (var createdTarget in cData.CreatedTargets)
             {
+                if (createdTarget == null) continue;
                 GameObject piece = createdTarget.gameObject;
-                CopyComponentsFromSource(sourceGO, piece, _lastPlanePoint, _lastPlaneNormal);
+                CopyComponentsFromSource(sourceGO, piece);
+            }
+
+            // ─────────────────────────────────────────────
+            // Inform the flower stem & session AFTER the cut
+            // ─────────────────────────────────────────────
+
+            var stem = info.MeshTarget.GetComponentInParent<FlowerStemRuntime>();
+            if (stem == null)
+                stem = previewStemOverride;
+            if (stem == null)
+                stem = Object.FindObjectOfType<FlowerStemRuntime>();
+
+            if (stem != null)
+            {
+                // Use the REAL cut plane from DMC, not just our cached guess.
+                Vector3 planePoint = info.Plane.WorldPosition;
+                Vector3 planeNormal = info.Plane.WorldNormal;
+
+                stem.ApplyCutFromPlane(planePoint, planeNormal);
+
+                float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
+                float len = stem.CurrentLength;
+                if (debugLogs)
+                    Debug.Log($"[PlaneBehaviour] Stem cut angle:{angle:F1}°, length:{len:F3}", stem);
+
+                var session = previewSessionOverride;
+                if (session == null)
+                    session = stem.GetComponentInParent<FlowerSessionController>();
+                if (session == null)
+                    session = Object.FindObjectOfType<FlowerSessionController>();
+
+                session?.CheckStemCutImmediate();
             }
         }
 
         void CopyComponentsFromSource(GameObject source,
-                                      GameObject piece,
-                                      Vector3 planePoint,
-                                      Vector3 planeNormal)
+                                      GameObject piece)
         {
             foreach (var comp in source.GetComponents<Component>())
             {
@@ -90,23 +194,21 @@ namespace DynamicMeshCutter
                 // SPECIAL CASE: joints
                 if (comp is Joint joint)
                 {
-                    TryHandleJointOnCut(joint, source, piece, planePoint, planeNormal);
+                    TryHandleJointOnCut(joint, source, piece);
                     continue;
                 }
 
                 // Generic component copy – add as needed
                 var type = comp.GetType();
                 var newComp = piece.AddComponent(type);
-                // Manually copy specific fields here if needed.
+                // NOTE: if you have important fields to copy, do it here manually.
             }
         }
 
         void TryHandleJointOnCut(
             Joint original,
             GameObject source,
-            GameObject piece,
-            Vector3 planePoint,
-            Vector3 planeNormal)
+            GameObject piece)
         {
             var policy = original.GetComponent<JointCutPolicy>();
             var mode = policy != null ? policy.mode : JointSplitMode.KeepAnchorSideOnly;

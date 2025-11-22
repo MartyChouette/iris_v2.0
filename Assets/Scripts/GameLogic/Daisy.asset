@@ -12,27 +12,148 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 312fa8266af38654e8741206d0bbbfbd, type: 3}
   m_Name: Daisy
   m_EditorClassIdentifier: Assembly-CSharp::IdealFlowerDefinition
-  idealStemLength: 1
+  idealStemLength: 11.791715
   stemHardFailDelta: 0.5
   stemPerfectDelta: 0.05
-  stemScoreWeight: 0.253
+  stemScoreWeight: 0.4
   stemCanCauseGameOver: 1
   stemContributesToScore: 1
   idealCutAngleDeg: 45
-  cutAngleHardFailDelta: 20
+  cutAngleHardFailDelta: 15
   cutAnglePerfectDelta: 3
-  cutAngleScoreWeight: 0.2
+  cutAngleScoreWeight: 0.4
   cutAngleCanCauseGameOver: 1
   cutAngleContributesToScore: 1
   partRules:
   - partId: Daisy_Leaf_R
     kind: 0
-    idealCondition: 2
-    canCauseGameOver: 1
-    isSpecial: 1
-    contributesToScore: 0
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
     allowedWithered: 0
     allowedMissing: 0
-    scoreWeight: 0.3
-    idealLocalPosition: {x: 0, y: 0, z: 0}
-    idealLocalEuler: {x: 0, y: 0, z: 0}
+    scoreWeight: 0.1
+    idealLocalPosition: {x: -2.16, y: 8.312, z: -3.333}
+    idealLocalEuler: {x: 340.06012, y: 34.344723, z: 249.81332}
+  - partId: Daisy_Leaf_L
+    kind: 0
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 0.83, y: 8.545, z: -4.194}
+    idealLocalEuler: {x: 310.07095, y: 104.74353, z: 241.28766}
+  - partId: Petal_00
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 5.416915, y: 9.956656, z: -0.7327814}
+    idealLocalEuler: {x: 284.04254, y: 270.67554, z: 0}
+  - partId: Petal_01
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 5.416915, y: 9.956656, z: -0.7327814}
+    idealLocalEuler: {x: 285.31888, y: 248.25159, z: 22.675533}
+  - partId: Petal_02
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 4.9009094, y: 9.995209, z: -0.72669697}
+    idealLocalEuler: {x: 334.55606, y: 76.28758, z: 168.44064}
+  - partId: Petal_03
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 5.416915, y: 10.124928, z: -0.7327814}
+    idealLocalEuler: {x: 20.124575, y: 88.69113, z: 190.55086}
+  - partId: Petal_04
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 5.4169145, y: 10.232674, z: -0.73278093}
+    idealLocalEuler: {x: 57.616398, y: 125.338264, z: 200.00282}
+  - partId: Petal_05
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 5.4162774, y: 10.124928, z: -0.7868495}
+    idealLocalEuler: {x: 28.667974, y: 98.399796, z: 196.93112}
+  - partId: Petal_06
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 5.4134784, y: 9.956656, z: -1.024231}
+    idealLocalEuler: {x: 293.06802, y: 111.73453, z: 147.73128}
+  - partId: Petal_07
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 5.0850315, y: 9.995209, z: -0.7971964}
+    idealLocalEuler: {x: 354.18518, y: 88.85872, z: 180.5364}
+  - partId: Petal_08
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 5.5045176, y: 9.963979, z: -0.73381424}
+    idealLocalEuler: {x: 67.0361, y: 112.5332, z: 195.42027}
+  - partId: Petal_09
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 0
+    scoreWeight: 0.1
+    idealLocalPosition: {x: 5.416915, y: 9.956657, z: -0.7327814}
+    idealLocalEuler: {x: 294.60742, y: 102.667145, z: 166.67543}

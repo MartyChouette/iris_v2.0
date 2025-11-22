@@ -1,46 +1,88 @@
-// File: FlowerStemRuntime.cs
+﻿// File: FlowerStemRuntime.cs
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public class FlowerStemRuntime : MonoBehaviour
 {
     [Header("Stem measurement")]
-    [Tooltip("Start of stem (e.g. where it meets the crown).")]
+    [Tooltip("Where the stem begins (bottom of the held piece after cut).")]
     public Transform stemStart;
 
-    [Tooltip("End of stem after cut (tip).")]
+    [Tooltip("Where the stem ends (tip of the held stem after cut). This MUST be moved by the cut logic.")]
     public Transform stemEnd;
 
-    [Header("Cut angle measurement")]
-    [Tooltip("Transform whose 'up' or 'forward' represents the cut plane normal.")]
+    [Header("Cut angle reference")]
+    [Tooltip("Object whose forward = plane normal. Used for angle measurement.")]
     public Transform cutNormalRef;
 
-    [Tooltip("Axis in local space used for angle measurement (usually Vector3.up).")]
+    [Tooltip("Local axis used for angle measurement (usually up).")]
     public Vector3 referenceAxisLocal = Vector3.up;
 
+    [Header("Cut Game-Over Threshold")]
+    [Tooltip("If the cut happens ABOVE this world-space Y height → instant game over.")]
+    public float minAllowedCutY = -9999f;
+
+    /// <summary>
+    /// Current length of the *held* stem.
+    /// </summary>
     public float CurrentLength
     {
         get
         {
-            if (stemStart == null || stemEnd == null) return 0f;
+            if (!stemStart || !stemEnd)
+                return 0f;
+
             return Vector3.Distance(stemStart.position, stemEnd.position);
         }
     }
 
     /// <summary>
-    /// Returns current cut angle in degrees relative to the given world-space axis (usually world up).
+    /// Computes the current cut angle relative to world-up.
     /// </summary>
     public float GetCurrentCutAngleDeg(Vector3 worldReferenceAxis)
     {
-        if (cutNormalRef == null)
+        if (!cutNormalRef)
             return 0f;
 
-        Vector3 localAxis = referenceAxisLocal;
-        Vector3 stemAxisWorld = cutNormalRef.TransformDirection(localAxis);
-        stemAxisWorld.Normalize();
-        worldReferenceAxis.Normalize();
-
-        float angle = Vector3.Angle(stemAxisWorld, worldReferenceAxis);
-        return angle;
+        Vector3 axisWorld = cutNormalRef.TransformDirection(referenceAxisLocal).normalized;
+        return Vector3.Angle(axisWorld, worldReferenceAxis.normalized);
     }
+
+    /// ======================================================================
+    /// APPLY THE CUT (preview OR real)
+    /// ======================================================================
+    ///
+    /// Called by:
+    ///     PlaneBehaviour (preview + final cut)
+    ///     MouseBehaviour  (final cut)
+    ///
+    /// This does NOT slice any mesh. It ONLY updates:
+    ///     - angle reference
+    ///     - stemEnd position
+    ///     - cut height for instant fail logic
+    ///
+    /// ======================================================================
+    public void ApplyCutFromPlane(Vector3 planePoint, Vector3 planeNormal)
+    {
+        if (!cutNormalRef || !stemEnd)
+            return;
+
+        // 1. Update angle
+        cutNormalRef.position = planePoint;
+        cutNormalRef.rotation = Quaternion.LookRotation(planeNormal, Vector3.up);
+
+        // 2. NEW: Re-position stemEnd to the EXACT cut location
+        stemEnd.position = planePoint;
+
+        // 3. Store last cut height for instant fail
+        lastCutHeight = planePoint.y;
+
+        // (No scoring or game-over here; session handles that)
+    }
+
+    /// <summary>
+    /// Where the last plane intersected world space.
+    /// Used by FlowerSessionController to check "cut too high".
+    /// </summary>
+    [HideInInspector] public float lastCutHeight = -99999f;
 }
