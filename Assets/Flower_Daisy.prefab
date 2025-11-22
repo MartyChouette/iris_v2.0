@@ -2489,6 +2489,7 @@ GameObject:
   - component: {fileID: 8456769616471066987}
   - component: {fileID: 8075709354355552181}
   - component: {fileID: 8771539118983463511}
+  - component: {fileID: 7968358097009675452}
   m_Layer: 7
   m_Name: Stem
   m_TagString: Untagged
@@ -2511,6 +2512,7 @@ Transform:
   m_Children:
   - {fileID: 447385147862574464}
   - {fileID: 8722214804869545187}
+  - {fileID: 1838831239140512676}
   m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7910132646512638531
@@ -2743,12 +2745,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6b2a21a04cc02941b0114a94875a9b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerStemRuntime
-  stemStart: {fileID: 447385147862574464}
-  stemEnd: {fileID: 8722214804869545187}
-  cutNormalRef: {fileID: 0}
+  stemStart: {fileID: 8722214804869545187}
+  stemEnd: {fileID: 447385147862574464}
+  cutNormalRef: {fileID: 1838831239140512676}
   referenceAxisLocal: {x: 0, y: 1, z: 0}
   minAllowedCutY: 2
   lastCutHeight: -99999
+--- !u!114 &7968358097009675452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5326607233462012353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 2
 --- !u!1 &5767342836430998163
 GameObject:
   m_ObjectHideFlags: 0
@@ -3010,6 +3025,37 @@ MonoBehaviour:
   - {fileID: 4735977587645251494}
   session: {fileID: 7065037729555491349}
   brain: {fileID: 0}
+--- !u!1 &7168888953667229958
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1838831239140512676}
+  m_Layer: 0
+  m_Name: Stem_Cut_Normal_Reference_GO
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1838831239140512676
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7168888953667229958}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0, z: 0.0551}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9139188167376853586}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7288625889274731292
 GameObject:
   m_ObjectHideFlags: 0
@@ -4986,6 +5032,7 @@ GameObject:
   - component: {fileID: 5439567335729082257}
   - component: {fileID: 1476761487897708459}
   - component: {fileID: 7065037729555491349}
+  - component: {fileID: 886931059027802662}
   m_Layer: 0
   m_Name: Flower_Daisy
   m_TagString: Untagged
@@ -5054,7 +5101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerSessionController
   brain: {fileID: 1476761487897708459}
-  FlowerType: {fileID: 0}
+  FlowerType: {fileID: 11400000, guid: 972e4fc78e6dfd24c87b688e7bb2ac9a, type: 2}
   OnGameOver:
     m_PersistentCalls:
       m_Calls:
@@ -5072,12 +5119,72 @@ MonoBehaviour:
         m_CallState: 2
   OnSuccessfulEvaluation:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   OnResult:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   lastGameOver: 1
   lastGameOverReason: 
   lastScore: 0
   lastDays: 0
   lastNormalizedScore: 0
+--- !u!114 &886931059027802662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9219504238569956344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4db513592c2a1e948a2f7525a7d87226, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerTypeAuthoring
+  flowerName: Authored_Daisy_Flower_Type_00
+  flowerIdOverride: 
+  stem: {fileID: 8771539118983463511}
+  parts:
+  - {fileID: 1517942348145943185}
+  - {fileID: 6565067318493313646}
+  - {fileID: 8873713761765573043}
+  - {fileID: 1870781213425333736}
+  - {fileID: 3324038461072046409}
+  - {fileID: 9032000319790388847}
+  - {fileID: 4674455882216906975}
+  - {fileID: 4017004320146080872}
+  - {fileID: 1268381719619357134}
+  - {fileID: 1867186498043317885}
+  - {fileID: 6686953167476818753}
+  - {fileID: 6382113683161978035}
+  idealAsset: {fileID: 11400000, guid: d5619429135132d4e9a7ca6cd668f734, type: 2}
+  flowerTypeAsset: {fileID: 11400000, guid: 972e4fc78e6dfd24c87b688e7bb2ac9a, type: 2}
+  defaultStemHardFailDelta: 0.5
+  defaultStemPerfectDelta: 0.05
+  defaultStemScoreWeight: 0.4
+  defaultCutAngleHardFailDelta: 15
+  defaultCutAnglePerfectDelta: 3
+  defaultCutAngleScoreWeight: 0.4

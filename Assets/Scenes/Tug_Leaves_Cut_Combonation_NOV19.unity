@@ -800,37 +800,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 197924383}
   m_CullTransparentMesh: 1
---- !u!1 &316960195
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 316960196}
-  m_Layer: 0
-  m_Name: Stem_Cut_Normal_Reference_GO
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &316960196
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 316960195}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0.0551}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6992369784623407840}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -1961,17 +1930,12 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 773301466}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &792062679 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9219504238569956344, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &792062681 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1476761487897708459, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
   m_PrefabInstance: {fileID: 1741564818074604406}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 792062679}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fafbc3100f9f9ba44b14fe8d3cf0b0c3, type: 3}
@@ -1982,53 +1946,12 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7065037729555491349, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
   m_PrefabInstance: {fileID: 1741564818074604406}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 792062679}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9300dddb051037144a1f4acb3ec42d06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerSessionController
---- !u!114 &792062683
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 792062679}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4db513592c2a1e948a2f7525a7d87226, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerTypeAuthoring
-  flowerName: Authored_Daisy_Flower_Type_00
-  flowerIdOverride: 
-  stem: {fileID: 6992369784623407850}
-  parts:
-  - {fileID: 8868436661678676150}
-  - {fileID: 7240802656111149256}
-  - {fileID: 7627441760446394687}
-  - {fileID: 8676136758897000159}
-  - {fileID: 8702806165067242477}
-  - {fileID: 6416859612401791237}
-  - {fileID: 8612123659171615105}
-  - {fileID: 6599678323577143055}
-  - {fileID: 8418495102803915917}
-  - {fileID: 8739252893829663606}
-  - {fileID: 8267910595929441124}
-  - {fileID: 8625476554561420369}
-  idealAsset: {fileID: 11400000, guid: d5619429135132d4e9a7ca6cd668f734, type: 2}
-  flowerTypeAsset: {fileID: 11400000, guid: 972e4fc78e6dfd24c87b688e7bb2ac9a, type: 2}
-  defaultStemHardFailDelta: 0.5
-  defaultStemPerfectDelta: 0.05
-  defaultStemScoreWeight: 0.4
-  defaultCutAngleHardFailDelta: 15
-  defaultCutAnglePerfectDelta: 3
-  defaultCutAngleScoreWeight: 0.4
---- !u!4 &816460691 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 8722214804869545187, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -3851,11 +3774,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1920340623}
   m_CullTransparentMesh: 1
---- !u!4 &1962069750 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 447385147862574464, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1971731459
 GameObject:
   m_ObjectHideFlags: 0
@@ -4322,45 +4240,13 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 330585545}
     - target: {fileID: 7065037729555491349, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: FlowerType
-      value: 
-      objectReference: {fileID: 11400000, guid: 972e4fc78e6dfd24c87b688e7bb2ac9a, type: 2}
-    - target: {fileID: 7065037729555491349, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: OnResult.m_PersistentCalls.m_Calls.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7065037729555491349, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: OnGameOver.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1990475205}
-    - target: {fileID: 7065037729555491349, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: OnSuccessfulEvaluation.m_PersistentCalls.m_Calls.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7065037729555491349, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: OnResult.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7065037729555491349, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: OnSuccessfulEvaluation.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 7795308481963342468, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
-    - target: {fileID: 8771539118983463511, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: stemEnd
-      value: 
-      objectReference: {fileID: 1962069750}
-    - target: {fileID: 8771539118983463511, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: stemStart
-      value: 
-      objectReference: {fileID: 816460691}
-    - target: {fileID: 8771539118983463511, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: cutNormalRef
-      value: 
-      objectReference: {fileID: 316960196}
     - target: {fileID: 8974699333962970216, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: cam
       value: 
@@ -4375,163 +4261,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 9139188167376853586, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 316960196}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 9219504238569956344, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 792062683}
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
---- !u!114 &6416859612401791237 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 9032000319790388847, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &6599678323577143055 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4017004320146080872, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!4 &6992369784623407840 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 9139188167376853586, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &6992369784623407850 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8771539118983463511, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a6b2a21a04cc02941b0114a94875a9b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerStemRuntime
---- !u!114 &7240802656111149256 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6565067318493313646, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &7627441760446394687 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8873713761765573043, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &8267910595929441124 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6686953167476818753, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &8418495102803915917 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1268381719619357134, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &8612123659171615105 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4674455882216906975, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &8625476554561420369 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6382113683161978035, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &8676136758897000159 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1870781213425333736, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &8702806165067242477 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3324038461072046409, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &8739252893829663606 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1867186498043317885, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
---- !u!114 &8868436661678676150 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1517942348145943185, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 1741564818074604406}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
