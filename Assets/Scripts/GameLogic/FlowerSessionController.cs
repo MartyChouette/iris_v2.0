@@ -26,8 +26,19 @@ public class FlowerSessionController : MonoBehaviour
         lastGameOver = true;
         lastGameOverReason = reason;
 
+        // Also update the brain so HUD live stats can show the cause.
+        if (brain != null)
+        {
+            brain.lastWasGameOver = true;
+            brain.lastGameOverReason = reason;
+            brain.lastScoreNormalized = 0f;
+        }
+
+        Debug.Log($"[FlowerSessionController] GAME OVER: {reason}", this);
+
         OnGameOver?.Invoke();
     }
+
 
     public void EvaluateCurrentFlower()
     {
