@@ -382,14 +382,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 7906754887595190452}
   unityJoints: []
-  session: {fileID: 7065037729555491349}
-  brain: {fileID: 0}
 --- !u!1 &1629132496362626701
 GameObject:
   m_ObjectHideFlags: 0
@@ -679,14 +679,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 8197700699443551098}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &2214357841021642041
 GameObject:
   m_ObjectHideFlags: 0
@@ -976,14 +976,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 1082934113060552226}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &3455973610173840327
 GameObject:
   m_ObjectHideFlags: 0
@@ -1273,14 +1273,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 0}
   xyJoint: {fileID: 1930340733601352926}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &4292744285590588290
 GameObject:
   m_ObjectHideFlags: 0
@@ -1570,14 +1570,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 2695786462197416103}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &4586192847055717791
 GameObject:
   m_ObjectHideFlags: 0
@@ -1867,14 +1867,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 7128819164888450287}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &5070192658512020074
 GameObject:
   m_ObjectHideFlags: 0
@@ -2164,14 +2164,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 346623718633278755}
   unityJoints: []
-  session: {fileID: 7065037729555491349}
-  brain: {fileID: 0}
 --- !u!1 &5314689234489813321
 GameObject:
   m_ObjectHideFlags: 0
@@ -2461,14 +2461,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 7893503663659657547}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &5326607233462012353
 GameObject:
   m_ObjectHideFlags: 0
@@ -2763,7 +2763,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
-  mode: 2
+  mode: 1
 --- !u!1 &5767342836430998163
 GameObject:
   m_ObjectHideFlags: 0
@@ -3020,11 +3020,11 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 0}
   xyJoint: {fileID: 0}
   unityJoints:
   - {fileID: 4735977587645251494}
-  session: {fileID: 7065037729555491349}
-  brain: {fileID: 0}
 --- !u!1 &7168888953667229958
 GameObject:
   m_ObjectHideFlags: 0
@@ -3345,14 +3345,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 0}
   xyJoint: {fileID: 6850669293754249085}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &7526729523255490388
 GameObject:
   m_ObjectHideFlags: 0
@@ -3642,14 +3642,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 8684104319694175572}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &7666263945407161078
 GameObject:
   m_ObjectHideFlags: 0
@@ -3970,14 +3970,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 454477287960826527}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &8718823069848491255
 GameObject:
   m_ObjectHideFlags: 0
@@ -4339,11 +4339,11 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 0}
+  brain: {fileID: 0}
   xyJoint: {fileID: 389446206363744042}
   unityJoints:
   - {fileID: 4449925702955563308}
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &8896250196363821573
 GameObject:
   m_ObjectHideFlags: 0
@@ -4633,14 +4633,14 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 3110070733151328953}
   unityJoints: []
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!1 &8972161866650211016
 GameObject:
   m_ObjectHideFlags: 0
@@ -5003,11 +5003,11 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 0}
+  brain: {fileID: 0}
   xyJoint: {fileID: 5445834702183120020}
   unityJoints:
   - {fileID: 1273782445167318751}
-  session: {fileID: 0}
-  brain: {fileID: 0}
 --- !u!114 &3065249614768481500
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5152,6 +5152,8 @@ MonoBehaviour:
   lastScore: 0
   lastDays: 0
   lastNormalizedScore: 0
+  freezeOnGameOver: 0
+  disableCollidersOnGameOver: 1
 --- !u!114 &886931059027802662
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -21,21 +21,34 @@ public class FlowerSessionController : MonoBehaviour
     public int lastDays;
     public float lastNormalizedScore;
 
+    [Header("Physics Guard Rails")]
+    [Tooltip("If true, all rigidbodies under the brain will be frozen (isKinematic) on game over so the flower doesn't melt down when you fail.")]
+    public bool freezeOnGameOver = true;
+
+    [Tooltip("If true, all colliders under the brain will be disabled on game over (prevents further physics events after failure).")]
+    public bool disableCollidersOnGameOver = false;
+
     // ─────────────────────────────────────────────
     // PUBLIC API
     // ─────────────────────────────────────────────
 
     /// <summary>
     /// Hard-fails the session immediately (e.g., crown ripped off, stem cut way too high).
-    /// This now ALSO pushes a result through the scoring pipeline so HUD can show it.
+    /// This also pushes a result through the scoring pipeline so HUD can show it.
     /// </summary>
     public void ForceGameOver(string reason)
     {
         if (brain == null)
         {
-            // Fallback old behavior if brain missing
+            // Fallback if brain missing: still fire the event so GameOverUI shows.
             lastGameOver = true;
             lastGameOverReason = reason;
+            lastScore = 0;
+            lastDays = 0;
+            lastNormalizedScore = 0f;
+
+            if (freezeOnGameOver)
+                FreezeAllRigidbodies();
 
             Debug.Log($"[FlowerSessionController] GAME OVER (no brain): {reason}", this);
             OnGameOver?.Invoke();
@@ -79,7 +92,7 @@ public class FlowerSessionController : MonoBehaviour
         float signedDelta = currentLen - brain.ideal.idealStemLength;
         float absDelta = Mathf.Abs(signedDelta);
 
-        // Only treat "too short" as instant fail: cut up into the crown area.
+        // We only treat "too short" as instant fail: cut up into the crown area.
         if (brain.ideal.stemCanCauseGameOver &&
             absDelta > brain.ideal.stemHardFailDelta &&
             signedDelta < 0f)
@@ -101,14 +114,13 @@ public class FlowerSessionController : MonoBehaviour
             brain.lastScoreNormalized = result.scoreNormalized;
         }
 
-        // Allow a FlowerType to soften "fatal" results if allowGameOver=false
         bool finalIsGameOver = result.isGameOver;
         string finalReason = result.gameOverReason;
 
         if (FlowerType != null && !FlowerType.allowGameOver && result.isGameOver)
         {
+            // This flower type prefers soft-fail: treat hard fails as bad scores instead.
             finalIsGameOver = false;
-            // keep reason only as debug; HUD will show non-fail status
         }
 
         lastGameOver = finalIsGameOver;
@@ -127,7 +139,7 @@ public class FlowerSessionController : MonoBehaviour
             }
             else
             {
-                // Simple fallback: 0–100 score, 0–7 days
+                // Simple fallback: 0–100 score, 0–7 days.
                 score = Mathf.RoundToInt(result.scoreNormalized * 100f);
                 days = Mathf.RoundToInt(result.scoreNormalized * 7f);
             }
@@ -136,20 +148,49 @@ public class FlowerSessionController : MonoBehaviour
             lastDays = days;
 
             Debug.Log($"[FlowerSessionController] EVALUATE OK → score={score}, days={days}, norm={result.scoreNormalized:0.###}", this);
-
             OnSuccessfulEvaluation?.Invoke();
         }
         else
         {
-            // Game over: we still want a consistent snapshot, but score/days are 0.
             lastScore = 0;
             lastDays = 0;
+
+            if (freezeOnGameOver)
+                FreezeAllRigidbodies();
 
             Debug.Log($"[FlowerSessionController] GAME OVER → {finalReason}", this);
             OnGameOver?.Invoke();
         }
 
-        // Always send result + whatever score/days we ended up with.
+        // Always broadcast result + the final score/days snapshot.
         OnResult?.Invoke(result, lastScore, lastDays);
+    }
+
+    private void FreezeAllRigidbodies()
+    {
+        if (brain == null)
+            return;
+
+        Transform root = brain.transform;
+
+        // Freeze all rigidbodies so they stop flopping when the player fails.
+        var bodies = root.GetComponentsInChildren<Rigidbody>();
+        foreach (var rb in bodies)
+        {
+            if (rb == null) continue;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+
+        if (disableCollidersOnGameOver)
+        {
+            var cols = root.GetComponentsInChildren<Collider>();
+            foreach (var c in cols)
+            {
+                if (c == null) continue;
+                c.enabled = false;
+            }
+        }
     }
 }

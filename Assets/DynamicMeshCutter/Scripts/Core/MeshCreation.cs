@@ -44,6 +44,15 @@ namespace DynamicMeshCutter
                 (target.FaceMaterial != null) ? target.FaceMaterial : defaultMaterial;
             materials = materialsNew;
 
+            // Is this MeshTarget part of a FlowerStemRuntime hierarchy?
+            // If yes, we will later anchor the longest stem piece.
+            global::FlowerStemRuntime stemRuntime = null;
+            if (target.GameobjectRoot != null)
+            {
+                stemRuntime = target.GameobjectRoot.GetComponentInParent<global::FlowerStemRuntime>();
+            }
+            bool isStemTarget = (stemRuntime != null);
+
             for (int i = 0; i < createdMeshes.Length; i++)
             {
                 VirtualMesh vMesh = createdMeshes[i];
@@ -125,6 +134,15 @@ namespace DynamicMeshCutter
                         break;
                 }
 
+                // Safety: if for any reason this piece failed to create, skip it.
+                if (parent == null || root == null)
+                    continue;
+
+                // Cull ultra-thin fragments to avoid jittering slivers.
+                const float MIN_FRAGMENT_THICKNESS = 0.005f; // tune this for your scale
+                if (CullIfTooThin(parent, MIN_FRAGMENT_THICKNESS))
+                    continue;
+
                 // Name the parent "(i/total)Stem" etc.
                 string prefix = $"({i}/{createdMeshes.Length})";
                 parent.name = prefix + parent.name;
@@ -170,6 +188,12 @@ namespace DynamicMeshCutter
 
                 cData.CreatedObjects[i] = parent.gameObject;
                 cData.CreatedTargets[i] = nTarget;
+            }
+
+            // NEW: If this was a stem cut, anchor the longest stem piece
+            if (isStemTarget)
+            {
+                AnchorLongestStemPiece(cData.CreatedObjects, stemRuntime);
             }
 
             return cData;
@@ -240,7 +264,7 @@ namespace DynamicMeshCutter
                     // "Concave Mesh Colliders are not supported with dynamic Rigidbody" errors.
                     collider.sharedMesh = mesh;
                     collider.convex = true;
-                    //collider.inflateMesh = true; // small stability helper
+                    //collider.inflateMesh = true; // optional stability helper
                 }
             }
         }
@@ -628,6 +652,108 @@ namespace DynamicMeshCutter
         }
 
         // ────────────────────────── helpers ──────────────────────────
+
+        /// <summary>
+        /// Destroys (or freezes) fragments that are too thin, which tend to jitter due to tiny overlapping colliders.
+        /// Returns true if the piece was culled.
+        /// </summary>
+        static bool CullIfTooThin(Transform parent, float minThickness)
+        {
+            if (parent == null) return false;
+
+            // Look for any collider under this piece.
+            var col = parent.GetComponentInChildren<Collider>();
+            if (col == null) return false;
+
+            var size = col.bounds.size;
+            float minDim = Mathf.Min(size.x, Mathf.Min(size.y, size.z));
+
+            if (minDim < minThickness)
+            {
+                if (Application.isPlaying)
+                    GameObject.Destroy(parent.gameObject);
+                else
+                    GameObject.DestroyImmediate(parent.gameObject);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Among created stem pieces, find the longest along the stem axis and anchor it
+        /// so it does not fall and rip joints off. Shorter pieces keep their default physics.
+        /// </summary>
+        static void AnchorLongestStemPiece(GameObject[] createdObjects, global::FlowerStemRuntime stemRuntime)
+        {
+            if (createdObjects == null || stemRuntime == null) return;
+
+            // Determine stem axis (from start to end if available, else transform.up, else world up).
+            Vector3 axis = Vector3.up;
+            if (stemRuntime.stemStart != null && stemRuntime.stemEnd != null)
+            {
+                Vector3 dir = stemRuntime.stemEnd.position - stemRuntime.stemStart.position;
+                if (dir.sqrMagnitude > 0.0001f)
+                    axis = dir.normalized;
+            }
+            else
+            {
+                axis = stemRuntime.transform.up;
+                if (axis.sqrMagnitude < 0.0001f) axis = Vector3.up;
+            }
+
+            axis.Normalize();
+
+            int bestIndex = -1;
+            float bestHeight = 0f;
+
+            // Find the piece with the greatest extent along the axis.
+            for (int i = 0; i < createdObjects.Length; i++)
+            {
+                var go = createdObjects[i];
+                if (go == null) continue;
+
+                var col = go.GetComponentInChildren<Collider>();
+                var rend = go.GetComponentInChildren<Renderer>();
+                if (col == null && rend == null) continue;
+
+                Bounds b = (col != null) ? col.bounds : rend.bounds;
+                Vector3 size = b.size;
+
+                // Approximate length along axis by projecting the bounds size.
+                float height =
+                    Mathf.Abs(size.x * axis.x) +
+                    Mathf.Abs(size.y * axis.y) +
+                    Mathf.Abs(size.z * axis.z);
+
+                if (height > bestHeight)
+                {
+                    bestHeight = height;
+                    bestIndex = i;
+                }
+            }
+
+            if (bestIndex < 0) return;
+
+            // Anchor the longest piece.
+            for (int i = 0; i < createdObjects.Length; i++)
+            {
+                var go = createdObjects[i];
+                if (go == null) continue;
+
+                var rb = go.GetComponent<Rigidbody>();
+                if (rb == null) continue;
+
+                if (i == bestIndex)
+                {
+                    rb.useGravity = false;
+                    rb.isKinematic = true;
+                    rb.constraints = RigidbodyConstraints.FreezeAll;
+                }
+                // others keep defaults – they can fall away.
+            }
+        }
 
         static void RemoveAllColliders(GameObject go)
         {

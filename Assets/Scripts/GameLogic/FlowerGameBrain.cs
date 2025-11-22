@@ -157,8 +157,15 @@ public class FlowerGameBrain : MonoBehaviour
 
                 float partScore = 0f;
 
+
+
+
+                //HOW MUCH TO GIVE OR TAKE AWAY IF LEAF STILL THERE OR GONE
                 if (!attached)
-                    partScore = rule.allowedMissing ? 1f : 0f;
+                {
+                    // Optional parts still lose some score when removed.
+                    partScore = rule.allowedMissing ? 0.5f : 0f;
+                }
                 else if (cond == rule.idealCondition)
                     partScore = 1f;
                 else if (cond == FlowerPartCondition.Withered && rule.allowedWithered)
@@ -166,10 +173,12 @@ public class FlowerGameBrain : MonoBehaviour
                 else
                     partScore = 0.2f;
 
+
                 totalScoreWeight += rule.scoreWeight;
                 accumulatedScore += partScore * rule.scoreWeight;
             }
         }
+
 
         // --- 4) Global: All parts detached = instant fail ---
         if (!gameOver)
