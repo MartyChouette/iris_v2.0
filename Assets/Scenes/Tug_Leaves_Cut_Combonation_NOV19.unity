@@ -1527,8 +1527,6 @@ GameObject:
   m_Component:
   - component: {fileID: 427113488}
   - component: {fileID: 427113491}
-  - component: {fileID: 427113490}
-  - component: {fileID: 427113489}
   m_Layer: 9
   m_Name: Crown
   m_TagString: Untagged
@@ -1554,51 +1552,6 @@ Transform:
   - {fileID: 638847919}
   m_Father: {fileID: 1104290229}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &427113489
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 427113487}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: Crown
-  kind: 0
-  condition: 0
-  isAttached: 1
-  canCauseGameOver: 1
-  isSpecial: 0
-  contributesToScore: 0
-  allowedWithered: 0
-  allowedMissing: 0
-  scoreWeight: 0.1
-  idealLocalPosition: {x: 0, y: 0, z: 0}
-  idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
-  unityJoints:
-  - {fileID: 427113490}
-  session: {fileID: 0}
-  brain: {fileID: 0}
---- !u!138 &427113490
-FixedJoint:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 427113487}
-  serializedVersion: 1
-  m_ConnectedBody: {fileID: 6992369784623407842}
-  m_ConnectedArticulationBody: {fileID: 0}
-  m_BreakForce: 999
-  m_BreakTorque: 999
-  m_EnableCollision: 0
-  m_EnablePreprocessing: 1
-  m_MassScale: 1
-  m_ConnectedMassScale: 1
 --- !u!54 &427113491
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2188,12 +2141,13 @@ MonoBehaviour:
   - {fileID: 7627441760446394687}
   - {fileID: 8676136758897000159}
   - {fileID: 8702806165067242477}
+  - {fileID: 6416859612401791237}
+  - {fileID: 8612123659171615105}
   - {fileID: 6599678323577143055}
   - {fileID: 8418495102803915917}
   - {fileID: 8739252893829663606}
   - {fileID: 8267910595929441124}
   - {fileID: 8625476554561420369}
-  - {fileID: 427113489}
   lastWasGameOver: 1
   lastGameOverReason: 
   lastScoreNormalized: 0
@@ -5844,8 +5798,7 @@ MonoBehaviour:
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
   xyJoint: {fileID: 6025717818985561776}
-  unityJoints:
-  - {fileID: 6025717818985561778}
+  unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
 --- !u!4 &6039931498097459755
@@ -6098,7 +6051,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_03
   kind: 1
   condition: 0
   isAttached: 1
@@ -6110,7 +6063,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 6416859612401791235}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
@@ -6293,7 +6246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_05
   kind: 1
   condition: 0
   isAttached: 1
@@ -6305,7 +6258,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 6599678323577143053}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
@@ -6972,7 +6925,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_00
   kind: 1
   condition: 0
   isAttached: 1
@@ -6984,7 +6937,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 7627441760446394685}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
@@ -7439,7 +7392,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_08
   kind: 1
   condition: 0
   isAttached: 1
@@ -7451,7 +7404,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 8267910595929441122}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
@@ -7715,7 +7668,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_06
   kind: 1
   condition: 0
   isAttached: 1
@@ -7727,7 +7680,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 8418495102803915915}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
@@ -7903,7 +7856,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_04
   kind: 1
   condition: 0
   isAttached: 1
@@ -7915,7 +7868,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 8612123659171615103}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
@@ -8131,7 +8084,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_09
   kind: 1
   condition: 0
   isAttached: 1
@@ -8143,7 +8096,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 8625476554561420367}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
@@ -8359,7 +8312,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_01
   kind: 1
   condition: 0
   isAttached: 1
@@ -8371,7 +8324,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 8676136758897000157}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
@@ -8563,7 +8516,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_02
   kind: 1
   condition: 0
   isAttached: 1
@@ -8575,7 +8528,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 8702806165067242475}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
@@ -8758,7 +8711,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: 
+  PartId: Petal_07
   kind: 1
   condition: 0
   isAttached: 1
@@ -8770,7 +8723,7 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  xyJoint: {fileID: 0}
+  xyJoint: {fileID: 8739252893829663604}
   unityJoints: []
   session: {fileID: 0}
   brain: {fileID: 0}
