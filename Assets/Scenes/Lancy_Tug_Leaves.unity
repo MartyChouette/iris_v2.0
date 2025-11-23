@@ -141,6 +141,50 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 3833889208564203372, guid: 27c3960524809a84bad7c57438920b62, type: 3}
+--- !u!1 &106510335
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 106510336}
+  m_Layer: 0
+  m_Name: Iris
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &106510336
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 106510335}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -6.46124, y: 6.3, z: -4.5675}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7138557602953601283}
+  - {fileID: 5240758347168961714}
+  - {fileID: 1671721701}
+  - {fileID: 6194803397177806521}
+  - {fileID: 3258482702583328773}
+  - {fileID: 418231438618745212}
+  - {fileID: 5265116147362003569}
+  - {fileID: 4645286739613549525}
+  - {fileID: 2729976743071182483}
+  - {fileID: 9010563338615425077}
+  - {fileID: 4447902543652806365}
+  - {fileID: 1275960760215118974}
+  - {fileID: 372619265}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!64 &120119805
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -344,6 +388,162 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1 &372619264
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 372619265}
+  - component: {fileID: 372619268}
+  - component: {fileID: 372619267}
+  - component: {fileID: 372619266}
+  - component: {fileID: 372619270}
+  - component: {fileID: 372619269}
+  m_Layer: 0
+  m_Name: Leaf Joint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &372619265
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 372619264}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.26, y: -5.28, z: -13.81}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &372619266
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 372619264}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &372619267
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 372619264}
+  m_Enabled: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &372619268
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 372619264}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!138 &372619269
+FixedJoint:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 372619264}
+  serializedVersion: 1
+  m_ConnectedBody: {fileID: 7086281294885519645}
+  m_ConnectedArticulationBody: {fileID: 0}
+  m_BreakForce: Infinity
+  m_BreakTorque: Infinity
+  m_EnableCollision: 0
+  m_EnablePreprocessing: 1
+  m_MassScale: 1
+  m_ConnectedMassScale: 20
+--- !u!54 &372619270
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 372619264}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!64 &403533509
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -581,51 +781,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -1883317055400845340, guid: 576894ac2d727eb42ad0cdfb025d7fc8, type: 3}
---- !u!1 &792062679
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 792062680}
-  m_Layer: 0
-  m_Name: Flower
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &792062680
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 792062679}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -3.66, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1104290229}
-  - {fileID: 5529540446996895510}
-  - {fileID: 6040352067275116384}
-  - {fileID: 1820290954882405882}
-  - {fileID: 3841489321961525278}
-  - {fileID: 977483797456569321}
-  - {fileID: 1841019572936225433}
-  - {fileID: 7905111776015329047}
-  - {fileID: 6599678323577143050}
-  - {fileID: 2525454734735196972}
-  - {fileID: 8739252893829663601}
-  - {fileID: 5600098351438424984}
-  - {fileID: 6039931498097459755}
-  - {fileID: 1073396786}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &794488540
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -798,7 +953,7 @@ GameObject:
   - component: {fileID: 1073396785}
   - component: {fileID: 1073396784}
   - component: {fileID: 1073396783}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -834,7 +989,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1073396782}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -892,11 +1047,11 @@ Transform:
   m_GameObject: {fileID: 1073396782}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.14000034, y: -3.66, z: 0}
+  m_LocalScale: {x: 2, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1104290228
 GameObject:
@@ -922,7 +1077,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1104290228}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -931,7 +1086,51 @@ Transform:
   - {fileID: 6025717818985561773}
   - {fileID: 4913828027210887286}
   - {fileID: 1391280885}
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1346316855
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1346316856}
+  m_Layer: 0
+  m_Name: Daisy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1346316856
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1346316855}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -5.63, y: -3.66, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1104290229}
+  - {fileID: 1820290954882405882}
+  - {fileID: 3841489321961525278}
+  - {fileID: 977483797456569321}
+  - {fileID: 1841019572936225433}
+  - {fileID: 7905111776015329047}
+  - {fileID: 6599678323577143050}
+  - {fileID: 2525454734735196972}
+  - {fileID: 8739252893829663601}
+  - {fileID: 5600098351438424984}
+  - {fileID: 6039931498097459755}
+  - {fileID: 5529540446996895510}
+  - {fileID: 6040352067275116384}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1347771560
 MonoBehaviour:
@@ -1037,7 +1236,7 @@ GameObject:
   - component: {fileID: 1391280886}
   - component: {fileID: 1391280890}
   m_Layer: 0
-  m_Name: Sphere
+  m_Name: Leaf Joint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1177,7 +1376,163 @@ FixedJoint:
   m_EnableCollision: 0
   m_EnablePreprocessing: 1
   m_MassScale: 1
+  m_ConnectedMassScale: 3
+--- !u!1 &1671721700
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1671721701}
+  - component: {fileID: 1671721704}
+  - component: {fileID: 1671721703}
+  - component: {fileID: 1671721702}
+  - component: {fileID: 1671721706}
+  - component: {fileID: 1671721705}
+  m_Layer: 0
+  m_Name: Crown Joint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1671721701
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1671721700}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.15, y: 11.66, z: -13.82}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &1671721702
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1671721700}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1671721703
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1671721700}
+  m_Enabled: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1671721704
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1671721700}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!138 &1671721705
+FixedJoint:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1671721700}
+  serializedVersion: 1
+  m_ConnectedBody: {fileID: 7086281294885519645}
+  m_ConnectedArticulationBody: {fileID: 0}
+  m_BreakForce: Infinity
+  m_BreakTorque: Infinity
+  m_EnableCollision: 0
+  m_EnablePreprocessing: 1
+  m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!54 &1671721706
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1671721700}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!64 &2048778594
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1208,6 +1563,54 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8702806165067242472}
   m_Mesh: {fileID: -1149026507558241922, guid: 27c3960524809a84bad7c57438920b62, type: 3}
+--- !u!23 &143608664327610129
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945219832014569156}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 4874126678125670354, guid: 8f59eacc4ce18214a9936b896be16840, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &286605335834415596
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1224,6 +1627,29 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6416859612401791232}
   m_Mesh: {fileID: -691950104148754208, guid: 27c3960524809a84bad7c57438920b62, type: 3}
+--- !u!4 &418231438618745212
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046537069879690182}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &726702803098292600
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3959173561868551271}
+  m_Mesh: {fileID: 3077425699364591462, guid: 4b9408498c2d9f440a2319ceafa6b9b8, type: 3}
 --- !u!1 &761207386755747915
 GameObject:
   m_ObjectHideFlags: 0
@@ -1240,7 +1666,7 @@ GameObject:
   - component: {fileID: 8267910595929441120}
   - component: {fileID: 8267910595929441122}
   - component: {fileID: 8267910595929441123}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals.008
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1265,10 +1691,48 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.5819703, y: 0.23298584, z: 0.7769531, w: -0.05806957}
   m_LocalPosition: {x: -1.3285503, y: 13.655209, z: -4.995197}
-  m_LocalScale: {x: 9.486179, y: 46.668713, z: 150.03015}
+  m_LocalScale: {x: 9.486179, y: 46.668716, z: 150.03015}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1046537069879690182
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 418231438618745212}
+  - component: {fileID: 3630465152811947737}
+  - component: {fileID: 1551199369466389011}
+  - component: {fileID: 3630465152811947741}
+  - component: {fileID: 3630465152811947740}
+  - component: {fileID: 3630465152811947739}
+  - component: {fileID: 3630465152811947738}
+  - component: {fileID: 3630465152811947742}
+  m_Layer: 3
+  m_Name: Back_Style_Arm
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1275960760215118974
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945219832014569156}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.70457506, y: -0.015052532, z: 0.015153649, w: 0.709308}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: 112.62807, y: 5.599721, z: 229.84746}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1286442299005017002
 MeshFilter:
@@ -1278,6 +1742,62 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2959448310797081507}
   m_Mesh: {fileID: 8616814702277539440, guid: 27c3960524809a84bad7c57438920b62, type: 3}
+--- !u!33 &1318720124883755318
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3362222782881838121}
+  m_Mesh: {fileID: 3953565434919087263, guid: 4c576d25e9f66434ba19585fc5d3c741, type: 3}
+--- !u!23 &1551199369466389011
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046537069879690182}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 4874126678125670354, guid: be2ef22e4d9e49d4eb0ef5fa0e8c9f80, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!23 &1632135088754591638
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1383,11 +1903,11 @@ Transform:
   m_GameObject: {fileID: 4777045512397538199}
   serializedVersion: 2
   m_LocalRotation: {x: -0.43768913, y: -0.55407387, z: -0.43255886, w: 0.56064534}
-  m_LocalPosition: {x: -0.81254494, y: 13.616656, z: -5.0012813}
-  m_LocalScale: {x: 9.486184, y: 46.66871, z: 150.03017}
+  m_LocalPosition: {x: -0.8125448, y: 13.616656, z: -5.0012813}
+  m_LocalScale: {x: 9.486185, y: 46.66871, z: 150.03017}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1841019572936225433
 Transform:
@@ -1398,12 +1918,43 @@ Transform:
   m_GameObject: {fileID: 6416859612401791232}
   serializedVersion: 2
   m_LocalRotation: {x: 0.67382944, y: -0.18769716, z: 0.7123832, w: 0.05686736}
-  m_LocalPosition: {x: -0.8125449, y: 13.784928, z: -5.0012813}
+  m_LocalPosition: {x: -0.8125448, y: 13.784928, z: -5.0012813}
   m_LocalScale: {x: 9.486181, y: 46.66872, z: 150.03018}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &1916192949234106272
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2770738981146176191}
+  m_Mesh: {fileID: 7353744763420758849, guid: aeeaa6ef0f109c44c8e6f2d92b74b565, type: 3}
+--- !u!1 &1945219832014569156
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1275960760215118974}
+  - component: {fileID: 2745722531636489179}
+  - component: {fileID: 143608664327610129}
+  - component: {fileID: 2745722531636489183}
+  - component: {fileID: 2745722531636489182}
+  - component: {fileID: 2745722531636489181}
+  - component: {fileID: 2745722531636489180}
+  - component: {fileID: 2745722531636489184}
+  m_Layer: 3
+  m_Name: Right_Standard
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &2164475204733349127
 GameObject:
   m_ObjectHideFlags: 0
@@ -1420,7 +1971,7 @@ GameObject:
   - component: {fileID: 8625476554561420365}
   - component: {fileID: 8625476554561420367}
   - component: {fileID: 8625476554561420368}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals.009
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1488,8 +2039,228 @@ Transform:
   m_LocalScale: {x: 100, y: 100.000015, z: 100.000015}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &2729976743071182483
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3362222782881838121}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &2745722531636489179
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945219832014569156}
+  m_Mesh: {fileID: -6476889394532514613, guid: 8f59eacc4ce18214a9936b896be16840, type: 3}
+--- !u!114 &2745722531636489180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945219832014569156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &2745722531636489181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945219832014569156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 1
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 0.5
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &2745722531636489182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945219832014569156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 1671721706}
+  maxDistance: 0.75
+  spring: 1200
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: Infinity
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 1
+  velocitySmoothing: 0.1
+  driveMaxForce: 500
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &2745722531636489183
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945219832014569156}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!64 &2745722531636489184
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945219832014569156}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -6476889394532514613, guid: 8f59eacc4ce18214a9936b896be16840, type: 3}
+--- !u!1 &2770738981146176191
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3258482702583328773}
+  - component: {fileID: 1916192949234106272}
+  - component: {fileID: 4427979737362860906}
+  - component: {fileID: 4427979737362860910}
+  - component: {fileID: 4427979737362860909}
+  - component: {fileID: 4427979737362860908}
+  - component: {fileID: 4427979737362860907}
+  - component: {fileID: 4427979737362860911}
+  m_Layer: 3
+  m_Name: Back_Standard
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &2959448310797081507
 GameObject:
   m_ObjectHideFlags: 0
@@ -1506,8 +2277,94 @@ GameObject:
   - component: {fileID: 8418495102803915913}
   - component: {fileID: 8418495102803915915}
   - component: {fileID: 8418495102803915916}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals.006
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3258482702583328773
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2770738981146176191}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.47688067, y: 0.50762707, z: 0.20506695, w: 0.6876388}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: 112.628075, y: 5.599721, z: 229.84746}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &3310483347219981746
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3959173561868551271}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 4874126678125670354, guid: 4b9408498c2d9f440a2319ceafa6b9b8, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &3362222782881838121
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2729976743071182483}
+  - component: {fileID: 1318720124883755318}
+  - component: {fileID: 3866902949062645244}
+  - component: {fileID: 3866902949062645248}
+  - component: {fileID: 3866902949062645247}
+  - component: {fileID: 3866902949062645246}
+  - component: {fileID: 3866902949062645245}
+  - component: {fileID: 3866902949062645249}
+  m_Layer: 3
+  m_Name: Left_Side_Fall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1521,6 +2378,188 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2164475204733349127}
   m_Mesh: {fileID: -8878024144902108712, guid: 27c3960524809a84bad7c57438920b62, type: 3}
+--- !u!33 &3630465152811947737
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046537069879690182}
+  m_Mesh: {fileID: -8703232119792011401, guid: be2ef22e4d9e49d4eb0ef5fa0e8c9f80, type: 3}
+--- !u!114 &3630465152811947738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046537069879690182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &3630465152811947739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046537069879690182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 1
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 0.5
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &3630465152811947740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046537069879690182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 1671721706}
+  maxDistance: 0.75
+  spring: 1200
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: Infinity
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 1
+  velocitySmoothing: 0.1
+  driveMaxForce: 500
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &3630465152811947741
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046537069879690182}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!64 &3630465152811947742
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1046537069879690182}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -8703232119792011401, guid: be2ef22e4d9e49d4eb0ef5fa0e8c9f80, type: 3}
 --- !u!4 &3841489321961525278
 Transform:
   m_ObjectHideFlags: 0
@@ -1530,12 +2569,257 @@ Transform:
   m_GameObject: {fileID: 5870710274844297084}
   serializedVersion: 2
   m_LocalRotation: {x: -0.46302792, y: -0.5784038, z: -0.4046233, w: 0.5360358}
-  m_LocalPosition: {x: -0.81254506, y: 13.616656, z: -5.0012813}
-  m_LocalScale: {x: 100, y: 100.00002, z: 100.00004}
+  m_LocalPosition: {x: -0.8125448, y: 13.616656, z: -5.0012813}
+  m_LocalScale: {x: 100, y: 100.000015, z: 100.00004}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &3866902949062645244
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3362222782881838121}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 4874126678125670354, guid: 4c576d25e9f66434ba19585fc5d3c741, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3866902949062645245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3362222782881838121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &3866902949062645246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3362222782881838121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 1
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 0.5
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &3866902949062645247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3362222782881838121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 1671721706}
+  maxDistance: 0.75
+  spring: 1200
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: Infinity
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 1
+  velocitySmoothing: 0.1
+  driveMaxForce: 500
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &3866902949062645248
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3362222782881838121}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!64 &3866902949062645249
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3362222782881838121}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 3953565434919087263, guid: 4c576d25e9f66434ba19585fc5d3c741, type: 3}
+--- !u!1 &3959173561868551271
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4447902543652806365}
+  - component: {fileID: 726702803098292600}
+  - component: {fileID: 3310483347219981746}
+  - component: {fileID: 4447902543652806369}
+  - component: {fileID: 4447902543652806368}
+  - component: {fileID: 4447902543652806367}
+  - component: {fileID: 4447902543652806366}
+  - component: {fileID: 4447902543652806370}
+  m_Layer: 3
+  m_Name: Right_Side_Fall
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!23 &4119896040893169327
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1584,6 +2868,228 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!23 &4427979737362860906
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2770738981146176191}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: -8274133419916619345, guid: aeeaa6ef0f109c44c8e6f2d92b74b565, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4427979737362860907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2770738981146176191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &4427979737362860908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2770738981146176191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 1
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 0.5
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &4427979737362860909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2770738981146176191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 1671721706}
+  maxDistance: 0.75
+  spring: 1200
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: Infinity
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 1
+  velocitySmoothing: 0.1
+  driveMaxForce: 500
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &4427979737362860910
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2770738981146176191}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!64 &4427979737362860911
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2770738981146176191}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 7353744763420758849, guid: aeeaa6ef0f109c44c8e6f2d92b74b565, type: 3}
 --- !u!1 &4433194371247931553
 GameObject:
   m_ObjectHideFlags: 0
@@ -1600,7 +3106,7 @@ GameObject:
   - component: {fileID: 6599678323577143051}
   - component: {fileID: 6599678323577143053}
   - component: {fileID: 6599678323577143054}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals.005
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1655,6 +3161,195 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!4 &4447902543652806365
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3959173561868551271}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4447902543652806366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3959173561868551271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &4447902543652806367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3959173561868551271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 1
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 0.5
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &4447902543652806368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3959173561868551271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 1671721706}
+  maxDistance: 0.75
+  spring: 1200
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: Infinity
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 1
+  velocitySmoothing: 0.1
+  driveMaxForce: 500
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &4447902543652806369
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3959173561868551271}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!64 &4447902543652806370
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3959173561868551271}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 3077425699364591462, guid: 4b9408498c2d9f440a2319ceafa6b9b8, type: 3}
 --- !u!23 &4491766293514127947
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1703,6 +3398,21 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!4 &4645286739613549525
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5421365286187030895}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4732522182749425030
 GameObject:
   m_ObjectHideFlags: 0
@@ -1719,7 +3429,7 @@ GameObject:
   - component: {fileID: 8612123659171615101}
   - component: {fileID: 8612123659171615103}
   - component: {fileID: 8612123659171615104}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals.004
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1742,8 +3452,31 @@ GameObject:
   - component: {fileID: 7627441760446394683}
   - component: {fileID: 7627441760446394685}
   - component: {fileID: 7627441760446394686}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &4781313798011035851
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5265116147362003569}
+  - component: {fileID: 9132922537194321364}
+  - component: {fileID: 6438564038001590558}
+  - component: {fileID: 9132922537194321368}
+  - component: {fileID: 9132922537194321367}
+  - component: {fileID: 9132922537194321366}
+  - component: {fileID: 9132922537194321365}
+  - component: {fileID: 9132922537194321369}
+  m_Layer: 3
+  m_Name: Front_fall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1797,6 +3530,29 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &4895757353034124808
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5240758347168961714}
+  - component: {fileID: 9157280832919198487}
+  - component: {fileID: 6409120552941039581}
+  - component: {fileID: 9157280832919198491}
+  - component: {fileID: 9157280832919198490}
+  - component: {fileID: 9157280832919198489}
+  - component: {fileID: 9157280832919198488}
+  - component: {fileID: 9157280832919198492}
+  m_Layer: 6
+  m_Name: Right_leaf
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &4913828027210887286
 Transform:
   m_ObjectHideFlags: 0
@@ -1852,13 +3608,61 @@ GameObject:
   - component: {fileID: 6992369784623407841}
   - component: {fileID: 6992369784623407843}
   - component: {fileID: 6992369784623407846}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Stem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!23 &5022481167269852630
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6823952285351728131}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: -2813467912831258332, guid: 5eaffad2bd6d93843b5e0543c1b80b06, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &5185630065804168620
 GameObject:
   m_ObjectHideFlags: 0
@@ -1875,13 +3679,43 @@ GameObject:
   - component: {fileID: 794488540}
   - component: {fileID: 8868436661678676148}
   - component: {fileID: 8868436661678676149}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: Daisy_Leaf_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!4 &5240758347168961714
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4895757353034124808}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.22305636, y: 0.696999, z: 0.6599267, w: 0.17010304}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: -30.604343, y: -5.2673593, z: -952.42395}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &5265116147362003569
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4781313798011035851}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.70520365, y: -0.051844563, z: 0.051844563, w: 0.7052036}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: 88.41095, y: 88.41095, z: 88.41095}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &5302003599983916929
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1930,6 +3764,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &5378467872334645136
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520849189601858191}
+  m_Mesh: {fileID: -1959463587742605449, guid: 02b7d97746070ab41b830379343e07ff, type: 3}
+--- !u!1 &5421365286187030895
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4645286739613549525}
+  - component: {fileID: 8635797664965889136}
+  - component: {fileID: 5781622951449229498}
+  - component: {fileID: 8635797664965889140}
+  - component: {fileID: 8635797664965889139}
+  - component: {fileID: 8635797664965889138}
+  - component: {fileID: 8635797664965889137}
+  - component: {fileID: 8635797664965889141}
+  m_Layer: 3
+  m_Name: Front_Style_Arm
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &5529540446996895510
 Transform:
   m_ObjectHideFlags: 0
@@ -1939,11 +3804,11 @@ Transform:
   m_GameObject: {fileID: 5185630065804168620}
   serializedVersion: 2
   m_LocalRotation: {x: 0.3331279, y: -0.030748047, z: 0.74244344, w: -0.58039486}
-  m_LocalPosition: {x: -2.16, y: 8.312, z: -3.333}
-  m_LocalScale: {x: 9.002764, y: 126.003624, z: 51.70117}
+  m_LocalPosition: {x: -2.1599998, y: 8.312, z: -3.333}
+  m_LocalScale: {x: 9.002765, y: 126.003624, z: 51.70117}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: -19.94, y: 34.345, z: -110.187}
 --- !u!4 &5600098351438424984
 Transform:
@@ -1954,12 +3819,60 @@ Transform:
   m_GameObject: {fileID: 761207386755747915}
   serializedVersion: 2
   m_LocalRotation: {x: 0.64593124, y: -0.39689985, z: 0.52040946, w: 0.39295974}
-  m_LocalPosition: {x: -0.72494245, y: 13.623979, z: -5.002314}
-  m_LocalScale: {x: 9.769332, y: 48.06171, z: 154.50835}
+  m_LocalPosition: {x: -0.7249422, y: 13.623979, z: -5.002314}
+  m_LocalScale: {x: 9.769333, y: 48.06171, z: 154.50835}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &5781622951449229498
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5421365286187030895}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 4874126678125670354, guid: 422994811483d7d48a9c50ef12b4a21e, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &5810956621735010061
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1984,7 +3897,7 @@ GameObject:
   - component: {fileID: 8676136758897000155}
   - component: {fileID: 8676136758897000157}
   - component: {fileID: 8676136758897000158}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2097,6 +4010,44 @@ MonoBehaviour:
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -2132,6 +4083,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!138 &6025717818985561778
 FixedJoint:
   m_ObjectHideFlags: 0
@@ -2157,11 +4112,11 @@ Transform:
   m_GameObject: {fileID: 2164475204733349127}
   serializedVersion: 2
   m_LocalRotation: {x: -0.6134833, y: -0.41145304, z: -0.571168, w: 0.35792705}
-  m_LocalPosition: {x: -0.81254494, y: 13.616657, z: -5.0012813}
-  m_LocalScale: {x: 9.486179, y: 46.66871, z: 150.03017}
+  m_LocalPosition: {x: -0.8125448, y: 13.616657, z: -5.0012813}
+  m_LocalScale: {x: 9.486178, y: 46.668705, z: 150.03017}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &6040352067275116384
 Transform:
@@ -2172,12 +4127,35 @@ Transform:
   m_GameObject: {fileID: 6383980698625807834}
   serializedVersion: 2
   m_LocalRotation: {x: 0.74906665, y: -0.14426434, z: 0.3058244, w: -0.5697003}
-  m_LocalPosition: {x: 0.83, y: 8.545, z: -4.194}
-  m_LocalScale: {x: 8.021908, y: 85.459915, z: 204.39343}
+  m_LocalPosition: {x: 0.8299999, y: 8.545, z: -4.194}
+  m_LocalScale: {x: 8.021908, y: 85.45991, z: 204.39343}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: -130.071, y: -75.25598, z: 61.288002}
+--- !u!33 &6106489411727896230
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7519481948143025081}
+  m_Mesh: {fileID: -2342502796289186243, guid: c5cc59aed6bccd3478fb3d452dab09be, type: 3}
+--- !u!4 &6194803397177806521
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6823952285351728131}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.000000030908623, y: 0.7071068, z: 0.7071067, w: 0.000000030908616}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: -17.857847, y: -17.857847, z: -1035.1294}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6355798562377432514
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -2202,13 +4180,61 @@ GameObject:
   - component: {fileID: 1347771560}
   - component: {fileID: 7240802656111149254}
   - component: {fileID: 7240802656111149255}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: Daisy_Leaf_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!23 &6409120552941039581
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4895757353034124808}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: -6629797300637803691, guid: 41e664bdfc31d9e42b1e3a57d64f12ee, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &6416859612401791232
 GameObject:
   m_ObjectHideFlags: 0
@@ -2225,7 +4251,7 @@ GameObject:
   - component: {fileID: 6416859612401791233}
   - component: {fileID: 6416859612401791235}
   - component: {fileID: 6416859612401791236}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals.003
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2246,10 +4272,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &6416859612401791234
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2290,23 +4316,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -2327,11 +4391,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 7
-  Mass: 1
+  Intensity: 1
+  Mass: 10
   stiffness: 1
   damping: 0.75
-  dragRadius: 0.5
+  dragRadius: 1
   dragStrength: 1
   moveThreshold: 0.6
   moveGain: 0.35
@@ -2342,6 +4406,58 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!23 &6438564038001590558
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4781313798011035851}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 4874126678125670354, guid: 1a7ed1c1e74809f4ca9764767b2b0d23, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!4 &6599678323577143050
 Transform:
   m_ObjectHideFlags: 0
@@ -2351,11 +4467,11 @@ Transform:
   m_GameObject: {fileID: 4433194371247931553}
   serializedVersion: 2
   m_LocalRotation: {x: 0.70162195, y: -0.26797906, z: 0.6537724, w: 0.092171066}
-  m_LocalPosition: {x: -0.8131824, y: 13.784928, z: -5.0553493}
-  m_LocalScale: {x: 9.486182, y: 46.668724, z: 150.03015}
+  m_LocalPosition: {x: -0.81318235, y: 13.784928, z: -5.0553493}
+  m_LocalScale: {x: 9.486183, y: 46.668724, z: 150.03015}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6599678323577143051
 MonoBehaviour:
@@ -2371,10 +4487,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &6599678323577143052
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2415,23 +4531,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -2452,11 +4606,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 7
-  Mass: 1
+  Intensity: 1
+  Mass: 10
   stiffness: 1
   damping: 0.75
-  dragRadius: 0.5
+  dragRadius: 1
   dragStrength: 1
   moveThreshold: 0.6
   moveGain: 0.35
@@ -2467,6 +4621,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!33 &6635618321783358775
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -2547,6 +4705,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &6823952285351728131
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6194803397177806521}
+  - component: {fileID: 7086281294885519644}
+  - component: {fileID: 5022481167269852630}
+  - component: {fileID: 7086281294885519645}
+  - component: {fileID: 7086281294885519646}
+  - component: {fileID: 7086281294885519647}
+  - component: {fileID: 7086281294885519648}
+  m_Layer: 7
+  m_Name: Stem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &6992369784623407840
 Transform:
   m_ObjectHideFlags: 0
@@ -2556,7 +4736,7 @@ Transform:
   m_GameObject: {fileID: 5018300004074052886}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50293887, y: -0.49704376, z: -0.4970438, w: 0.50293887}
-  m_LocalPosition: {x: -0.84, y: 1, z: -4.79}
+  m_LocalPosition: {x: -0.8, y: 1, z: -4.79}
   m_LocalScale: {x: 100, y: 99.999985, z: 99.999985}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2620,12 +4800,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Intensity: 1
-  Mass: 10
+  Mass: 2
   stiffness: 1
   damping: 0.75
   dragRadius: 1
   dragStrength: 0.1
-  moveThreshold: 0.6
+  moveThreshold: 0.37
   moveGain: 0.35
   velocityMoveGain: 0.02
   maxMoveSpeed: 6
@@ -2634,6 +4814,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!138 &6992369784623407846
 FixedJoint:
   m_ObjectHideFlags: 0
@@ -2650,6 +4834,185 @@ FixedJoint:
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!33 &7086281294885519644
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6823952285351728131}
+  m_Mesh: {fileID: 5285146552827388945, guid: 5eaffad2bd6d93843b5e0543c1b80b06, type: 3}
+--- !u!54 &7086281294885519645
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6823952285351728131}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!114 &7086281294885519646
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6823952285351728131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 0}
+  maxDistance: 0.75
+  spring: 1200
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: Infinity
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 1
+  velocitySmoothing: 0.1
+  driveMaxForce: 500
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!64 &7086281294885519647
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6823952285351728131}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 5285146552827388945, guid: 5eaffad2bd6d93843b5e0543c1b80b06, type: 3}
+--- !u!114 &7086281294885519648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6823952285351728131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 1
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 0.5
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!4 &7138557602953601283
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7519481948143025081}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.636866, y: -0.00000019792503, z: -0.0000002033942, w: 0.7709745}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: -32.365967, y: -5.2137175, z: -692.09784}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7240802656111149253
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -2688,6 +5051,44 @@ MonoBehaviour:
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -2723,6 +5124,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!1 &7354005482645672518
 GameObject:
   m_ObjectHideFlags: 0
@@ -2739,8 +5144,31 @@ GameObject:
   - component: {fileID: 8739252893829663602}
   - component: {fileID: 8739252893829663604}
   - component: {fileID: 8739252893829663605}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals.007
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &7519481948143025081
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7138557602953601283}
+  - component: {fileID: 6106489411727896230}
+  - component: {fileID: 8312075418746837612}
+  - component: {fileID: 8312075418746837616}
+  - component: {fileID: 8312075418746837615}
+  - component: {fileID: 8312075418746837614}
+  - component: {fileID: 8312075418746837613}
+  - component: {fileID: 8312075418746837617}
+  m_Layer: 6
+  m_Name: Left_leaf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2808,10 +5236,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &7627441760446394684
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2852,23 +5280,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -2904,6 +5370,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!23 &7836976888343162327
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3027,6 +5497,44 @@ MonoBehaviour:
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3062,6 +5570,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!138 &7836976888343162332
 FixedJoint:
   m_ObjectHideFlags: 0
@@ -3078,6 +5590,54 @@ FixedJoint:
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!23 &7872537620994814810
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520849189601858191}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 4874126678125670354, guid: 02b7d97746070ab41b830379343e07ff, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!4 &7905111776015329047
 Transform:
   m_ObjectHideFlags: 0
@@ -3087,11 +5647,11 @@ Transform:
   m_GameObject: {fileID: 4732522182749425030}
   serializedVersion: 2
   m_LocalRotation: {x: 0.72817, y: -0.3530728, z: 0.47053874, w: 0.35171208}
-  m_LocalPosition: {x: -0.81254536, y: 13.8926735, z: -5.001281}
-  m_LocalScale: {x: 9.486181, y: 46.668705, z: 150.03015}
+  m_LocalPosition: {x: -0.8125453, y: 13.8926735, z: -5.001281}
+  m_LocalScale: {x: 9.486182, y: 46.6687, z: 150.03015}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8267910595929441119
 MeshFilter:
@@ -3115,10 +5675,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &8267910595929441121
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3159,23 +5719,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3196,11 +5794,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 7
-  Mass: 1
+  Intensity: 1
+  Mass: 10
   stiffness: 1
   damping: 0.75
-  dragRadius: 0.5
+  dragRadius: 1
   dragStrength: 1
   moveThreshold: 0.6
   moveGain: 0.35
@@ -3211,6 +5809,232 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!23 &8312075418746837612
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7519481948143025081}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: -3846018093981099296, guid: c5cc59aed6bccd3478fb3d452dab09be, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &8312075418746837613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7519481948143025081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &8312075418746837614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7519481948143025081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 10
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 3
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &8312075418746837615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7519481948143025081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 372619270}
+  maxDistance: 0.75
+  spring: 400
+  damper: 30
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 0
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &8312075418746837616
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7519481948143025081}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 1
+--- !u!64 &8312075418746837617
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7519481948143025081}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -2342502796289186243, guid: c5cc59aed6bccd3478fb3d452dab09be, type: 3}
 --- !u!23 &8343201767129499458
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3321,10 +6145,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &8418495102803915914
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3365,23 +6189,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3402,11 +6264,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 7
-  Mass: 1
+  Intensity: 1
+  Mass: 10
   stiffness: 1
   damping: 0.75
-  dragRadius: 0.5
+  dragRadius: 1
   dragStrength: 1
   moveThreshold: 0.6
   moveGain: 0.35
@@ -3417,6 +6279,33 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!1 &8520849189601858191
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9010563338615425077}
+  - component: {fileID: 5378467872334645136}
+  - component: {fileID: 7872537620994814810}
+  - component: {fileID: 9010563338615425081}
+  - component: {fileID: 9010563338615425080}
+  - component: {fileID: 9010563338615425079}
+  - component: {fileID: 9010563338615425078}
+  - component: {fileID: 9010563338615425082}
+  m_Layer: 3
+  m_Name: Left_Standard
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!33 &8612123659171615100
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -3439,10 +6328,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &8612123659171615102
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3483,23 +6372,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3520,11 +6447,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 7
-  Mass: 1
+  Intensity: 1
+  Mass: 10
   stiffness: 1
   damping: 0.75
-  dragRadius: 0.5
+  dragRadius: 1
   dragStrength: 1
   moveThreshold: 0.6
   moveGain: 0.35
@@ -3535,6 +6462,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!23 &8625476554561420364
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3597,10 +6528,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &8625476554561420366
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3641,23 +6572,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3678,11 +6647,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 7
-  Mass: 1
+  Intensity: 1
+  Mass: 10
   stiffness: 1
   damping: 0.75
-  dragRadius: 0.5
+  dragRadius: 1
   dragStrength: 1
   moveThreshold: 0.6
   moveGain: 0.35
@@ -3693,6 +6662,192 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!33 &8635797664965889136
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5421365286187030895}
+  m_Mesh: {fileID: -3730958872594668567, guid: 422994811483d7d48a9c50ef12b4a21e, type: 3}
+--- !u!114 &8635797664965889137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5421365286187030895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &8635797664965889138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5421365286187030895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 1
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 0.5
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &8635797664965889139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5421365286187030895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 1671721706}
+  maxDistance: 0.75
+  spring: 1200
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: Infinity
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 1
+  velocitySmoothing: 0.1
+  driveMaxForce: 500
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &8635797664965889140
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5421365286187030895}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!64 &8635797664965889141
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5421365286187030895}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -3730958872594668567, guid: 422994811483d7d48a9c50ef12b4a21e, type: 3}
 --- !u!23 &8676136758897000154
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3755,10 +6910,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &8676136758897000156
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3799,23 +6954,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3836,11 +7029,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 7
-  Mass: 1
+  Intensity: 1
+  Mass: 10
   stiffness: 1
   damping: 0.75
-  dragRadius: 0.5
+  dragRadius: 1
   dragStrength: 1
   moveThreshold: 0.6
   moveGain: 0.35
@@ -3851,6 +7044,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!1 &8702806165067242472
 GameObject:
   m_ObjectHideFlags: 0
@@ -3867,7 +7064,7 @@ GameObject:
   - component: {fileID: 8702806165067242473}
   - component: {fileID: 8702806165067242475}
   - component: {fileID: 8702806165067242476}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Pedals.002
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3888,10 +7085,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &8702806165067242474
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3932,23 +7129,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3969,11 +7204,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 7
-  Mass: 1
+  Intensity: 1
+  Mass: 10
   stiffness: 1
   damping: 0.75
-  dragRadius: 0.5
+  dragRadius: 1
   dragStrength: 1
   moveThreshold: 0.6
   moveGain: 0.35
@@ -3984,6 +7219,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!4 &8739252893829663601
 Transform:
   m_ObjectHideFlags: 0
@@ -3993,11 +7232,11 @@ Transform:
   m_GameObject: {fileID: 7354005482645672518}
   serializedVersion: 2
   m_LocalRotation: {x: 0.6992902, y: 0.032948293, z: 0.71302086, w: -0.03884502}
-  m_LocalPosition: {x: -1.1444281, y: 13.655209, z: -5.0656962}
-  m_LocalScale: {x: 9.486183, y: 46.668743, z: 150.03017}
+  m_LocalPosition: {x: -1.1444283, y: 13.655209, z: -5.0656962}
+  m_LocalScale: {x: 9.486184, y: 46.668747, z: 150.03015}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 792062680}
+  m_Father: {fileID: 1346316856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8739252893829663602
 MonoBehaviour:
@@ -4013,10 +7252,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabPull
   cam: {fileID: 330585545}
   grabKey: 323
-  grabSpring: 200
+  grabSpring: 120
   grabDamper: 18
-  maxAccel: 100
-  maxSpeed: 15
+  maxAccel: 60
+  maxSpeed: 12
 --- !u!54 &8739252893829663603
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4057,23 +7296,61 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 7836976888343162329}
-  maxDistance: 0.2
+  maxDistance: 0.75
   spring: 400
   damper: 30
-  criteria: 6
+  criteria: 3
   testSpace: 0
-  armDelay: 0.15
-  breakForce: 1000
-  relativeSpeedThreshold: 5
-  ownSpeedThreshold: 999
-  absoluteTravelThreshold: 999
-  relativeTravelThreshold: 999
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 300
+  ownSpeedThreshold: 300
+  absoluteTravelThreshold: 300
+  relativeTravelThreshold: 300
   velocityMode: 0
-  velocitySmoothing: 0.05
-  driveMaxForce: 600
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -4094,11 +7371,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Intensity: 7
-  Mass: 1
+  Intensity: 1
+  Mass: 10
   stiffness: 1
   damping: 0.75
-  dragRadius: 0.5
+  dragRadius: 1
   dragStrength: 1
   moveThreshold: 0.6
   moveGain: 0.35
@@ -4109,6 +7386,10 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
 --- !u!33 &8868436661678676147
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -4147,6 +7428,44 @@ MonoBehaviour:
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -4182,6 +7501,563 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 20
+  coupledStem: {fileID: 6992369784623407843}
+  stemAttachPoint: {fileID: 1391280885}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!4 &9010563338615425077
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520849189601858191}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.70457506, y: -0.015052532, z: 0.015153649, w: 0.709308}
+  m_LocalPosition: {x: 4.2, y: -4, z: -13.8}
+  m_LocalScale: {x: 112.62807, y: 5.599721, z: 229.84746}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 106510336}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9010563338615425078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520849189601858191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &9010563338615425079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520849189601858191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 1
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 0.5
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &9010563338615425080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520849189601858191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 1671721706}
+  maxDistance: 0.75
+  spring: 1200
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: Infinity
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 1
+  velocitySmoothing: 0.1
+  driveMaxForce: 500
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &9010563338615425081
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520849189601858191}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!64 &9010563338615425082
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8520849189601858191}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -1959463587742605449, guid: 02b7d97746070ab41b830379343e07ff, type: 3}
+--- !u!33 &9132922537194321364
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4781313798011035851}
+  m_Mesh: {fileID: 3094249016697949149, guid: 1a7ed1c1e74809f4ca9764767b2b0d23, type: 3}
+--- !u!114 &9132922537194321365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4781313798011035851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &9132922537194321366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4781313798011035851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 1
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 0.5
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &9132922537194321367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4781313798011035851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 1671721706}
+  maxDistance: 0.75
+  spring: 1200
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: Infinity
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 1
+  velocitySmoothing: 0.1
+  driveMaxForce: 500
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &9132922537194321368
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4781313798011035851}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!64 &9132922537194321369
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4781313798011035851}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 3094249016697949149, guid: 1a7ed1c1e74809f4ca9764767b2b0d23, type: 3}
+--- !u!33 &9157280832919198487
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4895757353034124808}
+  m_Mesh: {fileID: 7887139656826704325, guid: 41e664bdfc31d9e42b1e3a57d64f12ee, type: 3}
+--- !u!114 &9157280832919198488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4895757353034124808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 330585545}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+--- !u!114 &9157280832919198489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4895757353034124808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SquishMove
+  Intensity: 1
+  Mass: 10
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 3
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 15
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!114 &9157280832919198490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4895757353034124808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 372619270}
+  maxDistance: 0.75
+  spring: 400
+  damper: 60
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 0
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!54 &9157280832919198491
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4895757353034124808}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 1
+--- !u!64 &9157280832919198492
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4895757353034124808}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 7887139656826704325, guid: 41e664bdfc31d9e42b1e3a57d64f12ee, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -4189,4 +8065,6 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
-  - {fileID: 792062680}
+  - {fileID: 1346316856}
+  - {fileID: 1073396786}
+  - {fileID: 106510336}
