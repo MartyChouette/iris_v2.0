@@ -13,16 +13,16 @@ MonoBehaviour:
   m_Name: Daisy
   m_EditorClassIdentifier: Assembly-CSharp::IdealFlowerDefinition
   idealStemLength: 11.791715
-  stemHardFailDelta: 0.5
+  stemHardFailDelta: 5
   stemPerfectDelta: 0.05
   stemScoreWeight: 0.4
-  stemCanCauseGameOver: 1
+  stemCanCauseGameOver: 0
   stemContributesToScore: 1
   idealCutAngleDeg: 45
   cutAngleHardFailDelta: 15
   cutAnglePerfectDelta: 3
   cutAngleScoreWeight: 0.4
-  cutAngleCanCauseGameOver: 1
+  cutAngleCanCauseGameOver: 0
   cutAngleContributesToScore: 1
   partRules:
   - partId: Daisy_Leaf_R

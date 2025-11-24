@@ -104,8 +104,18 @@ public class FlowerPartRuntime : MonoBehaviour
     /// <summary>
     /// Public so cutters or other scripts can force a detach.
     /// </summary>
+    /// <summary>
+    /// Public so cutters or other scripts can force a detach.
+    /// </summary>
     public void MarkDetached(string reason = "Detached")
     {
+        // NEW: ignore detach events while the session is in a cut/rebind grace window
+        if (session != null && session.suppressDetachEvents)
+        {
+            Debug.Log($"[FlowerPartRuntime] Detach '{PartId}' skipped during cut grace: {reason}", this);
+            return;
+        }
+
         if (!isAttached)
             return;
 
@@ -114,6 +124,7 @@ public class FlowerPartRuntime : MonoBehaviour
 
         bool triggerInstantFail = false;
         string failReason = "";
+
 
         // ───────── Option 1: crown via layer ─────────
         int crownLayer = LayerMask.NameToLayer("CrownCore");

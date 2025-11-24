@@ -14,6 +14,9 @@ public class GrabPull : MonoBehaviour
     bool grabbing;
     Vector3 grabWorld;
 
+    // NEW: who we mark as "engaged" while grabbing
+    private InteractionEngagement currentEngagement;   // optional
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -29,9 +32,28 @@ public class GrabPull : MonoBehaviour
             {
                 grabbing = true;
                 grabWorld = hit.point; // start at hit
+
+                // NEW: mark this object (or its parent) as engaged
+                currentEngagement = hit.rigidbody.GetComponentInParent<InteractionEngagement>();
+                if (currentEngagement != null)
+                    currentEngagement.isEngaged = true;
             }
         }
-        if (Input.GetKeyUp(grabKey)) grabbing = false;
+
+        if (Input.GetKeyUp(grabKey))
+        {
+            if (grabbing)
+            {
+                grabbing = false;
+
+                // NEW: clear engagement on release
+                if (currentEngagement != null)
+                {
+                    currentEngagement.isEngaged = false;
+                    currentEngagement = null;
+                }
+            }
+        }
     }
 
     void FixedUpdate()

@@ -1,5 +1,4 @@
-﻿// File: PlaneBehaviour.cs
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace DynamicMeshCutter
@@ -68,37 +67,67 @@ namespace DynamicMeshCutter
 
             var roots = SceneManager.GetActiveScene().GetRootGameObjects();
 
-            foreach (var root in roots)
+            // suppress detach events on all sessions while slicing
+            var sessions = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(
+                FindObjectsSortMode.None
+            );
+
+            foreach (var s in sessions)
+                if (s != null) s.suppressDetachEvents = true;
+
+            // ***** ADDED: suppress XYTether force-breaks for the entire cut
+            XYTetherJoint.SetCutBreakSuppressed(true);
+
+            try
             {
-                if (!root.activeInHierarchy)
-                    continue;
-
-                var targets = root.GetComponentsInChildren<MeshTarget>();
-                foreach (var target in targets)
+                foreach (var root in roots)
                 {
-                    if (target == null)
+                    if (!root.activeInHierarchy)
                         continue;
 
-                    // Make sure it has a mesh
-                    var mf = target.GetComponent<MeshFilter>();
-                    var smr = target.GetComponent<SkinnedMeshRenderer>();
-                    bool hasMesh =
-                        (mf != null && mf.sharedMesh != null) ||
-                        (smr != null && smr.sharedMesh != null);
-
-                    if (!hasMesh)
-                        continue;
-
-                    try
+                    var targets = root.GetComponentsInChildren<MeshTarget>();
+                    foreach (var target in targets)
                     {
-                        // Call into the plugin cutter.
-                        Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreated);
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.LogError($"[PlaneBehaviour] Exception while cutting '{target.name}': {e}", target);
+                        if (target == null)
+                            continue;
+
+                        // Must actually have a mesh
+                        var mf = target.GetComponent<MeshFilter>();
+                        var smr = target.GetComponent<SkinnedMeshRenderer>();
+                        bool hasMesh =
+                            (mf != null && mf.sharedMesh != null) ||
+                            (smr != null && smr.sharedMesh != null);
+
+                        if (!hasMesh)
+                            continue;
+
+                        // 1) Must belong to the stem hierarchy
+                        FlowerStemRuntime stemRuntime = target.GetComponentInParent<FlowerStemRuntime>();
+                        if (stemRuntime == null)
+                            continue;
+
+                        // 2) Must NOT be leaves / petals / crown
+                        if (target.GetComponent<FlowerPartRuntime>() != null)
+                            continue;
+
+                        try
+                        {
+                            Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreated);
+                        }
+                        catch (System.Exception e)
+                        {
+                            Debug.LogError($"[PlaneBehaviour] Exception while cutting '{target.name}': {e}", target);
+                        }
                     }
                 }
+            }
+            finally
+            {
+                // ***** ADDED: always restore suppression + detach flags
+                XYTetherJoint.SetCutBreakSuppressed(false);
+
+                foreach (var s in sessions)
+                    if (s != null) s.suppressDetachEvents = false;
             }
         }
 
@@ -110,7 +139,7 @@ namespace DynamicMeshCutter
         {
             FlowerStemRuntime stem = previewStemOverride;
             if (stem == null)
-                stem = Object.FindObjectOfType<FlowerStemRuntime>();
+                stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
 
             if (stem == null)
                 return;
@@ -129,67 +158,142 @@ namespace DynamicMeshCutter
         }
 
         // ───────────────────── DMC callback ─────────────────────
-
         // This is called once for each MeshTarget that was cut
         void OnCreated(Info info, MeshCreationData cData)
         {
+            if (cData == null)
+                return;
+
+            // ***** REMOVED: we no longer toggle suppression here
+            // XYTetherJoint.SetCutBreakSuppressed(true);
+
             // Let DMC move/offset the created objects first
             MeshCreation.TranslateCreatedObjects(info,
                                                  cData.CreatedObjects,
                                                  cData.CreatedTargets,
                                                  Separation);
 
-            // Correct source object (the thing that was cut)
-            GameObject sourceGO = info.MeshTarget.gameObject;
+            // Source object (the thing that was cut)
+            GameObject sourceGO = info.MeshTarget != null
+                ? info.MeshTarget.gameObject
+                : null;
 
-            foreach (var createdTarget in cData.CreatedTargets)
+            // Stem that owns this mesh
+
+            var stemRuntime = info.MeshTarget.GetComponentInParent<FlowerStemRuntime>();
+
+            for (int i = 0; i < cData.CreatedTargets.Length; i++)
             {
-                if (createdTarget == null) continue;
+                var createdTarget = cData.CreatedTargets[i];
+                if (createdTarget == null)
+                    continue;
+
                 GameObject piece = createdTarget.gameObject;
-                CopyComponentsFromSource(sourceGO, piece);
+
+                // CopyComponentsFromSource(...);
+
+                if (stemRuntime != null)
+                {
+                    var marker = piece.AddComponent<StemPieceMarker>();
+                    marker.stemRuntime = stemRuntime;
+
+                    bool isBottom = info.BT != null &&
+                                    i < info.BT.Length &&
+                                    info.BT[i] == 0;
+
+                    var rb = piece.GetComponent<Rigidbody>() ?? piece.AddComponent<Rigidbody>();
+
+                    rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+                    if (isBottom)
+                    {
+                        rb.isKinematic = true;
+                        rb.useGravity = false;
+                        rb.constraints = RigidbodyConstraints.FreezeAll;
+                    }
+                    else
+                    {
+                        rb.isKinematic = false;
+                        rb.useGravity = true;  // or false if you don't want them to fall
+                        rb.constraints = RigidbodyConstraints.None;
+                    }
+                }
             }
+
 
             // ─────────────────────────────────────────────
             // Inform the flower stem & session AFTER the cut
             // ─────────────────────────────────────────────
 
-            var stem = info.MeshTarget.GetComponentInParent<FlowerStemRuntime>();
+            var stem = info.MeshTarget != null
+                ? info.MeshTarget.GetComponentInParent<FlowerStemRuntime>()
+                : null;
+
             if (stem == null)
                 stem = previewStemOverride;
             if (stem == null)
-                stem = Object.FindObjectOfType<FlowerStemRuntime>();
+                stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
 
             if (stem != null)
             {
-                // Use the REAL cut plane from DMC, not just our cached guess.
                 Vector3 planePoint = info.Plane.WorldPosition;
                 Vector3 planeNormal = info.Plane.WorldNormal;
-
-                stem.ApplyCutFromPlane(planePoint, planeNormal);
-
-                float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
-                float len = stem.CurrentLength;
-                if (debugLogs)
-                    Debug.Log($"[PlaneBehaviour] Stem cut angle:{angle:F1}°, length:{len:F3}", stem);
 
                 var session = previewSessionOverride;
                 if (session == null)
                     session = stem.GetComponentInParent<FlowerSessionController>();
                 if (session == null)
-                    session = Object.FindObjectOfType<FlowerSessionController>();
+                    session = UnityEngine.Object.FindFirstObjectByType<FlowerSessionController>();
 
-                session?.CheckStemCutImmediate();
+                // suppress detach events during cut + rebind
+                if (session != null) session.suppressDetachEvents = true;
+                try
+                {
+                    stem.ApplyCutFromPlane(planePoint, planeNormal);
+
+                    float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
+                    float len = stem.CurrentLength;
+                    if (debugLogs)
+                        Debug.Log($"[PlaneBehaviour] Stem cut angle:{angle:F1}°, length:{len:F3}", stem);
+
+                    session?.CheckStemCutImmediate();
+
+                    // rebind leaves/petals to nearest stem chunk
+                    var rebinder = stem.GetComponentInParent<FlowerJointRebinder>();
+                    rebinder?.RebindAllPartsToClosestStemPiece();
+                }
+                finally
+                {
+                    if (session != null)
+                    {
+                        // ***** REMOVED: suppression is handled at the top-level Cut() now
+                        // XYTetherJoint.SetCutBreakSuppressed(false);
+                        session.suppressDetachEvents = false;
+                    }
+                }
+
             }
         }
 
-        void CopyComponentsFromSource(GameObject source,
-                                      GameObject piece)
+        void CopyComponentsFromSource(GameObject source, GameObject piece)
         {
             foreach (var comp in source.GetComponents<Component>())
             {
                 // Skip core components already handled by DMC
                 if (comp is Transform || comp is MeshFilter || comp is MeshRenderer || comp is MeshTarget)
                     continue;
+
+                // skip gameplay / interaction components on cut pieces.
+                if (comp is GrabPull
+                    || comp is FlowerPartRuntime
+                    || comp is FlowerStemRuntime
+                    || comp is XYTetherJoint
+                    || comp is InteractionEngagement
+                    || comp is FlowerJointRebinder
+                    || comp is FlowerGameBrain)
+                {
+                    continue;
+                }
 
                 // SPECIAL CASE: joints
                 if (comp is Joint joint)
@@ -200,21 +304,27 @@ namespace DynamicMeshCutter
 
                 // Generic component copy – add as needed
                 var type = comp.GetType();
-                var newComp = piece.AddComponent(type);
-                // NOTE: if you have important fields to copy, do it here manually.
+                piece.AddComponent(type);
             }
         }
 
-        void TryHandleJointOnCut(
-            Joint original,
-            GameObject source,
-            GameObject piece)
+        void TryHandleJointOnCut(Joint original, GameObject source, GameObject piece)
         {
+            // only joints that OPT-IN via JointCutPolicy are affected by cutting
             var policy = original.GetComponent<JointCutPolicy>();
-            var mode = policy != null ? policy.mode : JointSplitMode.KeepAnchorSideOnly;
+            if (policy == null)
+                return;  // no policy => leave this joint exactly as-is
+
+            var mode = policy.mode;
 
             if (mode == JointSplitMode.DestroyOnCut)
+            {
+                if (Application.isPlaying)
+                    Destroy(original);
+                else
+                    DestroyImmediate(original);
                 return;
+            }
 
             var pieceCollider = piece.GetComponent<Collider>();
             if (pieceCollider == null)
@@ -225,20 +335,18 @@ namespace DynamicMeshCutter
 
             bool thisPieceHasAnchor = pieceCollider.bounds.Contains(anchorWorld);
 
-            // --- Mode: keep only anchor side ---
+            // keep only anchor side
             if (mode == JointSplitMode.KeepAnchorSideOnly && !thisPieceHasAnchor)
                 return;
 
-            // --- Mode: Custom hook ---
+            // Custom hook
             if (mode == JointSplitMode.CustomLogic)
             {
                 policy?.OnCutCustom?.Invoke(original, source, piece);
                 return;
             }
 
-            // -------------------------------------------------------
-            // CLONE THE JOINT ONTO THIS PIECE
-            // -------------------------------------------------------
+            // Clone the joint onto this piece
             var cloned = piece.AddComponent(original.GetType()) as Joint;
             if (!cloned)
                 return;
@@ -250,21 +358,13 @@ namespace DynamicMeshCutter
             cloned.breakTorque = original.breakTorque;
             cloned.enableCollision = original.enableCollision;
 
-            // connectedBody logic:
             var srcRb = source.GetComponent<Rigidbody>();
 
-            // If originally attached to some OTHER body (e.g., stalk, ceiling)
             if (original.connectedBody != null && original.connectedBody != srcRb)
-            {
                 cloned.connectedBody = original.connectedBody;
-            }
             else
-            {
-                // If it was self-connected, we clear it
                 cloned.connectedBody = null;
-            }
 
-            // Hinge extra fields
             if (original is HingeJoint oH && cloned is HingeJoint cH)
             {
                 cH.axis = oH.axis;
@@ -273,8 +373,6 @@ namespace DynamicMeshCutter
                 cH.useSpring = oH.useSpring;
                 cH.spring = oH.spring;
             }
-
-            // TODO: add similar blocks for SpringJoint, ConfigurableJoint, etc. as needed.
         }
     }
 }

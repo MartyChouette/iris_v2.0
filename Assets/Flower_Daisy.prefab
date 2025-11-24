@@ -32,7 +32,6 @@ Transform:
   m_Children:
   - {fileID: 1652273040116408638}
   - {fileID: 520680268166457172}
-  - {fileID: 2491490619276510798}
   m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &4905102761511322909
@@ -71,6 +70,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 447385147862574464}
+  - component: {fileID: 346621414959039876}
   m_Layer: 7
   m_Name: top_stem
   m_TagString: Untagged
@@ -86,13 +86,26 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 969089590696797957}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0045, y: -0, z: 0.11851}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0.50293887, y: -0.49704376, z: -0.4970438, w: 0.50293887}
+  m_LocalPosition: {x: 5.3947654, y: 9.190998, z: -0.07153177}
+  m_LocalScale: {x: 100, y: 99.999985, z: 99.999985}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9139188167376853586}
+  m_Father: {fileID: 6056292307205435292}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &346621414959039876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 969089590696797957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 1
 --- !u!1 &1240776200526331645
 GameObject:
   m_ObjectHideFlags: 0
@@ -127,10 +140,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.74906665, y: -0.14426434, z: 0.3058244, w: -0.5697003}
   m_LocalPosition: {x: 0.83, y: 8.545, z: -4.194}
-  m_LocalScale: {x: 8.021908, y: 85.459915, z: 204.39343}
+  m_LocalScale: {x: 8.021908, y: 85.45991, z: 204.39343}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5439567335729082257}
+  m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: -130.071, y: -75.25598, z: 61.288002}
 --- !u!33 &4721859760037306932
 MeshFilter:
@@ -323,6 +336,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -406,6 +423,7 @@ GameObject:
   - component: {fileID: 8974699333962970216}
   - component: {fileID: 8197700699443551098}
   - component: {fileID: 5553624247539756394}
+  - component: {fileID: 2937513710028057408}
   - component: {fileID: 8873713761765573043}
   m_Layer: 3
   m_Name: Petals
@@ -571,7 +589,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -620,6 +638,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -655,10 +677,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &2937513710028057408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629132496362626701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &8873713761765573043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -678,7 +714,7 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
@@ -703,6 +739,7 @@ GameObject:
   - component: {fileID: 527120007902035841}
   - component: {fileID: 1082934113060552226}
   - component: {fileID: 1609190348797671204}
+  - component: {fileID: 2750969283354826712}
   - component: {fileID: 1870781213425333736}
   m_Layer: 3
   m_Name: Petals.001
@@ -868,7 +905,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -917,6 +954,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -952,10 +993,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &2750969283354826712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2214357841021642041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &1870781213425333736
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -975,7 +1030,7 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
@@ -1000,6 +1055,7 @@ GameObject:
   - component: {fileID: 6669921729166417400}
   - component: {fileID: 1930340733601352926}
   - component: {fileID: 2853903399949513555}
+  - component: {fileID: 3081611298494686289}
   - component: {fileID: 6686953167476818753}
   m_Layer: 3
   m_Name: Petals.008
@@ -1165,7 +1221,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -1214,6 +1270,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -1249,10 +1309,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &3081611298494686289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3455973610173840327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &6686953167476818753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1272,15 +1346,49 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
   session: {fileID: 7065037729555491349}
-  brain: {fileID: 0}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 1930340733601352926}
   unityJoints: []
+--- !u!1 &4099787641865176019
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6056292307205435292}
+  m_Layer: 9
+  m_Name: StemReferals
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6056292307205435292
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4099787641865176019}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -6.22946, y: 3.66, z: -4.2685}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8722214804869545187}
+  - {fileID: 1838831239140512676}
+  - {fileID: 447385147862574464}
+  m_Father: {fileID: 6233228201949715265}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4292744285590588290
 GameObject:
   m_ObjectHideFlags: 0
@@ -1297,6 +1405,7 @@ GameObject:
   - component: {fileID: 760414367152606648}
   - component: {fileID: 2695786462197416103}
   - component: {fileID: 4879782119121220601}
+  - component: {fileID: 2776903261968550425}
   - component: {fileID: 4674455882216906975}
   m_Layer: 3
   m_Name: Petals.004
@@ -1462,7 +1571,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -1511,6 +1620,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -1546,10 +1659,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &2776903261968550425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4292744285590588290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &4674455882216906975
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1569,7 +1696,7 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
@@ -1594,6 +1721,7 @@ GameObject:
   - component: {fileID: 4236941957900661885}
   - component: {fileID: 7128819164888450287}
   - component: {fileID: 8655077313284812695}
+  - component: {fileID: 7135103338214279269}
   - component: {fileID: 3324038461072046409}
   m_Layer: 3
   m_Name: Petals.002
@@ -1759,7 +1887,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -1808,6 +1936,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -1843,10 +1975,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &7135103338214279269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4586192847055717791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &3324038461072046409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1866,7 +2012,7 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
@@ -1909,10 +2055,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.3331279, y: -0.030748047, z: 0.74244344, w: -0.58039486}
   m_LocalPosition: {x: -2.16, y: 8.312, z: -3.333}
-  m_LocalScale: {x: 9.002764, y: 126.003624, z: 51.70117}
+  m_LocalScale: {x: 9.002765, y: 126.003624, z: 51.70117}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5439567335729082257}
+  m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: -19.94, y: 34.345, z: -110.187}
 --- !u!33 &4821779323113916634
 MeshFilter:
@@ -2105,6 +2251,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -2158,7 +2308,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
   PartId: Daisy_Leaf_R
   kind: 0
-  condition: 0
+  condition: 2
   isAttached: 1
   canCauseGameOver: 0
   isSpecial: 0
@@ -2188,6 +2338,7 @@ GameObject:
   - component: {fileID: 6741166079452168788}
   - component: {fileID: 7893503663659657547}
   - component: {fileID: 567596957717846695}
+  - component: {fileID: 1660017730100424578}
   - component: {fileID: 4017004320146080872}
   m_Layer: 3
   m_Name: Petals.005
@@ -2353,7 +2504,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -2402,6 +2553,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -2437,10 +2592,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &1660017730100424578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5314689234489813321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &4017004320146080872
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2460,7 +2629,7 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
@@ -2488,8 +2657,9 @@ GameObject:
   - component: {fileID: 670498451246344978}
   - component: {fileID: 8456769616471066987}
   - component: {fileID: 8075709354355552181}
-  - component: {fileID: 8771539118983463511}
   - component: {fileID: 7968358097009675452}
+  - component: {fileID: 8015329153449627934}
+  - component: {fileID: 5381549879417796548}
   m_Layer: 7
   m_Name: Stem
   m_TagString: Untagged
@@ -2506,13 +2676,10 @@ Transform:
   m_GameObject: {fileID: 5326607233462012353}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50293887, y: -0.49704376, z: -0.4970438, w: 0.50293887}
-  m_LocalPosition: {x: -0.84, y: 1, z: -4.79}
+  m_LocalPosition: {x: -0.84000015, y: 1, z: -4.79}
   m_LocalScale: {x: 100, y: 99.999985, z: 99.999985}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 447385147862574464}
-  - {fileID: 8722214804869545187}
-  - {fileID: 1838831239140512676}
+  m_Children: []
   m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7910132646512638531
@@ -2733,24 +2900,6 @@ MonoBehaviour:
   CreateMeshCollider: 0101
   Physics: 0200000002000000
   Inherit: 0000
---- !u!114 &8771539118983463511
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5326607233462012353}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a6b2a21a04cc02941b0114a94875a9b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerStemRuntime
-  stemStart: {fileID: 8722214804869545187}
-  stemEnd: {fileID: 447385147862574464}
-  cutNormalRef: {fileID: 1838831239140512676}
-  referenceAxisLocal: {x: 0, y: 1, z: 0}
-  minAllowedCutY: 2
-  lastCutHeight: -99999
 --- !u!114 &7968358097009675452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2764,6 +2913,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
   mode: 1
+--- !u!114 &8015329153449627934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5326607233462012353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
+--- !u!114 &5381549879417796548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5326607233462012353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03c1d911546db954c81a364fc5bbe80c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StemPieceMarker
+  stemRuntime: {fileID: 232145106645487097}
 --- !u!1 &5767342836430998163
 GameObject:
   m_ObjectHideFlags: 0
@@ -2788,8 +2964,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5767342836430998163}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -6.22946, y: 3.66, z: -4.2685}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2803,7 +2979,7 @@ Transform:
   - {fileID: 7360575210255379860}
   - {fileID: 5662208666715156353}
   - {fileID: 8412570015225433350}
-  m_Father: {fileID: 2254095988633084449}
+  m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5772280211588480482
 GameObject:
@@ -2991,8 +3167,12 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2254095988633084449}
+  - {fileID: 8658300951072714129}
+  - {fileID: 8477496628403874827}
   - {fileID: 9139188167376853586}
+  - {fileID: 6056292307205435292}
+  - {fileID: 2491490619276510798}
+  - {fileID: 2254095988633084449}
   - {fileID: 2760855016577988303}
   m_Father: {fileID: 5439567335729082257}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3003,7 +3183,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7127011884221172709}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
   m_Name: 
@@ -3016,12 +3196,12 @@ MonoBehaviour:
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
-  allowedMissing: 0
+  allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
   session: {fileID: 7065037729555491349}
-  brain: {fileID: 0}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 0}
   unityJoints:
   - {fileID: 4735977587645251494}
@@ -3049,12 +3229,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7168888953667229958}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0.0551}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0.50293887, y: -0.49704376, z: -0.4970438, w: 0.50293887}
+  m_LocalPosition: {x: 5.3894596, y: 2.8499992, z: -0.5215001}
+  m_LocalScale: {x: 100, y: 99.999985, z: 99.999985}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9139188167376853586}
+  m_Father: {fileID: 6056292307205435292}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7288625889274731292
 GameObject:
@@ -3072,6 +3252,7 @@ GameObject:
   - component: {fileID: 612474189886840842}
   - component: {fileID: 6850669293754249085}
   - component: {fileID: 7565424278733859049}
+  - component: {fileID: 7622477914628950403}
   - component: {fileID: 1867186498043317885}
   m_Layer: 3
   m_Name: Petals.007
@@ -3237,7 +3418,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -3286,6 +3467,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3321,10 +3506,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &7622477914628950403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7288625889274731292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &1867186498043317885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3344,13 +3543,13 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
   session: {fileID: 7065037729555491349}
-  brain: {fileID: 0}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 6850669293754249085}
   unityJoints: []
 --- !u!1 &7526729523255490388
@@ -3369,6 +3568,7 @@ GameObject:
   - component: {fileID: 4481001757060723089}
   - component: {fileID: 8684104319694175572}
   - component: {fileID: 907632116065463138}
+  - component: {fileID: 8739587756852830064}
   - component: {fileID: 1268381719619357134}
   m_Layer: 3
   m_Name: Petals.006
@@ -3534,7 +3734,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -3583,6 +3783,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3618,10 +3822,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &8739587756852830064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526729523255490388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &1268381719619357134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3641,7 +3859,7 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
@@ -3674,12 +3892,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7666263945407161078}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0058, y: -0, z: 0.0006}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0.50293887, y: -0.49704376, z: -0.4970438, w: 0.50293887}
+  m_LocalPosition: {x: 5.396298, y: -2.6000001, z: 0.05845976}
+  m_LocalScale: {x: 100, y: 99.999985, z: 99.999985}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9139188167376853586}
+  m_Father: {fileID: 6056292307205435292}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7968407410608574840
 GameObject:
@@ -3697,6 +3915,7 @@ GameObject:
   - component: {fileID: 4825186514578887515}
   - component: {fileID: 454477287960826527}
   - component: {fileID: 1004213017235768454}
+  - component: {fileID: 3793005633059329408}
   - component: {fileID: 6382113683161978035}
   m_Layer: 3
   m_Name: Petals.009
@@ -3862,7 +4081,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -3911,6 +4130,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -3946,10 +4169,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &3793005633059329408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7968407410608574840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &6382113683161978035
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3969,7 +4206,7 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
@@ -3999,6 +4236,7 @@ GameObject:
   - component: {fileID: 7399561677350125895}
   - component: {fileID: 774088183975529052}
   - component: {fileID: 8958625064512593596}
+  - component: {fileID: 4208839630878551886}
   m_Layer: 9
   m_Name: Front
   m_TagString: Untagged
@@ -4212,6 +4450,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -4265,7 +4507,7 @@ FixedJoint:
   m_BreakTorque: Infinity
   m_EnableCollision: 0
   m_EnablePreprocessing: 1
-  m_MassScale: 1
+  m_MassScale: 10
   m_ConnectedMassScale: 1
 --- !u!114 &9051645516860400733
 MonoBehaviour:
@@ -4339,11 +4581,24 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  session: {fileID: 0}
-  brain: {fileID: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 389446206363744042}
   unityJoints:
   - {fileID: 4449925702955563308}
+--- !u!114 &4208839630878551886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8718823069848491255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 2
 --- !u!1 &8896250196363821573
 GameObject:
   m_ObjectHideFlags: 0
@@ -4360,6 +4615,7 @@ GameObject:
   - component: {fileID: 9111703884528286503}
   - component: {fileID: 3110070733151328953}
   - component: {fileID: 9184686465938178215}
+  - component: {fileID: 587937046150827434}
   - component: {fileID: 9032000319790388847}
   m_Layer: 3
   m_Name: Petals.003
@@ -4525,7 +4781,7 @@ MonoBehaviour:
   criteria: 6
   testSpace: 0
   armDelay: 0.15
-  breakForce: 1000
+  breakForce: 100
   relativeSpeedThreshold: 5
   ownSpeedThreshold: 999
   absoluteTravelThreshold: 999
@@ -4574,6 +4830,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -4609,10 +4869,24 @@ MonoBehaviour:
   driveRigidbodyFromDrag: 1
   dragAcceleration: 40
   hardMaxSpeed: 15
-  coupledStem: {fileID: 0}
-  stemAttachPoint: {fileID: 0}
+  coupledStem: {fileID: 824632589644842973}
+  stemAttachPoint: {fileID: 6233228201949715265}
   stemTugRadius: 0.35
   stemTugStrength: 0.7
+--- !u!114 &587937046150827434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8896250196363821573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.25
 --- !u!114 &9032000319790388847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4632,7 +4906,7 @@ MonoBehaviour:
   canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
-  allowedWithered: 0
+  allowedWithered: 1
   allowedMissing: 1
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
@@ -4821,23 +5095,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 6938696393206376507}
-  maxDistance: 0.75
+  maxDistance: 5
   spring: 1200
   damper: 60
-  criteria: 3
-  testSpace: 0
+  criteria: -1
+  testSpace: 1
   armDelay: 0.05
   breakForce: Infinity
-  relativeSpeedThreshold: 6
-  ownSpeedThreshold: 8
-  absoluteTravelThreshold: 5
-  relativeTravelThreshold: 5
+  relativeSpeedThreshold: 100
+  ownSpeedThreshold: 100
+  absoluteTravelThreshold: 100
+  relativeTravelThreshold: 100
   velocityMode: 1
   velocitySmoothing: 0.1
   driveMaxForce: 500
   useJointProjection: 1
   projectionDistance: 0.02
-  enforceXYConstraints: 1
+  enforceXYConstraints: 0
   useAdaptiveDrive: 0
   softZoneFraction: 0.6
   tensionCurve:
@@ -4876,6 +5150,10 @@ MonoBehaviour:
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -4995,7 +5273,7 @@ MonoBehaviour:
   kind: 0
   condition: 0
   isAttached: 1
-  canCauseGameOver: 1
+  canCauseGameOver: 0
   isSpecial: 0
   contributesToScore: 1
   allowedWithered: 0
@@ -5003,8 +5281,8 @@ MonoBehaviour:
   scoreWeight: 0.1
   idealLocalPosition: {x: 0, y: 0, z: 0}
   idealLocalEuler: {x: 0, y: 0, z: 0}
-  session: {fileID: 0}
-  brain: {fileID: 0}
+  session: {fileID: 7065037729555491349}
+  brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 5445834702183120020}
   unityJoints:
   - {fileID: 1273782445167318751}
@@ -5020,7 +5298,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
-  mode: 1
+  mode: 2
 --- !u!1 &9219504238569956344
 GameObject:
   m_ObjectHideFlags: 0
@@ -5033,6 +5311,9 @@ GameObject:
   - component: {fileID: 1476761487897708459}
   - component: {fileID: 7065037729555491349}
   - component: {fileID: 886931059027802662}
+  - component: {fileID: 2148140104094420840}
+  - component: {fileID: 232145106645487097}
+  - component: {fileID: 7400225432268500986}
   m_Layer: 0
   m_Name: Flower_Daisy
   m_TagString: Untagged
@@ -5054,8 +5335,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6233228201949715265}
-  - {fileID: 8658300951072714129}
-  - {fileID: 8477496628403874827}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1476761487897708459
@@ -5071,7 +5350,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerGameBrain
   ideal: {fileID: 11400000, guid: d5619429135132d4e9a7ca6cd668f734, type: 2}
-  stem: {fileID: 8771539118983463511}
+  stem: {fileID: 232145106645487097}
   parts:
   - {fileID: 1517942348145943185}
   - {fileID: 6565067318493313646}
@@ -5154,6 +5433,7 @@ MonoBehaviour:
   lastNormalizedScore: 0
   freezeOnGameOver: 0
   disableCollidersOnGameOver: 1
+  suppressDetachEvents: 0
 --- !u!114 &886931059027802662
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5168,7 +5448,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlowerTypeAuthoring
   flowerName: Authored_Daisy_Flower_Type_00
   flowerIdOverride: 
-  stem: {fileID: 8771539118983463511}
+  stem: {fileID: 232145106645487097}
   parts:
   - {fileID: 1517942348145943185}
   - {fileID: 6565067318493313646}
@@ -5190,3 +5470,53 @@ MonoBehaviour:
   defaultCutAngleHardFailDelta: 15
   defaultCutAnglePerfectDelta: 3
   defaultCutAngleScoreWeight: 0.4
+--- !u!114 &2148140104094420840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9219504238569956344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fec94a4c40d441419d57dab44cb21fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerJointRebinder
+  stemRuntime: {fileID: 232145106645487097}
+--- !u!114 &232145106645487097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9219504238569956344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b2a21a04cc02941b0114a94875a9b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerStemRuntime
+  stemStart: {fileID: 8722214804869545187}
+  stemEnd: {fileID: 447385147862574464}
+  cutNormalRef: {fileID: 1838831239140512676}
+  referenceAxisLocal: {x: 0, y: 1, z: 0}
+  minAllowedCutY: 2
+  lastCutHeight: -99999
+--- !u!114 &7400225432268500986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9219504238569956344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45defc1cef0851b4bbcc39be0c3e9e63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerRootAnchor
+  lockBottomPiece: 1
+  bottomConstraints: 126
+  bottomUseGravity: 0
+  bottomIsKinematic: 1
+  makeTopDynamic: 0
+  topUseGravity: 0
+  topConstraints: 126

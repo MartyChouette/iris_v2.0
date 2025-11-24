@@ -101,6 +101,37 @@ public class XYTetherJoint : MonoBehaviour
     [Tooltip("Fired with normalized tension (0..1) each FixedUpdate. Use for audio, haptics, etc.")]
     public FloatEvent onTensionChanged;
 
+    [Header("Engagement Scaling")]
+    [Tooltip("If true, scale all forces/break checks by an engagement factor.")]
+    public bool useEngagementScaling = true;
+
+    [Tooltip("Override: how strong this joint is when directly engaged (if 0, use 1).")]
+    [Range(0f, 2f)] public float engagedMultiplier = 1f;
+
+    [Tooltip("Override for passive intensity (if 0, use InteractionEngagement.passiveIntensity).")]
+    [Range(0f, 1f)] public float passiveMultiplierOverride = 0f;
+
+    [Tooltip("If true, joint will only be allowed to break while engaged.")]
+    public bool onlyBreakWhenEngaged = true;
+
+    private InteractionEngagement _engagement;
+
+    // ───────────────────────── Static cut suppression ─────────────────────────
+    // During stem cuts we suppress physics-based breaks so leaves don't pop off.
+    public static bool cutBreakSuppressed = false;
+
+    public static void SetCutBreakSuppressed(bool on)
+    {
+        cutBreakSuppressed = on;
+
+        // Update existing joints’ breakForce so they respect the new state.
+        var all = FindObjectsByType<XYTetherJoint>(FindObjectsSortMode.None);
+        foreach (var t in all)
+        {
+            t.ApplyBreakForceToJoint();
+        }
+    }
+
     // ───────────────────────── Events / Debug ─────────────────────────
 
     [Header("Events")]
@@ -144,12 +175,14 @@ public class XYTetherJoint : MonoBehaviour
 
         if (enforceXYConstraints)
         {
-            // ✅ don't overwrite constraints, only add freezes
+            // don't overwrite constraints, only add freezes
             rb.constraints |= RigidbodyConstraints.FreezePositionZ
                             | RigidbodyConstraints.FreezeRotationX
                             | RigidbodyConstraints.FreezeRotationY
                             | RigidbodyConstraints.FreezeRotationZ;
         }
+
+        _engagement = GetComponent<InteractionEngagement>();
     }
 
     void Start() => TryCreateJoint();
@@ -198,21 +231,22 @@ public class XYTetherJoint : MonoBehaviour
             float springMult = Mathf.Lerp(minSpringMultiplier, maxSpringMultiplier, tension);
             float damperMult = Mathf.Lerp(minDamperMultiplier, maxDamperMultiplier, tension);
 
+            // scale by engagement factor (1.0 when engaged, ~0.4 when passive, etc.)
+            float engageFactor = GetEngagementFactor();
+
             var drive = joint.xDrive;
-            drive.positionSpring = baseSpring * springMult;
-            drive.positionDamper = baseDamper * damperMult;
+            drive.positionSpring = baseSpring * springMult * engageFactor;
+            drive.positionDamper = baseDamper * damperMult * engageFactor;
             joint.xDrive = drive;
             joint.yDrive = drive;
 
-            // push tension out for audio/haptics
             if (onTensionChanged != null)
             {
-                // You can add a small threshold if you want to avoid micro-jitter:
-                // if (Mathf.Abs(tension - lastTension) > 0.001f)
                 onTensionChanged.Invoke(tension);
                 lastTension = tension;
             }
         }
+
 
         if (Time.time >= armedAt)
         {
@@ -318,10 +352,41 @@ public class XYTetherJoint : MonoBehaviour
         }
     }
 
+    float GetEngagementFactor()
+    {
+        if (!useEngagementScaling)
+            return 1f;
+
+        float engaged = 1f;
+        float passive = 0.25f;
+
+        if (_engagement != null)
+        {
+            engaged = 1f;
+            passive = _engagement.passiveIntensity;
+        }
+
+        if (engagedMultiplier > 0f) engaged = engagedMultiplier;
+        if (passiveMultiplierOverride > 0f) passive = passiveMultiplierOverride;
+
+        bool isEngaged = _engagement != null && _engagement.isEngaged;
+        return isEngaged ? engaged : passive;
+    }
+
+
     void OnJointBreak(float force)
     {
+        // During a cut, completely ignore physics auto-breaks.
+        if (cutBreakSuppressed)
+        {
+            if (debugLogs)
+                Debug.Log($"[XYTetherJoint] OnJointBreak suppressed (force={force:F1}) due to cutBreakSuppressed.", this);
+            return;
+        }
+
         if ((criteria & BreakCriteria.Force) != 0 && debugLogs)
             Debug.Log($"[XYTetherJoint] Joint broke by physics force = {force:F1}.", this);
+
         joint = null;
         onBroke?.Invoke();
     }
@@ -360,10 +425,31 @@ public class XYTetherJoint : MonoBehaviour
 
     public void ForceBreak(string reason = "Forced")
     {
+        // Also suppress scripted breaks during a cut, so nothing detaches mid-slice.
+        if (cutBreakSuppressed)
+        {
+            if (debugLogs)
+                Debug.Log($"[XYTetherJoint] ForceBreak \"{reason}\" suppressed due to cutBreakSuppressed.", this);
+            return;
+        }
+
+        // optionally suppress breaks if this part is not engaged
+        if (onlyBreakWhenEngaged)
+        {
+            bool isEngagedNow = (_engagement != null && _engagement.isEngaged);
+            if (!isEngagedNow)
+            {
+                if (debugLogs)
+                    Debug.Log($"[XYTetherJoint] Suppressed break \"{reason}\" because not engaged.", this);
+                return;
+            }
+        }
+
         if (debugLogs) Debug.Log($"[XYTetherJoint] Break → {reason}", this);
         DestroyJoint();
         onBroke?.Invoke();
     }
+
 
     // ───────────────────────── Joint Setup ─────────────────────────
 
@@ -422,8 +508,8 @@ public class XYTetherJoint : MonoBehaviour
             joint.projectionMode = JointProjectionMode.None;
         }
 
-        joint.breakForce = ((criteria & BreakCriteria.Force) != 0) ? breakForce : Mathf.Infinity;
-        joint.breakTorque = Mathf.Infinity;
+        // apply correct breakForce / breakTorque based on cut suppression
+        ApplyBreakForceToJoint();
 
         Vector3 a = transform.TransformPoint(joint.anchor);
         Vector3 b = connectedBody.transform.TransformPoint(joint.connectedAnchor);
@@ -441,6 +527,23 @@ public class XYTetherJoint : MonoBehaviour
         {
             string bf = float.IsInfinity(joint.breakForce) ? "∞" : joint.breakForce.ToString("F0");
             Debug.Log($"[XYTetherJoint] Created → Spring={spring}, Damper={damper}, StretchMax={maxDistance}, DriveMax={driveMaxForce}, BreakForce={bf}, Criteria={criteria}, VelMode={velocityMode}, Projection={(useJointProjection ? "On" : "Off")}", this);
+        }
+    }
+
+    // helper to sync joint.breakForce with suppression state
+    void ApplyBreakForceToJoint()
+    {
+        if (!joint) return;
+
+        if (cutBreakSuppressed)
+        {
+            joint.breakForce = Mathf.Infinity;
+            joint.breakTorque = Mathf.Infinity;
+        }
+        else
+        {
+            joint.breakForce = ((criteria & BreakCriteria.Force) != 0) ? breakForce : Mathf.Infinity;
+            joint.breakTorque = Mathf.Infinity;
         }
     }
 

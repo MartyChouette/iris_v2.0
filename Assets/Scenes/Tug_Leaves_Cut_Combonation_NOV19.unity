@@ -401,6 +401,62 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 346623718633278755, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: breakForce
+      value: 750
+      objectReference: {fileID: 0}
+    - target: {fileID: 439749213122491937, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 527120007902035841, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 612474189886840842, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 760414367152606648, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 772402456567789220, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 952180718380474935, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 1619356845726467275, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 2148140104094420840, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: flowerRoot
+      value: 
+      objectReference: {fileID: 1738770608}
+    - target: {fileID: 3065249614768481500, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208839630878551886, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4236941957900661885, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 4481001757060723089, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 4825186514578887515, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
     - target: {fileID: 5439567335729082257, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -441,18 +497,68 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7944276298038620594, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: brain
+    - target: {fileID: 5772280211588480482, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: m_Name
+      value: LeafAttachmentPoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 6669921729166417400, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
       value: 
-      objectReference: {fileID: 1738770606}
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 6741166079452168788, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 7400225432268500986, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: topUseGravity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400225432268500986, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: topConstraints
+      value: 126
+      objectReference: {fileID: 0}
+    - target: {fileID: 7795308481963342468, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 7906754887595190452, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: breakForce
+      value: 750
+      objectReference: {fileID: 0}
+    - target: {fileID: 7944276298038620594, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7968358097009675452, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8974699333962970216, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
+    - target: {fileID: 9111703884528286503, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 330585545}
     - target: {fileID: 9219504238569956344, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: m_Name
       value: Flower_Daisy
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7944276298038620594, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1240776200526331645, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 522046584}
+    - targetCorrespondingSourceObject: {fileID: 5772280211588480482, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1941157278}
+    - targetCorrespondingSourceObject: {fileID: 5772280211588480482, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1941157279}
   m_SourcePrefab: {fileID: 100100000, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
 --- !u!1 &51065318
 GameObject:
@@ -1260,7 +1366,7 @@ GameObject:
   - component: {fileID: 381303911}
   - component: {fileID: 381303910}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: '[HDR]Canvas'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1614,6 +1720,24 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &522046574 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1240776200526331645, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+  m_PrefabInstance: {fileID: 49592312}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &522046584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522046574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 1
 --- !u!1 &580290147
 GameObject:
   m_ObjectHideFlags: 0
@@ -3012,7 +3136,7 @@ MonoBehaviour:
   trimCursor: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
   cursorHotspot: {x: 0, y: 0}
   pullTool: {fileID: 0}
-  trimTool: {fileID: 0}
+  trimTool: {fileID: 350313690}
   currentMode: 0
   raycastMaxDistance: 25
 --- !u!4 &1336091879
@@ -3458,6 +3582,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fafbc3100f9f9ba44b14fe8d3cf0b0c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerGameBrain
+--- !u!4 &1738770608 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5439567335729082257, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+  m_PrefabInstance: {fileID: 49592312}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1738770610 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 232145106645487097, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+  m_PrefabInstance: {fileID: 49592312}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b2a21a04cc02941b0114a94875a9b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerStemRuntime
 --- !u!1 &1758946208
 GameObject:
   m_ObjectHideFlags: 0
@@ -3699,9 +3839,9 @@ MonoBehaviour:
   DefaultMaterial: {fileID: -2813467912831258332, guid: 27c3960524809a84bad7c57438920b62, type: 3}
   DebugPlaneLength: 2
   debugLogs: 1
-  previewBeforeCut: 0
-  previewStemOverride: {fileID: 0}
-  previewSessionOverride: {fileID: 0}
+  previewBeforeCut: 1
+  previewStemOverride: {fileID: 1738770610}
+  previewSessionOverride: {fileID: 1738770605}
 --- !u!1 &1920340623
 GameObject:
   m_ObjectHideFlags: 0
@@ -3835,6 +3975,36 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1920340623}
   m_CullTransparentMesh: 1
+--- !u!1 &1941157271 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5772280211588480482, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+  m_PrefabInstance: {fileID: 49592312}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1941157278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941157271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 1
+--- !u!114 &1941157279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941157271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50b8598af48af3142bae19fab4f627be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &1971731459
 GameObject:
   m_ObjectHideFlags: 0

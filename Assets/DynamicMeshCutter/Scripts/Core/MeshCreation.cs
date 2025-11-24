@@ -44,14 +44,15 @@ namespace DynamicMeshCutter
                 (target.FaceMaterial != null) ? target.FaceMaterial : defaultMaterial;
             materials = materialsNew;
 
-            // Is this MeshTarget part of a FlowerStemRuntime hierarchy?
-            // If yes, we will later anchor the longest stem piece.
+            // Detect if this cut is happening on a FlowerStemRuntime
             global::FlowerStemRuntime stemRuntime = null;
             if (target.GameobjectRoot != null)
             {
                 stemRuntime = target.GameobjectRoot.GetComponentInParent<global::FlowerStemRuntime>();
             }
             bool isStemTarget = (stemRuntime != null);
+
+
 
             for (int i = 0; i < createdMeshes.Length; i++)
             {
@@ -134,19 +135,56 @@ namespace DynamicMeshCutter
                         break;
                 }
 
-                // Safety: if for any reason this piece failed to create, skip it.
-                if (parent == null || root == null)
-                    continue;
+                // Create the actual object(s)
+                switch (behaviour)
+                {
+                    case Behaviour.Stone:
+                        CreateMesh(ref root, ref parent, target, mesh, vMesh, materials, bt);
+                        break;
+                    case Behaviour.Ragdoll:
+                        // ...
+                        break;
+                    case Behaviour.Animation:
+                        // ...
+                        break;
+                }
 
-                // Cull ultra-thin fragments to avoid jittering slivers.
-                const float MIN_FRAGMENT_THICKNESS = 0.005f; // tune this for your scale
-                if (CullIfTooThin(parent, MIN_FRAGMENT_THICKNESS))
-                    continue;
+                // NEW: mark stem pieces so we can find them later
+                if (isStemTarget && parent != null)
+                {
+                    var marker = parent.gameObject.AddComponent<StemPieceMarker>();
+                    marker.stemRuntime = stemRuntime;
+                }
 
                 // Name the parent "(i/total)Stem" etc.
                 string prefix = $"({i}/{createdMeshes.Length})";
                 parent.name = prefix + parent.name;
                 parent.name = parent.name.Replace("(Clone)", "");
+
+                // 🔍 TRACE: log info about each stem piece we create
+                if (isStemTarget && parent != null)
+                {
+                    var col = parent.GetComponentInChildren<Collider>();
+                    Bounds b = col ? col.bounds : new Bounds(parent.position, Vector3.zero);
+                    Vector3 size = b.size;
+
+                    Debug.Log(
+                        $"[MeshCreation] Stem piece created: '{parent.name}' " +
+                        $"size=({size.x:F3}, {size.y:F3}, {size.z:F3}) pos={parent.position}",
+                        parent);
+                }
+
+
+                // Safety: if for any reason this piece failed to create, skip it.
+                if (parent == null || root == null)
+                    continue;
+
+                // Cull ultra-thin fragments to avoid jittering slivers.
+                const float MIN_FRAGMENT_THICKNESS = 0.00075f; // tune this for your scale
+                if (CullIfTooThin(parent, MIN_FRAGMENT_THICKNESS))
+                    continue;
+
+
 
                 // Ensure a MeshTarget lives on the root
                 var nTarget = root.GetComponent<MeshTarget>();
@@ -190,14 +228,113 @@ namespace DynamicMeshCutter
                 cData.CreatedTargets[i] = nTarget;
             }
 
-            // NEW: If this was a stem cut, anchor the longest stem piece
+            // NEW: for stem cuts, treat the longest piece as the main stem
+            // For stem cuts, keep the TOP piece (BT == 1) "in hand" and let the bottom fall.
+            // For stem cuts, keep the piece closest to the crown (stemStart) and let the rest fall.
             if (isStemTarget)
             {
-                AnchorLongestStemPiece(cData.CreatedObjects, stemRuntime);
+                AnchorTopStemPiece(cData.CreatedObjects, stemRuntime);
             }
+
+
 
             return cData;
         }
+        /// <summary>
+        /// For stem cuts: keep the TOP piece (BT == 1) as the held stem,
+        /// and let all other pieces behave normally (usually fall via gravity).
+        /// </summary>
+        /// <summary>
+        /// For stem cuts: keep the stem piece closest to the crown (stemStart)
+        /// as the "held" stem, and let all other pieces fall away.
+        /// This avoids relying on DMC's BT/top-side classification, which can flip
+        /// depending on plane normal orientation.
+        /// </summary>
+        static void AnchorTopStemPiece(GameObject[] createdObjects,
+                                       global::FlowerStemRuntime stemRuntime)
+        {
+            if (createdObjects == null || stemRuntime == null)
+                return;
+
+            // If we don't know where the crown is, fall back to size-based logic.
+            if (stemRuntime.stemStart == null)
+            {
+                AnchorMainStemPiece(createdObjects, stemRuntime);
+                return;
+            }
+
+            Vector3 crownPos = stemRuntime.stemStart.position;
+
+            // Find the piece whose bounds center is closest to the crown.
+            int bestIndex = -1;
+            float bestDist = float.MaxValue;
+
+            for (int i = 0; i < createdObjects.Length; i++)
+            {
+                var go = createdObjects[i];
+                if (go == null)
+                    continue;
+
+                var col = go.GetComponentInChildren<Collider>();
+                var rend = go.GetComponentInChildren<Renderer>();
+                if (col == null && rend == null)
+                    continue;
+
+                Bounds b = (col != null) ? col.bounds : rend.bounds;
+                float dist = Vector3.Distance(b.center, crownPos);
+
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    bestIndex = i;
+                }
+            }
+
+            if (bestIndex < 0)
+                return;
+
+            // Keep the crown-side piece "in hand", let others fall.
+            for (int i = 0; i < createdObjects.Length; i++)
+            {
+                var go = createdObjects[i];
+                if (go == null)
+                    continue;
+
+                var rb = go.GetComponent<Rigidbody>();
+                if (rb == null)
+                    continue;
+
+                if (i == bestIndex)
+                {
+                    // This is the piece closest to the crown → the one we keep.
+                    rb.useGravity = false;
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+
+                    // Parent to the flower so it moves with the system.
+                    go.transform.SetParent(stemRuntime.transform, true);
+                }
+                else
+                {
+                    // bottom / extra chunks: let them FALL
+
+                    rb.useGravity = true;
+                    rb.isKinematic = false;
+
+                    // 🔧 IMPORTANT: remove any position freezes copied from the original stem
+                    rb.constraints &= ~(RigidbodyConstraints.FreezePositionX |
+                                        RigidbodyConstraints.FreezePositionY |
+                                        RigidbodyConstraints.FreezePositionZ);
+                    // (keeps any rotation freezes you had, just unlocks translation)
+
+                    if (go.transform.IsChildOf(stemRuntime.transform))
+                        go.transform.SetParent(null, true);
+                }
+
+            }
+        }
+
+
 
         /// <summary>
         /// Standard "stone" piece: parent has Rigidbody, child (root) has Mesh + collider.
@@ -681,16 +818,26 @@ namespace DynamicMeshCutter
             return false;
         }
 
-        /// <summary>
-        /// Among created stem pieces, find the longest along the stem axis and anchor it
-        /// so it does not fall and rip joints off. Shorter pieces keep their default physics.
-        /// </summary>
-        static void AnchorLongestStemPiece(GameObject[] createdObjects, global::FlowerStemRuntime stemRuntime)
-        {
-            if (createdObjects == null || stemRuntime == null) return;
 
-            // Determine stem axis (from start to end if available, else transform.up, else world up).
+        //markiers for finding nearest conenections
+        public class StemPieceMarker : MonoBehaviour
+        {
+            public FlowerStemRuntime stemRuntime;
+        }
+
+
+        /// <summary>
+        /// Among created stem pieces, find the one with the greatest extent along the stem axis
+        /// and make it the "main stem" by disabling gravity. Smaller pieces keep gravity and can fall.
+        /// </summary>
+        static void AnchorMainStemPiece(GameObject[] createdObjects, global::FlowerStemRuntime stemRuntime)
+        {
+            if (createdObjects == null || stemRuntime == null)
+                return;
+
+            // Figure out stem axis: use stemStart->stemEnd if available, otherwise fall back to world up.
             Vector3 axis = Vector3.up;
+
             if (stemRuntime.stemStart != null && stemRuntime.stemEnd != null)
             {
                 Vector3 dir = stemRuntime.stemEnd.position - stemRuntime.stemStart.position;
@@ -699,61 +846,61 @@ namespace DynamicMeshCutter
             }
             else
             {
-                axis = stemRuntime.transform.up;
-                if (axis.sqrMagnitude < 0.0001f) axis = Vector3.up;
+                axis = Vector3.up;
             }
 
             axis.Normalize();
+            if (axis.sqrMagnitude < 0.0001f)
+                axis = Vector3.up;
 
             int bestIndex = -1;
-            float bestHeight = 0f;
+            float bestExtent = 0f;
 
-            // Find the piece with the greatest extent along the axis.
+            // Choose the piece with the greatest "length" along the stem axis.
             for (int i = 0; i < createdObjects.Length; i++)
             {
                 var go = createdObjects[i];
-                if (go == null) continue;
+                if (go == null)
+                    continue;
 
                 var col = go.GetComponentInChildren<Collider>();
                 var rend = go.GetComponentInChildren<Renderer>();
-                if (col == null && rend == null) continue;
+                if (col == null && rend == null)
+                    continue;
 
                 Bounds b = (col != null) ? col.bounds : rend.bounds;
                 Vector3 size = b.size;
 
-                // Approximate length along axis by projecting the bounds size.
-                float height =
-                    Mathf.Abs(size.x * axis.x) +
-                    Mathf.Abs(size.y * axis.y) +
-                    Mathf.Abs(size.z * axis.z);
+                // Approximate how big this piece is along the axis by projecting its bounds size.
+                Vector3 absAxis = new Vector3(Mathf.Abs(axis.x), Mathf.Abs(axis.y), Mathf.Abs(axis.z));
+                float extent =
+                    size.x * absAxis.x +
+                    size.y * absAxis.y +
+                    size.z * absAxis.z;
 
-                if (height > bestHeight)
+                if (extent > bestExtent)
                 {
-                    bestHeight = height;
+                    bestExtent = extent;
                     bestIndex = i;
                 }
             }
 
-            if (bestIndex < 0) return;
+            if (bestIndex < 0)
+                return;
 
-            // Anchor the longest piece.
-            for (int i = 0; i < createdObjects.Length; i++)
+            // The largest piece becomes the main stem: keep physics, but don't let gravity drop it.
+            var mainGo = createdObjects[bestIndex];
+            if (mainGo == null)
+                return;
+
+            var rb = mainGo.GetComponent<Rigidbody>();
+            if (rb != null)
             {
-                var go = createdObjects[i];
-                if (go == null) continue;
-
-                var rb = go.GetComponent<Rigidbody>();
-                if (rb == null) continue;
-
-                if (i == bestIndex)
-                {
-                    rb.useGravity = false;
-                    rb.isKinematic = true;
-                    rb.constraints = RigidbodyConstraints.FreezeAll;
-                }
-                // others keep defaults – they can fall away.
+                rb.useGravity = false;   // stays hanging / held
+                // keep rb.isKinematic = false, so joints and forces still work
             }
         }
+
 
         static void RemoveAllColliders(GameObject go)
         {

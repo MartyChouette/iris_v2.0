@@ -1,5 +1,4 @@
-﻿// File: FlowerSessionController.cs
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 [DisallowMultipleComponent]
@@ -27,6 +26,12 @@ public class FlowerSessionController : MonoBehaviour
 
     [Tooltip("If true, all colliders under the brain will be disabled on game over (prevents further physics events after failure).")]
     public bool disableCollidersOnGameOver = false;
+
+    [Header("Runtime Flags")]
+    [Tooltip("If true, detach events from FlowerPartRuntime are temporarily ignored (used during cut + rebind).")]
+    public bool suppressDetachEvents = false;
+
+
 
     // ─────────────────────────────────────────────
     // PUBLIC API
