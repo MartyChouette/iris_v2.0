@@ -5,7 +5,9 @@ public enum FlowerPartKind
 {
     Leaf,
     Petal,
-    StemExtra   // e.g. buds, side stems, etc. (optional)
+    StemExtra,
+    Stem,
+    Crown// e.g. buds, side stems, etc. (optional)
 }
 
 public enum FlowerPartCondition

@@ -116,8 +116,10 @@ namespace DynamicMeshCutter
                         }
                         catch (System.Exception e)
                         {
-                            Debug.LogError($"[PlaneBehaviour] Exception while cutting '{target.name}': {e}", target);
+                            if (debugLogs)
+                                Debug.LogWarning($"[PlaneBehaviour] Skipped cutting '{target.name}' due to error: {e.Message}", target);
                         }
+
                     }
                 }
             }

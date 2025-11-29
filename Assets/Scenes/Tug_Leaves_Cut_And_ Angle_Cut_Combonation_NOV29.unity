@@ -401,10 +401,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 346623718633278755, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: breakForce
-      value: 750
-      objectReference: {fileID: 0}
     - target: {fileID: 439749213122491937, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: cam
       value: 
@@ -433,18 +429,6 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
-    - target: {fileID: 2148140104094420840, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: flowerRoot
-      value: 
-      objectReference: {fileID: 1738770608}
-    - target: {fileID: 3065249614768481500, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: mode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4208839630878551886, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: mode
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 4236941957900661885, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: cam
       value: 
@@ -497,10 +481,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5772280211588480482, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: m_Name
-      value: LeafAttachmentPoint
-      objectReference: {fileID: 0}
     - target: {fileID: 6669921729166417400, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: cam
       value: 
@@ -509,30 +489,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
-    - target: {fileID: 7400225432268500986, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: topUseGravity
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7400225432268500986, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: topConstraints
-      value: 126
-      objectReference: {fileID: 0}
     - target: {fileID: 7795308481963342468, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
-    - target: {fileID: 7906754887595190452, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: breakForce
-      value: 750
-      objectReference: {fileID: 0}
-    - target: {fileID: 7944276298038620594, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7968358097009675452, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      propertyPath: mode
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8974699333962970216, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: cam
       value: 
@@ -545,20 +505,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Flower_Daisy
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 7944276298038620594, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1240776200526331645, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 522046584}
-    - targetCorrespondingSourceObject: {fileID: 5772280211588480482, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1941157278}
-    - targetCorrespondingSourceObject: {fileID: 5772280211588480482, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1941157279}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
 --- !u!1 &51065318
 GameObject:
@@ -1933,24 +1883,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1 &522046574 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1240776200526331645, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 49592312}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &522046584
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 522046574}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
-  mode: 1
 --- !u!1 &548320939
 GameObject:
   m_ObjectHideFlags: 0
@@ -1976,7 +1908,7 @@ Transform:
   m_GameObject: {fileID: 548320939}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -25.2, y: -1.83, z: 17.33}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2571,8 +2503,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 935114158}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 24.84104, y: -9.16257, z: -20.72417}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2603,7 +2535,8 @@ MonoBehaviour:
   previewStemOverride: {fileID: 1738770610}
   previewSessionOverride: {fileID: 1738770605}
   useTwoStageAngleMode: 1
-  autoCancelOnDisable: 1
+  autoCancelOnDisable: 0
+  AngleSnapStepDeg: 5
 --- !u!114 &935114161
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2616,21 +2549,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9d6180f6a90b374498e4a69cbeda5d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AngleCuttingPlaneController
-  controlMode: 2
+  controlMode: 1
   anglePlane: {fileID: 935114160}
+  planeVisual: {fileID: 1758254849}
   axisMoveSpeed: 15
   mouseFollowSpeed: 20
   minY: -2
   maxY: 15
-  useMouseHeight: 1
-  tiltSpeedDegPerSec: 90
-  invertTilt: 0
-  moveAxisAction: {fileID: -8353132383941606965, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  pointerPositionAction: {fileID: -4607245114537870528, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  tiltPointerAction: {fileID: 6564999863303420839, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  useMouseHeight: 0
+  tiltSpeedDegPerSec: 20
+  invertTilt: 1
+  stemForPivotOverride: {fileID: 1738770610}
+  angleMoveAction: {fileID: 4195487263322012913, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   cutAction: {fileID: -2110107483395221795, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   cancelAngleStageAction: {fileID: -4090225696740746782, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  debugLogs: 0
+  pointerPositionAction: {fileID: 0}
+  debugLogs: 1
 --- !u!1 &1014799773
 GameObject:
   m_ObjectHideFlags: 0
@@ -3414,7 +3348,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DynamicMeshCutter.CutModeManager
   mouseCutter: {fileID: 350313690}
   planeCutter: {fileID: 1882337832}
-  anglePlaneCutter: {fileID: 0}
+  anglePlaneCutter: {fileID: 935114160}
+  planeController: {fileID: 1882337831}
+  anglePlaneController: {fileID: 935114161}
   mouseVisual: {fileID: 350313687}
   planeVisual: {fileID: 1848364816}
   anglePlaneVisual: {fileID: 935114158}
@@ -3429,7 +3365,7 @@ MonoBehaviour:
   planeModeKey: 50
   anglePlaneModeKey: 51
   disableAllKey: 51
-  debugLogs: 1
+  debugLogs: 0
   currentMode: 0
 --- !u!4 &1248085389
 Transform:
@@ -3619,7 +3555,7 @@ MonoBehaviour:
   pullCursor: {fileID: 10906, guid: 0000000000000000f000000000000000, type: 0}
   trimCursor: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
   cursorHotspot: {x: 0, y: 0}
-  pullTool: {fileID: 0}
+  pullTool: {fileID: 1738770606}
   trimTool: {fileID: 350313690}
   currentMode: 0
   raycastMaxDistance: 25
@@ -4066,11 +4002,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fafbc3100f9f9ba44b14fe8d3cf0b0c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerGameBrain
---- !u!4 &1738770608 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5439567335729082257, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 49592312}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1738770610 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 232145106645487097, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
@@ -4110,7 +4041,7 @@ Transform:
   m_GameObject: {fileID: 1758254848}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.52850914, y: 1.4, z: 4.060711}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 38.489998, y: 0.22999999, z: 1.62}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4706,36 +4637,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1920340623}
   m_CullTransparentMesh: 1
---- !u!1 &1941157271 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5772280211588480482, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
-  m_PrefabInstance: {fileID: 49592312}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1941157278
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1941157271}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
-  mode: 1
---- !u!114 &1941157279
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1941157271}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 50b8598af48af3142bae19fab4f627be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
 --- !u!1 &1971731459
 GameObject:
   m_ObjectHideFlags: 0

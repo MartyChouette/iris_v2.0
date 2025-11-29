@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using TMPro;
 using UnityEngine;
+using DynamicMeshCutter;   // <-- for AngleStagePlaneBehaviour / FlowerStemRuntime if they are in this namespace
 
 public class FlowerHUD : MonoBehaviour
 {
@@ -35,6 +36,45 @@ public class FlowerHUD : MonoBehaviour
 
     private float _liveStatsTimer;
 
+    // ───────────────────────── Angle HUD (new) ─────────────────────────
+
+    [Header("Angle HUD")]
+    [Tooltip("Enable the cut-angle HUD section.")]
+    public bool showAngleHUD = true;
+
+    [Tooltip("Two-stage angle plane driving the cut. " +
+             "If assigned, we can optionally show angle only while its angle stage is armed.")]
+    public AngleStagePlaneBehaviour anglePlane;
+
+    [Tooltip("Optional explicit stem for angle HUD. If null, uses brain.stem.")]
+    public FlowerStemRuntime angleStemOverride;
+
+    [Tooltip("Target angle in degrees that the player is aiming for.")]
+    public float targetAngleDeg = 45f;
+
+    [Tooltip("If true, angle HUD only shows while the anglePlane is armed (IsAngleStageArmed == true). " +
+             "If anglePlane is null or lacks this property, HUD will always show when enabled.")]
+    public bool onlyShowAngleWhenArmed = true;
+
+    [Tooltip("How close (in degrees) counts as 'on target' for angle coloring.")]
+    public float angleOnTargetTolerance = 2f;
+
+    [Tooltip("TMP label to show current / target angle and delta.")]
+    public TMP_Text angleLabel;
+
+    [Tooltip("UI dial / plane icon RectTransform. Its Z rotation will match the current cut angle.")]
+    public RectTransform angleDialUI;
+
+    [Tooltip("Optional worldspace visual that should track the angle plane orientation.")]
+    public Transform angleWorldPlaneVisual;
+
+    [Header("Angle HUD Colors")]
+    public Color angleNormalColor = Color.white;
+    public Color angleOnTargetColor = new Color(0.3f, 1.0f, 0.3f, 1f);
+
+    [Header("Debug")]
+    public bool debugLogs = false;
+
     void Awake()
     {
         if (session != null)
@@ -44,6 +84,10 @@ public class FlowerHUD : MonoBehaviour
             if (flowerType == null)
                 flowerType = session.FlowerType;
         }
+
+        // Safety: avoid zero or negative intervals
+        if (liveStatsUpdateInterval <= 0f)
+            liveStatsUpdateInterval = 0.05f;
     }
 
     void OnEnable()
@@ -60,14 +104,25 @@ public class FlowerHUD : MonoBehaviour
 
     void Update()
     {
-        if (!showLiveStats || liveStatsLabel == null || brain == null)
-            return;
-
-        _liveStatsTimer += Time.deltaTime;
-        if (_liveStatsTimer >= liveStatsUpdateInterval)
+        // ───────── Live stats (existing) ─────────
+        if (showLiveStats && liveStatsLabel != null && brain != null)
         {
-            _liveStatsTimer = 0f;
-            UpdateLiveStats();
+            _liveStatsTimer += Time.deltaTime;
+            if (_liveStatsTimer >= liveStatsUpdateInterval)
+            {
+                _liveStatsTimer = 0f;
+                UpdateLiveStats();
+            }
+        }
+
+        // ───────── Angle HUD (new) ─────────
+        if (showAngleHUD)
+        {
+            UpdateAngleHUD();
+        }
+        else
+        {
+            SetAngleHUDVisible(false);
         }
     }
 
@@ -162,5 +217,83 @@ public class FlowerHUD : MonoBehaviour
             sb.AppendLine($"Fail: {brain.lastGameOverReason}");
 
         liveStatsLabel.text = sb.ToString();
+    }
+
+    // ───────────────────────── Angle HUD (new) ─────────────────────────
+
+    private void UpdateAngleHUD()
+    {
+        // If we have no label, no dial, and no world visual, nothing to show.
+        if (angleLabel == null && angleDialUI == null && angleWorldPlaneVisual == null)
+            return;
+
+        // Optional gating: only show while the two-stage plane is armed.
+        if (onlyShowAngleWhenArmed && anglePlane != null)
+        {
+            // NOTE: this assumes AngleStagePlaneBehaviour exposes IsAngleStageArmed.
+            // If you haven't added it yet, either add it or set onlyShowAngleWhenArmed = false.
+            if (!anglePlane.enabled || !anglePlane.IsAngleStageArmed)
+            {
+                SetAngleHUDVisible(false);
+                return;
+            }
+        }
+
+        // If we're here, HUD should be visible.
+        SetAngleHUDVisible(true);
+
+        // Determine which stem to use for angle measurement.
+        FlowerStemRuntime stemForAngle = angleStemOverride;
+
+        if (stemForAngle == null && brain != null)
+            stemForAngle = brain.stem;
+
+        if (stemForAngle == null)
+        {
+            if (debugLogs)
+                Debug.LogWarning("[FlowerHUD] Angle HUD: no stem available for angle measurement.", this);
+            return;
+        }
+
+        // Measure current cut angle (relative to world up for now).
+        float currentAngle = stemForAngle.GetCurrentCutAngleDeg(Vector3.up);
+        float deltaAngle = Mathf.DeltaAngle(currentAngle, targetAngleDeg);
+        float absDelta = Mathf.Abs(deltaAngle);
+        bool onTarget = absDelta <= angleOnTargetTolerance;
+
+        // Text label
+        if (angleLabel != null)
+        {
+            angleLabel.text =
+                $"Angle: {currentAngle:0.#}° / Target: {targetAngleDeg:0.#}° (Δ {deltaAngle:+0.#;-0.#;0}°)";
+
+            angleLabel.color = onTarget ? angleOnTargetColor : angleNormalColor;
+        }
+
+        // UI dial: rotate around Z so it visually tracks the cut angle.
+        if (angleDialUI != null)
+        {
+            // Convention: positive angles tilt clockwise on-screen; adjust sign to taste.
+            angleDialUI.localRotation = Quaternion.Euler(0f, 0f, -currentAngle);
+        }
+
+        // Worldspace plane visual: track the angle plane's orientation (if assigned).
+        if (angleWorldPlaneVisual != null && anglePlane != null)
+        {
+            // Align world visual's forward to the plane normal, with world up as reference.
+            angleWorldPlaneVisual.rotation = Quaternion.LookRotation(
+                anglePlane.transform.forward,
+                Vector3.up
+            );
+        }
+    }
+
+    private void SetAngleHUDVisible(bool visible)
+    {
+        if (angleLabel != null && angleLabel.gameObject.activeSelf != visible)
+            angleLabel.gameObject.SetActive(visible);
+
+        if (angleDialUI != null && angleDialUI.gameObject.activeSelf != visible)
+            angleDialUI.gameObject.SetActive(visible);
     }
 }

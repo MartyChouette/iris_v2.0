@@ -80,6 +80,27 @@ public class FlowerStemRuntime : MonoBehaviour
         // (No scoring or game-over here; session handles that)
     }
 
+    // In FlowerStemRuntime.cs
+    public Vector3 GetClosestPointOnStem(Vector3 worldPoint)
+    {
+        if (stemStart == null || stemEnd == null)
+            return transform.position;
+
+        Vector3 a = stemStart.position;
+        Vector3 b = stemEnd.position;
+        Vector3 ab = b - a;
+
+        float abLenSq = ab.sqrMagnitude;
+        if (abLenSq < 1e-6f)
+            return a;
+
+        float t = Vector3.Dot(worldPoint - a, ab) / abLenSq;
+        t = Mathf.Clamp01(t);
+
+        return a + ab * t;
+    }
+
+
     /// <summary>
     /// Where the last plane intersected world space.
     /// Used by FlowerSessionController to check "cut too high".

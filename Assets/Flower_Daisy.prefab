@@ -123,6 +123,7 @@ GameObject:
   - component: {fileID: 7906754887595190452}
   - component: {fileID: 3350195670796599783}
   - component: {fileID: 6565067318493313646}
+  - component: {fileID: 8304842457430827527}
   m_Layer: 3
   m_Name: Daisy_Leaf_L
   m_TagString: Untagged
@@ -287,7 +288,7 @@ MonoBehaviour:
   criteria: 3
   testSpace: 0
   armDelay: 0.05
-  breakForce: 50
+  breakForce: 750
   relativeSpeedThreshold: 6
   ownSpeedThreshold: 8
   absoluteTravelThreshold: 5
@@ -407,6 +408,19 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 7906754887595190452}
   unityJoints: []
+--- !u!114 &8304842457430827527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1240776200526331645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 1
 --- !u!1 &1629132496362626701
 GameObject:
   m_ObjectHideFlags: 0
@@ -2202,7 +2216,7 @@ MonoBehaviour:
   criteria: 3
   testSpace: 0
   armDelay: 0.05
-  breakForce: 50
+  breakForce: 750
   relativeSpeedThreshold: 6
   ownSpeedThreshold: 8
   absoluteTravelThreshold: 5
@@ -2995,8 +3009,10 @@ GameObject:
   - component: {fileID: 5340485921555083675}
   - component: {fileID: 4586749691523393482}
   - component: {fileID: 6332587706764964537}
+  - component: {fileID: 7668698183486721530}
+  - component: {fileID: 8795344580361321751}
   m_Layer: 0
-  m_Name: Sphere
+  m_Name: LeafAttachmentPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3137,6 +3153,31 @@ FixedJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!114 &7668698183486721530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5772280211588480482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 1
+--- !u!114 &8795344580361321751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5772280211588480482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50b8598af48af3142bae19fab4f627be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &7127011884221172709
 GameObject:
   m_ObjectHideFlags: 0
@@ -3146,7 +3187,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6233228201949715265}
-  - component: {fileID: 7944276298038620594}
   m_Layer: 0
   m_Name: Stem Parent
   m_TagString: Untagged
@@ -3176,35 +3216,6 @@ Transform:
   - {fileID: 2760855016577988303}
   m_Father: {fileID: 5439567335729082257}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7944276298038620594
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7127011884221172709}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
-  PartId: Stem
-  kind: 0
-  condition: 0
-  isAttached: 1
-  canCauseGameOver: 0
-  isSpecial: 0
-  contributesToScore: 1
-  allowedWithered: 0
-  allowedMissing: 1
-  scoreWeight: 0.1
-  idealLocalPosition: {x: 0, y: 0, z: 0}
-  idealLocalEuler: {x: 0, y: 0, z: 0}
-  session: {fileID: 7065037729555491349}
-  brain: {fileID: 1476761487897708459}
-  xyJoint: {fileID: 0}
-  unityJoints:
-  - {fileID: 4735977587645251494}
 --- !u!1 &7168888953667229958
 GameObject:
   m_ObjectHideFlags: 0
@@ -4598,7 +4609,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
-  mode: 2
+  mode: 1
 --- !u!1 &8896250196363821573
 GameObject:
   m_ObjectHideFlags: 0
@@ -5298,7 +5309,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
-  mode: 2
+  mode: 1
 --- !u!1 &9219504238569956344
 GameObject:
   m_ObjectHideFlags: 0
@@ -5483,6 +5494,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerJointRebinder
   stemRuntime: {fileID: 232145106645487097}
+  flowerRoot: {fileID: 5439567335729082257}
 --- !u!114 &232145106645487097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5518,5 +5530,5 @@ MonoBehaviour:
   bottomUseGravity: 0
   bottomIsKinematic: 1
   makeTopDynamic: 0
-  topUseGravity: 0
+  topUseGravity: 1
   topConstraints: 126
