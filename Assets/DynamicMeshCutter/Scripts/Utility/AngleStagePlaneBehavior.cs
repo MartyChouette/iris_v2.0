@@ -1,124 +1,195 @@
-﻿using UnityEngine;
+﻿using System.Reflection;
+using UnityEngine;
 
 namespace DynamicMeshCutter
 {
     /// <summary>
-    /// Angle-stage wrapper around PlaneBehaviour:
-    /// - First Cut() call: ARM angle mode.
-    /// - Move/tilt plane with AngleCuttingPlaneController.
-    /// - Second Cut() call: forwards to base PlaneBehaviour.Cut().
-    /// 
-    /// All actual slicing logic + OnCreated come from PlaneBehaviour,
-    /// which we already know works.
+    /// Plane-based cutter that stores the current plane (point + normal) and
+    /// optionally previews angle. This sits on your AnglePlane object.
     /// </summary>
-    public class AngleStagePlaneBehaviour : PlaneBehaviour
+    public class AngleStagePlaneBehaviour : CutterBehaviour
     {
+        [Header("Debug")]
+        [Tooltip("Length of the debug line drawn in the Scene view.")]
+        public float debugPlaneLength = 2f;
+        public bool debugLogs = true;
+
+        [Header("Angle Preview")]
+        [Tooltip("If true, we keep updating the cached plane from the transform so HUD/UI can show the angle before cutting.")]
+        public bool previewBeforeCut = true;
+
+        [Tooltip("Optional explicit stem to preview against. If null, the first FlowerStemRuntime in the scene is used.")]
+        public FlowerStemRuntime previewStemOverride;
+
+        [Tooltip("Optional explicit session to use for instant fail checks. If null, taken from stem's parent.")]
+        public FlowerSessionController previewSessionOverride;
+
         [Header("Two-Stage Angle Mode")]
-        [Tooltip("If true, first Cut() arms the angle stage, second Cut() executes the cut.")]
+        [Tooltip("If enabled, controller will first lock height, then angle, then call PerformCut().")]
         public bool useTwoStageAngleMode = true;
 
-        [Tooltip("Optional: automatically cancel the angle stage if this object is disabled.")]
+        [Tooltip("If true, we reset stage state when this component is disabled.")]
         public bool autoCancelOnDisable = true;
 
         [Header("Angle Snapping")]
-        [Tooltip("Snap the tilt angle in degrees (e.g. 5 = snap to 0, 5, 10, 15...). " +
-                 "Set to 0 to disable snapping. Controller reads this value.")]
-        public float AngleSnapStepDeg = 5f;
+        [Tooltip("Snap step (in degrees) when the controller asks us to snap the angle.")]
+        public float angleSnapStepDeg = 5f;
 
-        /// <summary>
-        /// Fired whenever the armed state changes (true = armed, false = not).
-        /// Used by AngleCuttingPlaneController.
-        /// </summary>
-        public System.Action<bool> OnAngleStageArmedChanged;
+        [Header("HUD State")]
+        [SerializeField]
+        [Tooltip("Used by FlowerHUD to know if the angle stage is currently armed.")]
+        private bool isAngleStageArmed = false;
 
-        // internal flag for armed state
-        private bool _angleStageArmed = false;
-        public bool IsAngleStageArmed => _angleStageArmed;
+        // At the top of the class:
+        [Header("Targets")]
+        [Tooltip("MeshTargets that this angle plane will cut. Drag your stem MeshTarget(s) here.")]
+        public MeshTarget[] angleTargets;
 
-        // ───────────────────── Unity ─────────────────────
 
-        // We add extra preview when ARMED, then let PlaneBehaviour do its normal Update.
-        new void Update()
+        // ───────────────────── Cached plane (for other systems / UI) ─────────────────────
+
+        private Vector3 _lastPlanePoint;
+        private Vector3 _lastPlaneNormal;
+
+        /// <summary>World-space point on the last plane used / previewed.</summary>
+        public Vector3 LastPlanePoint => _lastPlanePoint;
+
+        /// <summary>World-space normal of the last plane used / previewed.</summary>
+        public Vector3 LastPlaneNormal => _lastPlaneNormal;
+
+        // ───────────────────── Unity lifecycle ─────────────────────
+
+        private void OnEnable()
         {
-            // While armed, keep pushing the current plane pose into the HUD preview.
-            if (_angleStageArmed && useTwoStageAngleMode)
-            {
-                PreviewAgainstFlower();
-            }
-
-            // This calls PlaneBehaviour.Update(), which:
-            //  - does previewBeforeCut if enabled
-            //  - calls CutterBehaviour.Update() for DMC async work
-            base.Update();
+            CachePlaneFromTransform();
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
-            if (autoCancelOnDisable && _angleStageArmed)
+            if (autoCancelOnDisable)
             {
-                _angleStageArmed = false;
-                OnAngleStageArmedChanged?.Invoke(false);
+                SetAngleStageArmed(false);
+            }
+        }
+
+        private void Update()
+        {
+            if (previewBeforeCut)
+            {
+                CachePlaneFromTransform();
             }
         }
 
         // ───────────────────── Public API ─────────────────────
 
         /// <summary>
-        /// External callers (AngleCuttingPlaneController) use this instead of PlaneBehaviour.Cut().
-        /// In two-stage mode:
-        ///   - First press: arm.
-        ///   - Second press: perform the actual cut via base.Cut().
+        /// Rebuild the cached plane from the current transform.
+        /// *** This is where we fix the 90° issue: the plane normal is transform.forward. ***
         /// </summary>
-        public new void Cut()
+        public void CachePlaneFromTransform()
         {
-            if (!useTwoStageAngleMode)
-            {
-                // Just behave like a normal PlaneBehaviour
-                base.Cut();
-                return;
-            }
-
-            if (!_angleStageArmed)
-            {
-                ArmAngleStage();
-                return;
-            }
-
-            // Already armed → this second press actually performs the cut.
-            // We simply call the working PlaneBehaviour.Cut().
-            base.Cut();
-
-            // After a real cut, disarm.
-            _angleStageArmed = false;
-            OnAngleStageArmedChanged?.Invoke(false);
+            _lastPlanePoint = transform.position;
+            _lastPlaneNormal = transform.up;   // ← plane normal
         }
 
         /// <summary>
-        /// Called by controller while in angle mode to cancel without cutting.
+        /// Called by controllers when the plane pose changes.
         /// </summary>
-        public void CancelAngleStage()
+        public void NotifyPlanePoseChanged()
         {
-            if (!_angleStageArmed) return;
-
+            CachePlaneFromTransform();
             if (debugLogs)
-                Debug.Log("[AngleStagePlane] Angle stage cancelled.", this);
-
-            _angleStageArmed = false;
-            OnAngleStageArmedChanged?.Invoke(false);
+            {
+                Debug.Log($"[AngleStagePlaneBehaviour] Plane updated. Point={_lastPlanePoint}, Normal={_lastPlaneNormal}");
+            }
         }
 
-        // ───────────────────── Internal helpers ─────────────────────
-
-        private void ArmAngleStage()
+        /// <summary>
+        /// Mark the angle stage as armed (used by FlowerHUD).
+        /// </summary>
+        public void SetAngleStageArmed(bool armed)
         {
-            _angleStageArmed = true;
-            OnAngleStageArmedChanged?.Invoke(true);
-
-            // Immediate preview so HUD updates right away
-            PreviewAgainstFlower();
-
-            if (debugLogs)
-                Debug.Log("[AngleStagePlane] Angle stage ARMED. Tilt plane to desired angle, then press Cut() again.", this);
+            isAngleStageArmed = armed;
         }
+
+        /// <summary>
+        /// Used by FlowerHUD to decide what icon/state to show.
+        /// Signature kept to satisfy existing code.
+        /// </summary>
+        public bool IsAngleStageArmed()
+        {
+            return isAngleStageArmed;
+        }
+
+        /// <summary>
+        /// Perform the actual mesh cut, using the plane defined by this component.
+        /// This finds the first MeshTarget on the base CutterBehaviour via reflection
+        /// and calls CutterBehaviour.Cut(target, point, normal, null).
+        /// </summary>
+        // Replace old PerformCut() with this:
+        public void PerformCut()
+        {
+            CachePlaneFromTransform();
+
+            if (angleTargets == null || angleTargets.Length == 0)
+            {
+                Debug.LogWarning("[AngleStagePlaneBehaviour] PerformCut: No MeshTargets assigned in angleTargets.");
+                return;
+            }
+
+            bool anyCut = false;
+
+            foreach (var mt in angleTargets)
+            {
+                if (mt == null) continue;
+
+                // This is the real DynamicMeshCutter API.
+                base.Cut(mt, _lastPlanePoint, _lastPlaneNormal, null);
+                anyCut = true;
+            }
+
+            if (!anyCut)
+            {
+                Debug.LogWarning("[AngleStagePlaneBehaviour] PerformCut: All entries in angleTargets are null.");
+            }
+        }
+
+
+        // ───────────────────── Debug drawing ─────────────────────
+
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            // Keep plane info in sync even when not playing.
+            CachePlaneFromTransform();
+
+            Vector3 p = _lastPlanePoint;
+            Vector3 n = _lastPlaneNormal.normalized;
+
+            Gizmos.color = Color.cyan;
+            float halfLen = debugPlaneLength * 0.5f;
+
+            // Tangent lying in the plane.
+            Vector3 arbitrary = Mathf.Abs(Vector3.Dot(n, Vector3.up)) > 0.9f ? Vector3.forward : Vector3.up;
+            Vector3 tangent = Vector3.Cross(n, arbitrary).normalized;
+
+            Vector3 a = p + tangent * halfLen;
+            Vector3 b = p - tangent * halfLen;
+            Gizmos.DrawLine(a, b);
+
+            // Normal arrow.
+            float normalLen = halfLen;
+            Vector3 end = p + n * normalLen;
+            Gizmos.DrawLine(p, end);
+
+            // Arrow head.
+            Vector3 side = Vector3.Cross(n, tangent).normalized;
+            float headSize = normalLen * 0.2f;
+            Vector3 headA = end - n * headSize + side * headSize * 0.5f;
+            Vector3 headB = end - n * headSize - side * headSize * 0.5f;
+            Gizmos.DrawLine(end, headA);
+            Gizmos.DrawLine(end, headB);
+        }
+#endif
     }
 }

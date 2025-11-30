@@ -232,7 +232,7 @@ public class FlowerHUD : MonoBehaviour
         {
             // NOTE: this assumes AngleStagePlaneBehaviour exposes IsAngleStageArmed.
             // If you haven't added it yet, either add it or set onlyShowAngleWhenArmed = false.
-            if (!anglePlane.enabled || !anglePlane.IsAngleStageArmed)
+            if (!anglePlane.enabled || !anglePlane.IsAngleStageArmed())
             {
                 SetAngleHUDVisible(false);
                 return;
