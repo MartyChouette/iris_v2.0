@@ -3,8 +3,11 @@
 [CreateAssetMenu(menuName = "Flower/Flower Type")]
 public class FlowerTypeDefinition : ScriptableObject
 {
+    // ──────────────────────────────────────────────────────────────
+    // Identity
+    // ──────────────────────────────────────────────────────────────
     [Header("Identity")]
-    [Tooltip("Stable ID used in save files, analytics, etc. Can be short like 'rose_01'.")]
+    [Tooltip("Stable ID used in save files, analytics, etc.")]
     public string flowerId;
 
     [Tooltip("Display name shown in UI.")]
@@ -14,79 +17,86 @@ public class FlowerTypeDefinition : ScriptableObject
     [Tooltip("Optional description shown in UI / debug.")]
     public string description;
 
+    // ──────────────────────────────────────────────────────────────
+    // Visuals
+    // ──────────────────────────────────────────────────────────────
     [Header("Visuals")]
-    [Tooltip("Reference image shown in the HUD as the goal / ideal flower.")]
+    [Tooltip("Image of the ideal flower shown in HUD + item menus.")]
     public Sprite idealFlowerSprite;
 
-    [Header("Game Over Policy")]
-    [Tooltip("If false, even hard failures are treated as very bad scores instead of true game-overs.")]
+    [Tooltip("Icon used in menus (optional).")]
+    public Sprite icon;
+
+    [Tooltip("Prefab that represents the base flower setup for this type.")]
+    public GameObject flowerPrefab;
+
+    // ──────────────────────────────────────────────────────────────
+    // Difficulty
+    // ──────────────────────────────────────────────────────────────
+    public enum Difficulty
+    {
+        VeryEasy,
+        Easy,
+        Normal,
+        Hard,
+        VeryHard
+    }
+
+    [Header("Difficulty / Scoring")]
+    public Difficulty difficulty = Difficulty.Normal;
+
+    [Tooltip("Base score for a perfect trim of this flower type.")]
+    public float basePerfectScore = 100f;
+
+    [Tooltip("Multiplier applied to the normalized score (0-1) from FlowerGameBrain.")]
+    public float scoreMultiplier = 1f;
+
+    // ──────────────────────────────────────────────────────────────
+    // Ideal configuration
+    // ──────────────────────────────────────────────────────────────
+    [Header("Ideal Setup")]
+    [Tooltip("Ideal configuration describing what 'perfect' looks like.")]
+    public IdealFlowerDefinition ideal;
+
+    [Tooltip("If true, ANY perfect part damaged/removed is treated as game over.")]
+    public bool globalPerfectDamageCausesGameOver = false;
+
+    [Tooltip("If true, ANY fatal violation found by FlowerGameBrain causes a hard fail.")]
     public bool allowGameOver = true;
 
-    [Header("Score Mapping (0–1 → final score)")]
-    [Tooltip("Minimum possible final score for this flower type.")]
-    public int minScore = 0;
+    // ──────────────────────────────────────────────────────────────
+    // Days Mapping
+    // ──────────────────────────────────────────────────────────────
+    [Header("Life / Days Mapping")]
+    [Tooltip("Minimum days this flower can live (score = 0).")]
+    public int minDays = 1;
 
-    [Tooltip("Maximum possible final score for this flower type.")]
-    public int maxScore = 100;
+    [Tooltip("Maximum days this flower can live (score = 1).")]
+    public int maxDays = 10;
 
-    [Tooltip("If true, use a custom curve to map normalized score (0–1) to final score.")]
-    public bool useCustomScoreCurve = false;
+    [Tooltip("If true, use scoreToDaysCurve instead of simple min/max linear mapping.")]
+    public bool useCustomCurve = false;
 
-    [Tooltip("X axis = normalized score (0–1). Y axis = interpolation factor between minScore and maxScore.")]
-    public AnimationCurve scoreCurve = AnimationCurve.Linear(0, 0, 1, 1);
-
-    [Header("Days Mapping (0–1 → days alive)")]
-    [Tooltip("Minimum possible days alive.")]
-    public int minDays = 0;
-
-    [Tooltip("Maximum possible days alive.")]
-    public int maxDays = 7;
-
-    [Tooltip("If true, use scoreToDaysCurve instead of simple linear mapping.")]
-    public bool useCustomDaysCurve = false;
-
-    [Tooltip("X axis = normalized score (0–1). Y axis = interpolation factor between minDays and maxDays.")]
+    [Tooltip("X = normalized score (0..1), Y = normalized life (0..1).")]
     public AnimationCurve scoreToDaysCurve = AnimationCurve.Linear(0, 0, 1, 1);
 
-    /// <summary>
-    /// Maps a normalized [0,1] score from FlowerGameBrain into a final integer score.
-    /// </summary>
+    // ──────────────────────────────────────────────────────────────
+    // Helpers
+    // ──────────────────────────────────────────────────────────────
     public int GetFinalScoreFromNormalized(float normalized)
     {
         normalized = Mathf.Clamp01(normalized);
-
-        float t;
-        if (useCustomScoreCurve && scoreCurve != null)
-        {
-            t = Mathf.Clamp01(scoreCurve.Evaluate(normalized));
-        }
-        else
-        {
-            // Simple linear mapping: 0 -> minScore, 1 -> maxScore
-            t = normalized;
-        }
-
-        float scoreFloat = Mathf.Lerp(minScore, maxScore, t);
-        return Mathf.RoundToInt(scoreFloat);
+        float raw = normalized * basePerfectScore * scoreMultiplier;
+        return Mathf.RoundToInt(raw);
     }
 
-    /// <summary>
-    /// Maps a normalized [0,1] score into a number of days (for lore / outcome flavor).
-    /// </summary>
     public int GetDaysFromNormalized(float normalized)
     {
         normalized = Mathf.Clamp01(normalized);
 
-        float t;
-        if (useCustomDaysCurve && scoreToDaysCurve != null)
-        {
-            t = Mathf.Clamp01(scoreToDaysCurve.Evaluate(normalized));
-        }
-        else
-        {
-            // Simple linear mapping: 0 -> minDays, 1 -> maxDays
-            t = normalized;
-        }
+        float t = useCustomCurve && scoreToDaysCurve != null
+            ? Mathf.Clamp01(scoreToDaysCurve.Evaluate(normalized))
+            : normalized;
 
         float daysFloat = Mathf.Lerp(minDays, maxDays, t);
         return Mathf.Max(0, Mathf.RoundToInt(daysFloat));

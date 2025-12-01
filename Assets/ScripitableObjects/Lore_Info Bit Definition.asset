@@ -15,6 +15,6 @@ MonoBehaviour:
   infoId: Test Info Bit Def_unlet
   title: Seems to Me
   description: So many times i was unlet to the dark.  i was almot unlet to the lost.
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 77bac899e323bce4baece751f003d334, type: 3}
   isTutorial: 1
   learnOnce: 1
