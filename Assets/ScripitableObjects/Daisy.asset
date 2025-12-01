@@ -42,7 +42,7 @@ MonoBehaviour:
     canCauseGameOver: 0
     isSpecial: 0
     contributesToScore: 1
-    allowedWithered: 0
+    allowedWithered: 1
     allowedMissing: 1
     scoreWeight: 0.1
     idealLocalPosition: {x: 0.83, y: 8.545, z: -4.194}
@@ -155,5 +155,16 @@ MonoBehaviour:
     allowedWithered: 0
     allowedMissing: 1
     scoreWeight: 0.1
+    idealLocalPosition: {x: 5.416915, y: 9.956657, z: -0.7327814}
+    idealLocalEuler: {x: 294.60742, y: 102.667145, z: 166.67543}
+  - partId: Petal_09
+    kind: 1
+    idealCondition: 0
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 1
+    scoreWeight: 1
     idealLocalPosition: {x: 5.416915, y: 9.956657, z: -0.7327814}
     idealLocalEuler: {x: 294.60742, y: 102.667145, z: 166.67543}

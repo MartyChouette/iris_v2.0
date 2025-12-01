@@ -17,6 +17,10 @@ public class FlowerGameBrain : MonoBehaviour
     public string lastGameOverReason;
     [Range(0f, 1f)] public float lastScoreNormalized;
 
+    [Header("Angle Calibration")]
+    [Tooltip("Calibration offset (degrees) so angle scoring & HUD share the same angle space.")]
+    public float angleOffsetDeg = 0f;
+
     private Dictionary<string, IdealFlowerDefinition.PartRule> ruleLookup =
         new Dictionary<string, IdealFlowerDefinition.PartRule>();
 
@@ -33,16 +37,21 @@ public class FlowerGameBrain : MonoBehaviour
     private void Awake()
     {
         BuildLookups();
-        // inject brain reference into all parts
+
+        // Inject brain reference into all parts
+        if (parts.Count == 0)
+            GetComponentsInChildren(true, parts);
+
         foreach (var p in parts)
-            if (p != null)
-                p.brain = this;
+        {
+            if (p == null) continue;
+            p.brain = this;
+        }
     }
 
     private void OnValidate()
     {
-        if (ideal != null)
-            BuildRuleLookupOnly();
+        BuildRuleLookupOnly();
     }
 
     private void BuildLookups()
@@ -57,6 +66,7 @@ public class FlowerGameBrain : MonoBehaviour
         {
             if (p == null || string.IsNullOrEmpty(p.PartId))
                 continue;
+
             if (!partLookup.ContainsKey(p.PartId))
                 partLookup.Add(p.PartId, p);
         }
@@ -89,11 +99,12 @@ public class FlowerGameBrain : MonoBehaviour
 
         bool gameOver = false;
         string reason = "";
+
         float totalScoreWeight = 0f;
         float accumulatedScore = 0f;
 
         // --- 1) Stem length ---
-        if (stem != null && ideal.stemContributesToScore)
+        if (stem != null && ideal != null && ideal.stemContributesToScore)
         {
             float currentLen = stem.CurrentLength;
             float delta = Mathf.Abs(currentLen - ideal.idealStemLength);
@@ -103,9 +114,9 @@ public class FlowerGameBrain : MonoBehaviour
                 delta > ideal.stemHardFailDelta)
             {
                 gameOver = true;
-                reason = signedDelta < 0f ?
-                    "Crown decapitated (cut too high)" :
-                    $"Stem length off by {delta:F2} (hard fail)";
+                reason = signedDelta < 0f
+                    ? "Crown decapitated (cut too high)"
+                    : "Stem cut too low";
             }
 
             float score = Mathf.Clamp01(1f - delta / ideal.stemHardFailDelta);
@@ -114,10 +125,16 @@ public class FlowerGameBrain : MonoBehaviour
         }
 
         // --- 2) Cut angle ---
-        if (!gameOver && stem != null && ideal.cutAngleContributesToScore)
+        if (ideal != null && stem != null && ideal.cutAngleContributesToScore)
         {
-            float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
-            float delta = Mathf.Abs(angle - ideal.idealCutAngleDeg);
+            // Raw physical angle from the stem / plane relationship.
+            float rawAngle = stem.GetCurrentCutAngleDeg(Vector3.up);
+
+            // Calibrated angle so that scoring and HUD share the same space.
+            float cutAngle = Mathf.DeltaAngle(rawAngle, angleOffsetDeg);
+
+            float idealAngle = ideal.idealCutAngleDeg;
+            float delta = Mathf.Abs(Mathf.DeltaAngle(cutAngle, idealAngle));
 
             if (ideal.cutAngleCanCauseGameOver &&
                 delta > ideal.cutAngleHardFailDelta)
@@ -131,82 +148,79 @@ public class FlowerGameBrain : MonoBehaviour
             accumulatedScore += score * ideal.cutAngleScoreWeight;
         }
 
-        // --- 3) Leaves & Petals ---
-        if (!gameOver)
+        // --- 3) Leaves & Petals / Parts ---
+        bool specialPartRemoved = false;
+
+        foreach (var kvp in ruleLookup)
         {
-            foreach (var kvp in ruleLookup)
-            {
-                var rule = kvp.Value;
-                partLookup.TryGetValue(rule.partId, out var runtime);
+            var rule = kvp.Value;
+            partLookup.TryGetValue(rule.partId, out var runtime);
 
-                bool exists = runtime != null;
-                bool attached = exists && runtime.isAttached;
-                FlowerPartCondition cond =
-                    exists ? runtime.condition : FlowerPartCondition.Withered;
+            bool exists = runtime != null;
+            bool attached = exists && runtime.isAttached;
+            FlowerPartCondition cond =
+                exists ? runtime.condition : FlowerPartCondition.Withered;
 
-                // Critical part removed
-                if (rule.canCauseGameOver && !attached)
-                {
-                    gameOver = true;
-                    reason = $"{rule.kind} '{rule.partId}' is missing";
-                    break;
-                }
-
-                if (!rule.contributesToScore)
-                    continue;
-
-                float partScore = 0f;
-
-
-
-
-                //HOW MUCH TO GIVE OR TAKE AWAY IF LEAF STILL THERE OR GONE
-                if (!attached)
-                {
-                    // Optional parts still lose some score when removed.
-                    partScore = rule.allowedMissing ? 0.5f : 0f;
-                }
-                else if (cond == rule.idealCondition)
-                    partScore = 1f;
-                else if (cond == FlowerPartCondition.Withered && rule.allowedWithered)
-                    partScore = 0.5f;
-                else
-                    partScore = 0.2f;
-
-
-                totalScoreWeight += rule.scoreWeight;
-                accumulatedScore += partScore * rule.scoreWeight;
-            }
-        }
-
-
-        // --- 4) Global: All parts detached = instant fail ---
-        if (!gameOver)
-        {
-            int totalParts = partLookup.Count;
-            int attachedParts = 0;
-
-            foreach (var p in partLookup.Values)
-                if (p != null && p.isAttached)
-                    attachedParts++;
-
-            if (totalParts > 0 && attachedParts == 0)
+            // Immediate crown failure at grading time.
+            if (rule.canCauseGameOver &&
+                rule.kind == FlowerPartKind.Crown &&
+                !attached)
             {
                 gameOver = true;
-                reason = "All parts removed – flower is dead.";
+                reason = "Crown was completely removed";
+                // We still continue scoring so we can show a meaningful percentage.
             }
+
+            if (rule.isSpecial && !attached)
+            {
+                specialPartRemoved = true;
+            }
+
+            if (!rule.contributesToScore)
+                continue;
+
+            float partScore = 0f;
+
+            if (!attached)
+            {
+                partScore = rule.allowedMissing ? 0.5f : 0f;
+            }
+            else if (cond == rule.idealCondition)
+            {
+                partScore = 1f;
+            }
+            else if (cond == FlowerPartCondition.Withered && rule.allowedWithered)
+            {
+                partScore = 0.5f;
+            }
+            else
+            {
+                partScore = 0.2f;
+            }
+
+            totalScoreWeight += rule.scoreWeight;
+            accumulatedScore += partScore * rule.scoreWeight;
         }
 
-        float normalizedScore =
-            totalScoreWeight > 0.001f ?
-            Mathf.Clamp01(accumulatedScore / totalScoreWeight) :
-            0f;
+        float normalizedScore = 0f;
+        if (totalScoreWeight > 0f)
+        {
+            normalizedScore = Mathf.Clamp01(accumulatedScore / totalScoreWeight);
+        }
+
+        // Grading-time game over for removed special parts.
+        if (!gameOver && specialPartRemoved)
+        {
+            gameOver = true;
+            reason = "You removed a special leaf.";
+        }
 
         var result = new EvaluationResult
         {
             isGameOver = gameOver,
             gameOverReason = gameOver ? reason : "",
-            scoreNormalized = gameOver ? 0f : normalizedScore
+            // IMPORTANT: keep the score even on game over.
+            scoreNormalized = normalizedScore
         };
 
         lastWasGameOver = result.isGameOver;

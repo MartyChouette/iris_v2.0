@@ -56,6 +56,16 @@ public class FlowerPartRuntime : MonoBehaviour
     [Tooltip("Fallback Unity joints (HingeJoint, SpringJoint, etc.) used for detachment events.")]
     public Joint[] unityJoints;
 
+    [Header("Crown Fall Failsafe")]
+    [Tooltip("If true and this part is a Crown, then if it falls below crownFailY after detaching, the session will be forced to game over.")]
+    public bool enableCrownYFailsafe = true;
+
+    [Tooltip("World-space Y threshold for crown fall failsafe. If the crown's position.y drops below this after detaching, it will trigger a forced game over.")]
+    public float crownFailY = -1f;
+
+    // Internal guard so we only trigger the fall failsafe once.
+    private bool _crownFallFailTriggered = false;
+
     private void Awake()
     {
         // Auto-wire session / brain if not set in inspector.
@@ -89,6 +99,24 @@ public class FlowerPartRuntime : MonoBehaviour
             xyJoint.onBroke.RemoveListener(OnXYJointBroke);
     }
 
+    private void Update()
+    {
+        // Failsafe: if this is a crown piece that has already detached
+        // and it falls below a world-space Y threshold, force a game over.
+        if (enableCrownYFailsafe &&
+            kind == FlowerPartKind.Crown &&
+            !_crownFallFailTriggered &&
+            !isAttached &&
+            session != null)
+        {
+            if (transform.position.y < crownFailY)
+            {
+                _crownFallFailTriggered = true;
+                session.ForceGameOver("Crown fell too far.");
+            }
+        }
+    }
+
     // Unity built-in: any 3D Joint on THIS object breaking will call this.
     private void OnJointBreak(float breakForce)
     {
@@ -104,12 +132,9 @@ public class FlowerPartRuntime : MonoBehaviour
     /// <summary>
     /// Public so cutters or other scripts can force a detach.
     /// </summary>
-    /// <summary>
-    /// Public so cutters or other scripts can force a detach.
-    /// </summary>
     public void MarkDetached(string reason = "Detached")
     {
-        // NEW: ignore detach events while the session is in a cut/rebind grace window
+        // Ignore detach events while the session is in a cut/rebind grace window.
         if (session != null && session.suppressDetachEvents)
         {
             Debug.Log($"[FlowerPartRuntime] Detach '{PartId}' skipped during cut grace: {reason}", this);
@@ -125,79 +150,16 @@ public class FlowerPartRuntime : MonoBehaviour
         bool triggerInstantFail = false;
         string failReason = "";
 
-
-        // ───────── Option 1: crown via layer ─────────
+        // The only true instant game over we want is when the crown is lost.
+        // We support both an explicit Crown kind and an optional layer-based check.
         int crownLayer = LayerMask.NameToLayer("CrownCore");
-        if (crownLayer >= 0 && gameObject.layer == crownLayer)
+        bool isCrownByLayer = (crownLayer >= 0 && gameObject.layer == crownLayer);
+        bool isCrownByKind = (kind == FlowerPartKind.Crown);
+
+        if (isCrownByLayer || isCrownByKind)
         {
             triggerInstantFail = true;
             failReason = "Crown detached.";
-        }
-
-        // ───────── Option 2: Ideal per-part rules ─────────
-        IdealFlowerDefinition.PartRule rule = null;
-        if (!triggerInstantFail && brain != null && brain.ideal != null && !string.IsNullOrEmpty(PartId))
-        {
-            foreach (var r in brain.ideal.partRules)
-            {
-                if (r == null || string.IsNullOrEmpty(r.partId))
-                    continue;
-                if (r.partId == PartId)
-                {
-                    rule = r;
-                    break;
-                }
-            }
-
-            if (rule != null)
-            {
-                // Perfect parts: always fatal if removed.
-                if (rule.idealCondition == FlowerPartCondition.Perfect)
-                {
-                    triggerInstantFail = true;
-                    failReason = $"Perfect part '{PartId}' was removed.";
-                }
-
-                // Authoring flag that this part can cause game over.
-                if (!triggerInstantFail && rule.canCauseGameOver)
-                {
-                    triggerInstantFail = true;
-                    failReason = $"Critical part '{PartId}' was removed.";
-                }
-
-                // Part not allowed to be missing at all.
-                if (!triggerInstantFail && !rule.allowedMissing)
-                {
-                    triggerInstantFail = true;
-                    failReason = $"Part '{PartId}' is not allowed to be missing.";
-                }
-            }
-        }
-
-        // ───────── Option 3: runtime flag on this component ─────────
-        if (!triggerInstantFail && canCauseGameOver)
-        {
-            triggerInstantFail = true;
-            failReason = $"Critical part '{PartId}' was removed.";
-        }
-
-        // ───────── Option 4: if all parts are gone, treat as dead ─────────
-        if (!triggerInstantFail && brain != null)
-        {
-            int total = 0;
-            int attached = 0;
-            foreach (var p in brain.parts)
-            {
-                if (p == null) continue;
-                total++;
-                if (p.isAttached) attached++;
-            }
-
-            if (total > 0 && attached == 0)
-            {
-                triggerInstantFail = true;
-                failReason = "All parts removed – flower is dead.";
-            }
         }
 
         if (triggerInstantFail && session != null)
@@ -206,8 +168,8 @@ public class FlowerPartRuntime : MonoBehaviour
         }
         else
         {
-            // No hard fail here – we *don’t* run full scoring yet.
-            // HUD live stats will still see isAttached changes.
+            // No other parts cause immediate failure here.
+            // Their effects are handled later in the grading logic (EvaluateFlower).
         }
     }
 }

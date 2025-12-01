@@ -14,74 +14,71 @@ public class FlowerTypeDefinition : ScriptableObject
     [Tooltip("Optional description shown in UI / debug.")]
     public string description;
 
-    [Tooltip("Icon for UI (picker, menus, etc.).")]
-    public Sprite icon;
+    [Header("Visuals")]
+    [Tooltip("Reference image shown in the HUD as the goal / ideal flower.")]
+    public Sprite idealFlowerSprite;
 
-    [Tooltip("Prefab that represents the base flower setup for this type.")]
-    public GameObject flowerPrefab;
-
-    public enum Difficulty
-    {
-        VeryEasy,
-        Easy,
-        Normal,
-        Hard,
-        VeryHard
-    }
-
-    [Header("Difficulty / Scoring")]
-    public Difficulty difficulty = Difficulty.Normal;
-
-    [Tooltip("Base score for a perfect trim of this flower type.")]
-    public float basePerfectScore = 100f;
-
-    [Tooltip("Multiplier applied to the normalized score (0-1) from FlowerGameBrain.")]
-    public float scoreMultiplier = 1f;
-
-    [Header("Game Logic")]
-    [Tooltip("Ideal configuration describing what 'perfect' looks like.")]
-    public IdealFlowerDefinition ideal;
-
-    [Tooltip("If true, ANY perfect part damaged/removed is treated as game over " +
-             "even if the individual part rule does not explicitly set canCauseGameOver.")]
-    public bool globalPerfectDamageCausesGameOver = false;
-
-    [Tooltip("If true, ANY fatal violation found by FlowerGameBrain will be treated as a hard fail " +
-             "for this flower type (can be used to make 'gentle' flowers that rarely hard-fail).")]
+    [Header("Game Over Policy")]
+    [Tooltip("If false, even hard failures are treated as very bad scores instead of true game-overs.")]
     public bool allowGameOver = true;
 
-    // ───────────────────────── Life / Days Mapping ─────────────────────────
+    [Header("Score Mapping (0–1 → final score)")]
+    [Tooltip("Minimum possible final score for this flower type.")]
+    public int minScore = 0;
 
-    [Header("Life / Days Mapping")]
-    [Tooltip("Minimum days this flower can live (even if the score is terrible but not a total fail).")]
-    public int minDays = 1;
+    [Tooltip("Maximum possible final score for this flower type.")]
+    public int maxScore = 100;
 
-    [Tooltip("Maximum days this flower can live at a perfect score.")]
-    public int maxDays = 10;
+    [Tooltip("If true, use a custom curve to map normalized score (0–1) to final score.")]
+    public bool useCustomScoreCurve = false;
 
-    [Tooltip("If true, use the scoreToDaysCurve instead of simple min/max linear mapping.")]
-    public bool useCustomCurve = false;
+    [Tooltip("X axis = normalized score (0–1). Y axis = interpolation factor between minScore and maxScore.")]
+    public AnimationCurve scoreCurve = AnimationCurve.Linear(0, 0, 1, 1);
 
-    [Tooltip("X = normalized score (0..1), Y = normalized life (0..1).")]
+    [Header("Days Mapping (0–1 → days alive)")]
+    [Tooltip("Minimum possible days alive.")]
+    public int minDays = 0;
+
+    [Tooltip("Maximum possible days alive.")]
+    public int maxDays = 7;
+
+    [Tooltip("If true, use scoreToDaysCurve instead of simple linear mapping.")]
+    public bool useCustomDaysCurve = false;
+
+    [Tooltip("X axis = normalized score (0–1). Y axis = interpolation factor between minDays and maxDays.")]
     public AnimationCurve scoreToDaysCurve = AnimationCurve.Linear(0, 0, 1, 1);
 
-    // ───────────────────────── Helpers ─────────────────────────
-
-    // Convert 0..1 brain score into a points score.
+    /// <summary>
+    /// Maps a normalized [0,1] score from FlowerGameBrain into a final integer score.
+    /// </summary>
     public int GetFinalScoreFromNormalized(float normalized)
     {
         normalized = Mathf.Clamp01(normalized);
-        float raw = normalized * basePerfectScore * scoreMultiplier;
-        return Mathf.RoundToInt(raw);
+
+        float t;
+        if (useCustomScoreCurve && scoreCurve != null)
+        {
+            t = Mathf.Clamp01(scoreCurve.Evaluate(normalized));
+        }
+        else
+        {
+            // Simple linear mapping: 0 -> minScore, 1 -> maxScore
+            t = normalized;
+        }
+
+        float scoreFloat = Mathf.Lerp(minScore, maxScore, t);
+        return Mathf.RoundToInt(scoreFloat);
     }
 
-    // Convert 0..1 brain score into days of life (integer).
+    /// <summary>
+    /// Maps a normalized [0,1] score into a number of days (for lore / outcome flavor).
+    /// </summary>
     public int GetDaysFromNormalized(float normalized)
     {
         normalized = Mathf.Clamp01(normalized);
 
         float t;
-        if (useCustomCurve && scoreToDaysCurve != null)
+        if (useCustomDaysCurve && scoreToDaysCurve != null)
         {
             t = Mathf.Clamp01(scoreToDaysCurve.Evaluate(normalized));
         }

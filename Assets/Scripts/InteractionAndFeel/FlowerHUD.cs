@@ -1,7 +1,8 @@
 ﻿using System.Text;
 using TMPro;
 using UnityEngine;
-using DynamicMeshCutter;   // <-- for AngleStagePlaneBehaviour / FlowerStemRuntime if they are in this namespace
+using UnityEngine.UI;
+using DynamicMeshCutter;   // for AngleStagePlaneBehaviour / FlowerStemRuntime
 
 public class FlowerHUD : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class FlowerHUD : MonoBehaviour
     [Tooltip("Flower type definition (for ideal values). Will auto-fill from session if left null.")]
     public FlowerTypeDefinition flowerType;
 
-    [Header("UI Text Elements (TMP)")]
+    [Header("Result UI Text Elements (TMP)")]
     public TMP_Text statusLabel;
     public TMP_Text scoreLabel;
     public TMP_Text daysLabel;
@@ -27,6 +28,13 @@ public class FlowerHUD : MonoBehaviour
     public Color successColor = new Color(0.25f, 0.9f, 0.4f, 1f);
     public Color failColor = new Color(1f, 0.3f, 0.25f, 1f);
 
+    [Header("Ideal Flower HUD")]
+    [Tooltip("UI Image that will display the ideal (goal) flower sprite in the corner of the screen.")]
+    public Image idealFlowerImage;
+
+    [Tooltip("If true, hide the image when no ideal sprite is defined on the flower type.")]
+    public bool hideIdealImageWhenMissing = true;
+
     [Header("Live Stats")]
     [Tooltip("Show live debug info while trimming (stem length/angle, leaf counts).")]
     public bool showLiveStats = true;
@@ -36,7 +44,7 @@ public class FlowerHUD : MonoBehaviour
 
     private float _liveStatsTimer;
 
-    // ───────────────────────── Angle HUD (new) ─────────────────────────
+    // ───────────────────────── Angle HUD ─────────────────────────
 
     [Header("Angle HUD")]
     [Tooltip("Enable the cut-angle HUD section.")]
@@ -58,6 +66,9 @@ public class FlowerHUD : MonoBehaviour
 
     [Tooltip("How close (in degrees) counts as 'on target' for angle coloring.")]
     public float angleOnTargetTolerance = 2f;
+
+    [Tooltip("Calibration offset (degrees) so HUD & scoring share the same angle space.")]
+    public float angleOffsetDeg = 0f;
 
     [Tooltip("TMP label to show current / target angle and delta.")]
     public TMP_Text angleLabel;
@@ -85,9 +96,20 @@ public class FlowerHUD : MonoBehaviour
                 flowerType = session.FlowerType;
         }
 
+        // Sync angle calibration and target from the brain/ideal if available.
+        if (brain != null)
+        {
+            angleOffsetDeg = brain.angleOffsetDeg;
+            if (brain.ideal != null)
+                targetAngleDeg = brain.ideal.idealCutAngleDeg;
+        }
+
         // Safety: avoid zero or negative intervals
         if (liveStatsUpdateInterval <= 0f)
             liveStatsUpdateInterval = 0.05f;
+
+        // Set up the ideal flower HUD image from the flower type, if present.
+        ApplyIdealFlowerSprite();
     }
 
     void OnEnable()
@@ -104,7 +126,7 @@ public class FlowerHUD : MonoBehaviour
 
     void Update()
     {
-        // ───────── Live stats (existing) ─────────
+        // ───────── Live stats ─────────
         if (showLiveStats && liveStatsLabel != null && brain != null)
         {
             _liveStatsTimer += Time.deltaTime;
@@ -115,7 +137,7 @@ public class FlowerHUD : MonoBehaviour
             }
         }
 
-        // ───────── Angle HUD (new) ─────────
+        // ───────── Angle HUD ─────────
         if (showAngleHUD)
         {
             UpdateAngleHUD();
@@ -123,6 +145,29 @@ public class FlowerHUD : MonoBehaviour
         else
         {
             SetAngleHUDVisible(false);
+        }
+    }
+
+    // ───────────────────────── Ideal Flower HUD ─────────────────────────
+
+    public void ApplyIdealFlowerSprite()
+    {
+        if (idealFlowerImage == null)
+            return;
+
+        Sprite sprite = null;
+        if (flowerType != null)
+            sprite = flowerType.idealFlowerSprite;
+
+        if (sprite != null)
+        {
+            idealFlowerImage.sprite = sprite;
+            idealFlowerImage.enabled = true;
+        }
+        else
+        {
+            if (hideIdealImageWhenMissing)
+                idealFlowerImage.enabled = false;
         }
     }
 
@@ -183,11 +228,13 @@ public class FlowerHUD : MonoBehaviour
 
             sb.AppendLine($"Stem length: {stemLen:0.###} (ideal {idealLen:0.###}, Δ {deltaLen:+0.###;-0.###;0})");
 
-            float cutAngle = brain.stem.GetCurrentCutAngleDeg(Vector3.up);
+            // Use the same calibrated angle that scoring uses.
+            float rawAngle = brain.stem.GetCurrentCutAngleDeg(Vector3.up);
+            float cutAngle = Mathf.DeltaAngle(rawAngle, brain.angleOffsetDeg);
             float idealAngle = brain.ideal.idealCutAngleDeg;
-            float deltaAngle = cutAngle - idealAngle;
+            float deltaAngle = Mathf.DeltaAngle(cutAngle, idealAngle);
 
-            sb.AppendLine($"Cut angle:   {cutAngle:0.#}° (ideal {idealAngle:0.#}°, Δ {deltaAngle:+0.#;-0.#;0})");
+            sb.AppendLine($"Cut angle:   {cutAngle:0.#}° (ideal {idealAngle:0.#}°, Δ {deltaAngle:+0.#;-0.#;0}°)");
         }
 
         // ───────── PARTS READOUT ─────────
@@ -219,7 +266,7 @@ public class FlowerHUD : MonoBehaviour
         liveStatsLabel.text = sb.ToString();
     }
 
-    // ───────────────────────── Angle HUD (new) ─────────────────────────
+    // ───────────────────────── Angle HUD ─────────────────────────
 
     private void UpdateAngleHUD()
     {
@@ -230,8 +277,7 @@ public class FlowerHUD : MonoBehaviour
         // Optional gating: only show while the two-stage plane is armed.
         if (onlyShowAngleWhenArmed && anglePlane != null)
         {
-            // NOTE: this assumes AngleStagePlaneBehaviour exposes IsAngleStageArmed.
-            // If you haven't added it yet, either add it or set onlyShowAngleWhenArmed = false.
+            // NOTE: this assumes AngleStagePlaneBehaviour exposes IsAngleStageArmed().
             if (!anglePlane.enabled || !anglePlane.IsAngleStageArmed())
             {
                 SetAngleHUDVisible(false);
@@ -255,8 +301,9 @@ public class FlowerHUD : MonoBehaviour
             return;
         }
 
-        // Measure current cut angle (relative to world up for now).
-        float currentAngle = stemForAngle.GetCurrentCutAngleDeg(Vector3.up);
+        // Measure current cut angle (relative to world up), then apply calibration so HUD matches scoring.
+        float rawAngle = stemForAngle.GetCurrentCutAngleDeg(Vector3.up);
+        float currentAngle = Mathf.DeltaAngle(rawAngle, angleOffsetDeg);
         float deltaAngle = Mathf.DeltaAngle(currentAngle, targetAngleDeg);
         float absDelta = Mathf.Abs(deltaAngle);
         bool onTarget = absDelta <= angleOnTargetTolerance;

@@ -16,36 +16,82 @@ public class FlowerSessionController : MonoBehaviour
     [Header("Debug / Last Result")]
     public bool lastGameOver;
     public string lastGameOverReason;
+    [Range(0f, 1f)]
+    public float lastNormalizedScore;
     public int lastScore;
     public int lastDays;
-    public float lastNormalizedScore;
+
+    [Header("Cut / Detach Grace Window")]
+    [Tooltip("If true, parts can detach during a short grace window after a cut without instantly failing the session.")]
+    public bool useCutGraceWindow = true;
+
+    [Tooltip("Duration (seconds) after a cut during which detach events are ignored for instant-fail.")]
+    public float cutGraceDuration = 0.15f;
+
+    [HideInInspector]
+    public bool suppressDetachEvents = false;
+
+    private float _cutGraceTimer = 0f;
 
     [Header("Physics Guard Rails")]
-    [Tooltip("If true, all rigidbodies under the brain will be frozen (isKinematic) on game over so the flower doesn't melt down when you fail.")]
+    [Tooltip("If true, all rigidbodies under the brain will be frozen (kinematic, zero velocity) on game over so the flower doesn't melt down when you fail.")]
     public bool freezeOnGameOver = true;
 
     [Tooltip("If true, all colliders under the brain will be disabled on game over (prevents further physics events after failure).")]
     public bool disableCollidersOnGameOver = false;
 
+    [Header("Game Over Slow Motion")]
+    [Tooltip("If true, forced game overs (like crown failure) will briefly go slow motion before fully pausing and showing the result UI.")]
+    public bool useSlowMoOnForcedGameOver = true;
+
+    [Tooltip("Time scale to use during the slow-motion window for forced game overs (0.01–1).")]
+    [Range(0.01f, 1f)]
+    public float forcedGameOverSlowMoScale = 0.1f;
+
+    [Tooltip("Real-time duration (seconds) to stay in slow motion before fully pausing (Time.timeScale = 0).")]
+    public float forcedGameOverSlowMoDuration = 0.5f;
+
     [Header("Runtime Flags")]
-    [Tooltip("If true, detach events from FlowerPartRuntime are temporarily ignored (used during cut + rebind).")]
-    public bool suppressDetachEvents = false;
+    [Tooltip("If true, session has already processed a final result (prevents double end).")]
+    public bool sessionEnded = false;
 
-
-
-    // ─────────────────────────────────────────────
-    // PUBLIC API
-    // ─────────────────────────────────────────────
+    private void Update()
+    {
+        // Manage cut grace window timer, if enabled.
+        if (useCutGraceWindow && suppressDetachEvents)
+        {
+            _cutGraceTimer -= Time.deltaTime;
+            if (_cutGraceTimer <= 0f)
+            {
+                suppressDetachEvents = false;
+            }
+        }
+    }
 
     /// <summary>
-    /// Hard-fails the session immediately (e.g., crown ripped off, stem cut way too high).
-    /// This also pushes a result through the scoring pipeline so HUD can show it.
+    /// Call this right after performing a stem cut so that brief detach flutters don't insta-fail.
+    /// </summary>
+    public void StartCutGraceWindow()
+    {
+        if (!useCutGraceWindow)
+            return;
+
+        suppressDetachEvents = true;
+        _cutGraceTimer = cutGraceDuration;
+    }
+
+    /// <summary>
+    /// Force a hard-fail of the session immediately (e.g., crown ripped off, stem cut way too high).
+    /// This also pushes a result through the scoring pipeline so HUD + grading UI can show it.
     /// </summary>
     public void ForceGameOver(string reason)
     {
+        if (sessionEnded)
+            return;
+
         if (brain == null)
         {
-            // Fallback if brain missing: still fire the event so GameOverUI shows.
+            // Fallback if brain missing: still fire the event so GameOverUI / GradingUI can show.
             lastGameOver = true;
             lastGameOverReason = reason;
             lastScore = 0;
@@ -57,17 +103,50 @@ public class FlowerSessionController : MonoBehaviour
 
             Debug.Log($"[FlowerSessionController] GAME OVER (no brain): {reason}", this);
             OnGameOver?.Invoke();
+            OnResult?.Invoke(new FlowerGameBrain.EvaluationResult
+            {
+                isGameOver = true,
+                gameOverReason = reason,
+                scoreNormalized = 0f
+            }, lastScore, lastDays);
+
+            sessionEnded = true;
             return;
         }
 
-        // Build a "forced" evaluation result.
-        var result = new FlowerGameBrain.EvaluationResult
+        // Run a real evaluation so we still see a meaningful score breakdown.
+        var result = brain.EvaluateFlower();
+        result.isGameOver = true;
+        result.gameOverReason = reason;
+
+        if (useSlowMoOnForcedGameOver && gameObject.activeInHierarchy)
         {
-            isGameOver = true,
-            gameOverReason = reason,
-            // Use whatever the brain last had (likely 0 if we never evaluated)
-            scoreNormalized = brain.lastScoreNormalized
-        };
+            StartCoroutine(CoHandleForcedGameOver(result));
+        }
+        else
+        {
+            ApplyResult(result);
+        }
+    }
+
+    private System.Collections.IEnumerator CoHandleForcedGameOver(FlowerGameBrain.EvaluationResult result)
+    {
+        float originalScale = Time.timeScale;
+
+        // Enter slow motion if requested.
+        if (forcedGameOverSlowMoScale > 0f && forcedGameOverSlowMoScale < originalScale)
+        {
+            Time.timeScale = forcedGameOverSlowMoScale;
+        }
+
+        // Wait in real-time so slowTimeScale doesn't affect the delay.
+        if (forcedGameOverSlowMoDuration > 0f)
+        {
+            yield return new WaitForSecondsRealtime(forcedGameOverSlowMoDuration);
+        }
+
+        // Fully pause gameplay while the grading screen is visible.
+        Time.timeScale = 0f;
 
         ApplyResult(result);
     }
@@ -77,6 +156,9 @@ public class FlowerSessionController : MonoBehaviour
     /// </summary>
     public void EvaluateCurrentFlower()
     {
+        if (sessionEnded)
+            return;
+
         if (brain == null)
             return;
 
@@ -98,9 +180,9 @@ public class FlowerSessionController : MonoBehaviour
         float absDelta = Mathf.Abs(signedDelta);
 
         // We only treat "too short" as instant fail: cut up into the crown area.
-        if (brain.ideal.stemCanCauseGameOver &&
-            absDelta > brain.ideal.stemHardFailDelta &&
-            signedDelta < 0f)
+        if (brain.ideal.stemCanCauseGameOver
+            && signedDelta < 0f
+            && absDelta > brain.ideal.stemHardFailDelta)
         {
             ForceGameOver("Stem cut too short (cut too high towards the crown).");
         }
@@ -112,6 +194,9 @@ public class FlowerSessionController : MonoBehaviour
 
     private void ApplyResult(FlowerGameBrain.EvaluationResult result)
     {
+        if (sessionEnded)
+            return;
+
         if (brain != null)
         {
             brain.lastWasGameOver = result.isGameOver;
@@ -122,9 +207,10 @@ public class FlowerSessionController : MonoBehaviour
         bool finalIsGameOver = result.isGameOver;
         string finalReason = result.gameOverReason;
 
+        // Soft-fail mode: this flower type doesn't want true "hard game over",
+        // so we treat even fatal violations like just a really bad score.
         if (FlowerType != null && !FlowerType.allowGameOver && result.isGameOver)
         {
-            // This flower type prefers soft-fail: treat hard fails as bad scores instead.
             finalIsGameOver = false;
         }
 
@@ -135,40 +221,40 @@ public class FlowerSessionController : MonoBehaviour
         int score = 0;
         int days = 0;
 
+        // ALWAYS compute score + days from normalized score, even on fail.
+        if (FlowerType != null)
+        {
+            score = FlowerType.GetFinalScoreFromNormalized(result.scoreNormalized);
+            days = FlowerType.GetDaysFromNormalized(result.scoreNormalized);
+        }
+        else
+        {
+            // Simple fallback: 0–100 score, 0–7 days.
+            score = Mathf.RoundToInt(result.scoreNormalized * 100f);
+            days = Mathf.RoundToInt(result.scoreNormalized * 7f);
+        }
+
+        lastScore = score;
+        lastDays = days;
+
         if (!finalIsGameOver)
         {
-            if (FlowerType != null)
-            {
-                score = FlowerType.GetFinalScoreFromNormalized(result.scoreNormalized);
-                days = FlowerType.GetDaysFromNormalized(result.scoreNormalized);
-            }
-            else
-            {
-                // Simple fallback: 0–100 score, 0–7 days.
-                score = Mathf.RoundToInt(result.scoreNormalized * 100f);
-                days = Mathf.RoundToInt(result.scoreNormalized * 7f);
-            }
-
-            lastScore = score;
-            lastDays = days;
-
             Debug.Log($"[FlowerSessionController] EVALUATE OK → score={score}, days={days}, norm={result.scoreNormalized:0.###}", this);
             OnSuccessfulEvaluation?.Invoke();
         }
         else
         {
-            lastScore = 0;
-            lastDays = 0;
-
             if (freezeOnGameOver)
                 FreezeAllRigidbodies();
 
-            Debug.Log($"[FlowerSessionController] GAME OVER → {finalReason}", this);
+            Debug.Log($"[FlowerSessionController] GAME OVER → {finalReason} (score={score}, days={days}, norm={result.scoreNormalized:0.###})", this);
             OnGameOver?.Invoke();
         }
 
-        // Always broadcast result + the final score/days snapshot.
+        // Always broadcast result + the final score/days snapshot to HUD / grading UI.
         OnResult?.Invoke(result, lastScore, lastDays);
+
+        sessionEnded = true;
     }
 
     private void FreezeAllRigidbodies()
