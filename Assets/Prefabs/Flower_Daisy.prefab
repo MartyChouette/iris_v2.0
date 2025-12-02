@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: 3350195670796599783}
   - component: {fileID: 6565067318493313646}
   - component: {fileID: 8304842457430827527}
+  - component: {fileID: 1671132382507589980}
   m_Layer: 3
   m_Name: Daisy_Leaf_L
   m_TagString: Untagged
@@ -288,7 +289,7 @@ MonoBehaviour:
   criteria: 3
   testSpace: 0
   armDelay: 0.05
-  breakForce: 750
+  breakForce: 40
   relativeSpeedThreshold: 6
   ownSpeedThreshold: 8
   absoluteTravelThreshold: 5
@@ -408,6 +409,8 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 7906754887595190452}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
 --- !u!114 &8304842457430827527
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -421,6 +424,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
   mode: 1
+--- !u!114 &1671132382507589980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1240776200526331645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &1629132496362626701
 GameObject:
   m_ObjectHideFlags: 0
@@ -439,6 +458,7 @@ GameObject:
   - component: {fileID: 5553624247539756394}
   - component: {fileID: 2937513710028057408}
   - component: {fileID: 8873713761765573043}
+  - component: {fileID: 3482452993454200180}
   m_Layer: 3
   m_Name: Petals
   m_TagString: Untagged
@@ -737,6 +757,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 8197700699443551098}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &3482452993454200180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629132496362626701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &2214357841021642041
 GameObject:
   m_ObjectHideFlags: 0
@@ -755,6 +793,7 @@ GameObject:
   - component: {fileID: 1609190348797671204}
   - component: {fileID: 2750969283354826712}
   - component: {fileID: 1870781213425333736}
+  - component: {fileID: 7641311882819069488}
   m_Layer: 3
   m_Name: Petals.001
   m_TagString: Untagged
@@ -1053,6 +1092,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 1082934113060552226}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &7641311882819069488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2214357841021642041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &3455973610173840327
 GameObject:
   m_ObjectHideFlags: 0
@@ -1071,6 +1128,7 @@ GameObject:
   - component: {fileID: 2853903399949513555}
   - component: {fileID: 3081611298494686289}
   - component: {fileID: 6686953167476818753}
+  - component: {fileID: 2973216400945697830}
   m_Layer: 3
   m_Name: Petals.008
   m_TagString: Untagged
@@ -1369,6 +1427,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 1930340733601352926}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &2973216400945697830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3455973610173840327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &4099787641865176019
 GameObject:
   m_ObjectHideFlags: 0
@@ -1421,6 +1497,7 @@ GameObject:
   - component: {fileID: 4879782119121220601}
   - component: {fileID: 2776903261968550425}
   - component: {fileID: 4674455882216906975}
+  - component: {fileID: 7803890332437222229}
   m_Layer: 3
   m_Name: Petals.004
   m_TagString: Untagged
@@ -1719,6 +1796,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 2695786462197416103}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &7803890332437222229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4292744285590588290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &4586192847055717791
 GameObject:
   m_ObjectHideFlags: 0
@@ -1737,6 +1832,7 @@ GameObject:
   - component: {fileID: 8655077313284812695}
   - component: {fileID: 7135103338214279269}
   - component: {fileID: 3324038461072046409}
+  - component: {fileID: 1758523606914436970}
   m_Layer: 3
   m_Name: Petals.002
   m_TagString: Untagged
@@ -2035,6 +2131,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 7128819164888450287}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &1758523606914436970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4586192847055717791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &5070192658512020074
 GameObject:
   m_ObjectHideFlags: 0
@@ -2052,6 +2166,7 @@ GameObject:
   - component: {fileID: 346623718633278755}
   - component: {fileID: 4056452791584144822}
   - component: {fileID: 1517942348145943185}
+  - component: {fileID: 4190970223672590170}
   m_Layer: 3
   m_Name: Daisy_Leaf_R
   m_TagString: Untagged
@@ -2216,7 +2331,7 @@ MonoBehaviour:
   criteria: 3
   testSpace: 0
   armDelay: 0.05
-  breakForce: 750
+  breakForce: 40
   relativeSpeedThreshold: 6
   ownSpeedThreshold: 8
   absoluteTravelThreshold: 5
@@ -2336,6 +2451,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 346623718633278755}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &4190970223672590170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5070192658512020074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &5314689234489813321
 GameObject:
   m_ObjectHideFlags: 0
@@ -2354,6 +2487,7 @@ GameObject:
   - component: {fileID: 567596957717846695}
   - component: {fileID: 1660017730100424578}
   - component: {fileID: 4017004320146080872}
+  - component: {fileID: 2632878871978231534}
   m_Layer: 3
   m_Name: Petals.005
   m_TagString: Untagged
@@ -2652,6 +2786,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 7893503663659657547}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &2632878871978231534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5314689234489813321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &5326607233462012353
 GameObject:
   m_ObjectHideFlags: 0
@@ -3265,6 +3417,7 @@ GameObject:
   - component: {fileID: 7565424278733859049}
   - component: {fileID: 7622477914628950403}
   - component: {fileID: 1867186498043317885}
+  - component: {fileID: 2485944220341676047}
   m_Layer: 3
   m_Name: Petals.007
   m_TagString: Untagged
@@ -3563,6 +3716,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 6850669293754249085}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &2485944220341676047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7288625889274731292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &7526729523255490388
 GameObject:
   m_ObjectHideFlags: 0
@@ -3581,6 +3752,7 @@ GameObject:
   - component: {fileID: 907632116065463138}
   - component: {fileID: 8739587756852830064}
   - component: {fileID: 1268381719619357134}
+  - component: {fileID: 7441305783875633065}
   m_Layer: 3
   m_Name: Petals.006
   m_TagString: Untagged
@@ -3879,6 +4051,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 8684104319694175572}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &7441305783875633065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526729523255490388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &7666263945407161078
 GameObject:
   m_ObjectHideFlags: 0
@@ -3928,6 +4118,7 @@ GameObject:
   - component: {fileID: 1004213017235768454}
   - component: {fileID: 3793005633059329408}
   - component: {fileID: 6382113683161978035}
+  - component: {fileID: 454988291891726181}
   m_Layer: 3
   m_Name: Petals.009
   m_TagString: Untagged
@@ -4226,6 +4417,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 454477287960826527}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &454988291891726181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7968407410608574840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &8718823069848491255
 GameObject:
   m_ObjectHideFlags: 0
@@ -4581,7 +4790,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
   PartId: Crown
-  kind: 0
+  kind: 4
   condition: 0
   isAttached: 1
   canCauseGameOver: 0
@@ -4597,6 +4806,8 @@ MonoBehaviour:
   xyJoint: {fileID: 389446206363744042}
   unityJoints:
   - {fileID: 4449925702955563308}
+  enableCrownYFailsafe: 1
+  crownFailY: -1
 --- !u!114 &4208839630878551886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4628,6 +4839,7 @@ GameObject:
   - component: {fileID: 9184686465938178215}
   - component: {fileID: 587937046150827434}
   - component: {fileID: 9032000319790388847}
+  - component: {fileID: 8527897029025731255}
   m_Layer: 3
   m_Name: Petals.003
   m_TagString: Untagged
@@ -4926,6 +5138,24 @@ MonoBehaviour:
   brain: {fileID: 1476761487897708459}
   xyJoint: {fileID: 3110070733151328953}
   unityJoints: []
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &8527897029025731255
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8896250196363821573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
 --- !u!1 &8972161866650211016
 GameObject:
   m_ObjectHideFlags: 0
@@ -5281,7 +5511,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
   PartId: Crown
-  kind: 0
+  kind: 4
   condition: 0
   isAttached: 1
   canCauseGameOver: 0
@@ -5297,6 +5527,8 @@ MonoBehaviour:
   xyJoint: {fileID: 5445834702183120020}
   unityJoints:
   - {fileID: 1273782445167318751}
+  enableCrownYFailsafe: 1
+  crownFailY: -1
 --- !u!114 &3065249614768481500
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5378,6 +5610,7 @@ MonoBehaviour:
   lastWasGameOver: 1
   lastGameOverReason: 
   lastScoreNormalized: 0
+  angleOffsetDeg: 0
 --- !u!114 &7065037729555491349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5439,12 +5672,18 @@ MonoBehaviour:
         m_CallState: 2
   lastGameOver: 1
   lastGameOverReason: 
+  lastNormalizedScore: 0
   lastScore: 0
   lastDays: 0
-  lastNormalizedScore: 0
+  useCutGraceWindow: 1
+  cutGraceDuration: 0.15
+  suppressDetachEvents: 0
   freezeOnGameOver: 0
   disableCollidersOnGameOver: 1
-  suppressDetachEvents: 0
+  useSlowMoOnForcedGameOver: 1
+  forcedGameOverSlowMoScale: 0.1
+  forcedGameOverSlowMoDuration: 0.5
+  sessionEnded: 0
 --- !u!114 &886931059027802662
 MonoBehaviour:
   m_ObjectHideFlags: 0

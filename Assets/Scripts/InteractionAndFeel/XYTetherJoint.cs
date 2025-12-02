@@ -373,6 +373,7 @@ public class XYTetherJoint : MonoBehaviour
         return isEngaged ? engaged : passive;
     }
 
+    // ───────────────────────── Break callbacks ─────────────────────────
 
     void OnJointBreak(float force)
     {
@@ -387,8 +388,59 @@ public class XYTetherJoint : MonoBehaviour
         if ((criteria & BreakCriteria.Force) != 0 && debugLogs)
             Debug.Log($"[XYTetherJoint] Joint broke by physics force = {force:F1}.", this);
 
+        // Play audio if present
+        TriggerBreakAudio();
+
         joint = null;
         onBroke?.Invoke();
+    }
+
+    /// <summary>
+    /// Called by scripts to intentionally break the joint.
+    /// </summary>
+    public void ForceBreak(string reason = "Forced")
+    {
+        // Also suppress scripted breaks during a cut, so nothing detaches mid-slice.
+        if (cutBreakSuppressed)
+        {
+            if (debugLogs)
+                Debug.Log($"[XYTetherJoint] ForceBreak \"{reason}\" suppressed due to cutBreakSuppressed.", this);
+            return;
+        }
+
+        // optionally suppress breaks if this part is not engaged
+        if (onlyBreakWhenEngaged)
+        {
+            bool isEngagedNow = (_engagement != null && _engagement.isEngaged);
+            if (!isEngagedNow)
+            {
+                if (debugLogs)
+                    Debug.Log($"[XYTetherJoint] Suppressed break \"{reason}\" because not engaged.", this);
+                return;
+            }
+        }
+
+        if (debugLogs) Debug.Log($"[XYTetherJoint] Break → {reason}", this);
+
+        DestroyJoint();
+
+        // Play audio if present
+        TriggerBreakAudio();
+
+        onBroke?.Invoke();
+    }
+
+    /// <summary>
+    /// Finds a JointBreakAudioResponder on this GameObject and fires its audio.
+    /// This is used both for physics breaks (OnJointBreak) and scripted ForceBreak.
+    /// </summary>
+    private void TriggerBreakAudio()
+    {
+        var audio = GetComponent<JointBreakAudioResponder>();
+        if (audio != null)
+        {
+            audio.OnJointBroken();
+        }
     }
 
     // ───────────────────────── Public API ─────────────────────────
@@ -422,34 +474,6 @@ public class XYTetherJoint : MonoBehaviour
         driveMaxForce = newDriveMax;
         TryCreateJoint();
     }
-
-    public void ForceBreak(string reason = "Forced")
-    {
-        // Also suppress scripted breaks during a cut, so nothing detaches mid-slice.
-        if (cutBreakSuppressed)
-        {
-            if (debugLogs)
-                Debug.Log($"[XYTetherJoint] ForceBreak \"{reason}\" suppressed due to cutBreakSuppressed.", this);
-            return;
-        }
-
-        // optionally suppress breaks if this part is not engaged
-        if (onlyBreakWhenEngaged)
-        {
-            bool isEngagedNow = (_engagement != null && _engagement.isEngaged);
-            if (!isEngagedNow)
-            {
-                if (debugLogs)
-                    Debug.Log($"[XYTetherJoint] Suppressed break \"{reason}\" because not engaged.", this);
-                return;
-            }
-        }
-
-        if (debugLogs) Debug.Log($"[XYTetherJoint] Break → {reason}", this);
-        DestroyJoint();
-        onBroke?.Invoke();
-    }
-
 
     // ───────────────────────── Joint Setup ─────────────────────────
 

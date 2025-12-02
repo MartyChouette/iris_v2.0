@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class GrabPull : MonoBehaviour
@@ -10,11 +10,25 @@ public class GrabPull : MonoBehaviour
     public float maxAccel = 60f;         // safety cap
     public float maxSpeed = 12f;
 
+    [Header("Grab SFX")]
+    public AudioClip leafGrabPrimary;
+    public AudioClip leafGrabSecondary;
+    public float leafGrabSecondaryDelay = 0.06f;
+
+    public AudioClip petalGrabPrimary;
+    public AudioClip petalGrabSecondary;
+    public float petalGrabSecondaryDelay = 0.06f;
+
+    [Tooltip("Optional generic grab SFX if we can't classify the part.")]
+    public AudioClip genericGrabPrimary;
+    public AudioClip genericGrabSecondary;
+    public float genericGrabSecondaryDelay = 0.05f;
+
     Rigidbody rb;
     bool grabbing;
     Vector3 grabWorld;
 
-    // NEW: who we mark as "engaged" while grabbing
+    // who we mark as "engaged" while grabbing
     private InteractionEngagement currentEngagement;   // optional
 
     void Awake()
@@ -33,10 +47,13 @@ public class GrabPull : MonoBehaviour
                 grabbing = true;
                 grabWorld = hit.point; // start at hit
 
-                // NEW: mark this object (or its parent) as engaged
+                // mark this object (or its parent) as engaged
                 currentEngagement = hit.rigidbody.GetComponentInParent<InteractionEngagement>();
                 if (currentEngagement != null)
                     currentEngagement.isEngaged = true;
+
+                // play grab SFX based on what kind of part we grabbed
+                PlayGrabSFX(hit.collider);
             }
         }
 
@@ -46,7 +63,7 @@ public class GrabPull : MonoBehaviour
             {
                 grabbing = false;
 
-                // NEW: clear engagement on release
+                // clear engagement on release
                 if (currentEngagement != null)
                 {
                     currentEngagement.isEngaged = false;
@@ -78,5 +95,56 @@ public class GrabPull : MonoBehaviour
         // optional speed cap to avoid tunneling
         if (rb.linearVelocity.sqrMagnitude > maxSpeed * maxSpeed)
             rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
+    }
+
+    // ─────────────────────────────────────────────
+    // Grab SFX helper
+    // ─────────────────────────────────────────────
+
+    void PlayGrabSFX(Collider col)
+    {
+        if (AudioManager.Instance == null || col == null)
+            return;
+
+        // prefer FlowerPartRuntime, since we already have that
+        FlowerPartRuntime part = col.GetComponentInParent<FlowerPartRuntime>();
+        if (part != null)
+        {
+            switch (part.kind)
+            {
+                case FlowerPartKind.Leaf:
+                    PlayDual(leafGrabPrimary, leafGrabSecondary, leafGrabSecondaryDelay);
+                    return;
+
+                case FlowerPartKind.Petal:
+                    PlayDual(petalGrabPrimary, petalGrabSecondary, petalGrabSecondaryDelay);
+                    return;
+
+                default:
+                    break;
+            }
+        }
+
+        // fallback: tags if no FlowerPartRuntime or unknown kind
+        if (col.CompareTag("Leaf") )
+        {
+            PlayDual(leafGrabPrimary, leafGrabSecondary, leafGrabSecondaryDelay);
+        }
+        else if (col.CompareTag("Petal") )
+        {
+            PlayDual(petalGrabPrimary, petalGrabSecondary, petalGrabSecondaryDelay);
+        }
+        else
+        {
+            PlayDual(genericGrabPrimary, genericGrabSecondary, genericGrabSecondaryDelay);
+        }
+    }
+
+    void PlayDual(AudioClip first, AudioClip second, float delay)
+    {
+        if (AudioManager.Instance == null) return;
+        if (first == null && second == null) return;
+
+        AudioManager.Instance.PlayDualSFX(first, second, delay);
     }
 }

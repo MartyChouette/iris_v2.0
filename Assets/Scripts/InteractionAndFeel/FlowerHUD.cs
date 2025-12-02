@@ -79,9 +79,54 @@ public class FlowerHUD : MonoBehaviour
     [Tooltip("Optional worldspace visual that should track the angle plane orientation.")]
     public Transform angleWorldPlaneVisual;
 
+    [Header("Angle Quality Text")]
+    [Tooltip("Optional label that shows a qualitative description of the cut angle (Perfect / Close / Way off).")]
+    public TMP_Text angleQualityLabel;
+
+    [Tooltip("Text used when the angle is within angleOnTargetTolerance.")]
+    public string perfectAngleText = "Perfect";
+
+    [Tooltip("Text used when the angle is close but not perfect.")]
+    public string closeAngleText = "Close";
+
+    [Tooltip("Text used when the angle is far from the target.")]
+    public string offAngleText = "Way off";
+
+    [Tooltip("Threshold (in degrees) above the on-target tolerance that still counts as 'Close'.")]
+    public float closeAngleThreshold = 5f;
+
     [Header("Angle HUD Colors")]
     public Color angleNormalColor = Color.white;
     public Color angleOnTargetColor = new Color(0.3f, 1.0f, 0.3f, 1f);
+
+    // ───────────────────────── Result Splash ─────────────────────────
+
+    [Header("Result Splash")]
+    [Tooltip("If true, builds a big splash text block when a result is shown.")]
+    public bool showResultSplash = true;
+
+    [Tooltip("TMP text used for the big 'report card' splash.")]
+    public TMP_Text resultSplashLabel;
+
+    [Tooltip("Color used for normal text in the splash (if you choose to override via rich text).")]
+    public Color splashBaseColor = Color.white;
+
+    [Tooltip("Color used for stat values in the splash (wrapped in <color> tags).")]
+    public Color splashStatColor = new Color(1f, 0.85f, 0.3f, 1f);
+
+    [Tooltip(
+        "Template for the result splash. Use tokens like {DAYS}, {SCORE}, {STEM_DELTA}, {ANGLE_DELTA}, " +
+        "{PERFECT}, {WITHERED}, {ATTACHED}, {TOTAL}. Wrap tokens you want highlighted in <stat>...</stat>."
+    )]
+    [TextArea(4, 12)]
+    public string splashTemplate =
+        "you kept this flower alive for <stat>{DAYS}</stat> days.\n\n" +
+        "final score: <stat>{SCORE}%</stat>\n\n" +
+        "stem length error: <stat>{STEM_DELTA}</stat>\n" +
+        "cut angle error: <stat>{ANGLE_DELTA}°</stat>\n\n" +
+        "perfect parts: <stat>{PERFECT}</stat> out of <stat>{TOTAL}</stat>\n" +
+        "withered parts: <stat>{WITHERED}</stat>\n" +
+        "attached parts: <stat>{ATTACHED}</stat> / <stat>{TOTAL}</stat>";
 
     [Header("Debug")]
     public bool debugLogs = false;
@@ -110,6 +155,10 @@ public class FlowerHUD : MonoBehaviour
 
         // Set up the ideal flower HUD image from the flower type, if present.
         ApplyIdealFlowerSprite();
+
+        // Start with splash hidden / empty if needed
+        if (resultSplashLabel != null && !showResultSplash)
+            resultSplashLabel.gameObject.SetActive(false);
     }
 
     void OnEnable()
@@ -208,6 +257,10 @@ public class FlowerHUD : MonoBehaviour
                 reasonLabel.gameObject.SetActive(false);
             }
         }
+
+        // Build the big splash card
+        if (showResultSplash)
+            BuildResultSplash(eval, finalScore, daysAlive);
     }
 
     // ───────────────────────── Live Debug ─────────────────────────
@@ -278,7 +331,7 @@ public class FlowerHUD : MonoBehaviour
     private void UpdateAngleHUD()
     {
         // If we have no label, no dial, and no world visual, nothing to show.
-        if (angleLabel == null && angleDialUI == null && angleWorldPlaneVisual == null)
+        if (angleLabel == null && angleDialUI == null && angleWorldPlaneVisual == null && angleQualityLabel == null)
             return;
 
         // Optional gating: only show while the two-stage plane is armed.
@@ -331,6 +384,32 @@ public class FlowerHUD : MonoBehaviour
             angleLabel.color = onTarget ? angleOnTargetColor : angleNormalColor;
         }
 
+        // Angle quality banding
+        if (angleQualityLabel != null)
+        {
+            string qText;
+            Color qColor;
+
+            if (onTarget)
+            {
+                qText = perfectAngleText;
+                qColor = angleOnTargetColor;
+            }
+            else if (absDelta <= closeAngleThreshold)
+            {
+                qText = closeAngleText;
+                qColor = angleNormalColor;
+            }
+            else
+            {
+                qText = offAngleText;
+                qColor = angleNormalColor;
+            }
+
+            angleQualityLabel.text = qText;
+            angleQualityLabel.color = qColor;
+        }
+
         // UI dial: rotate around Z so it visually tracks the cut angle.
         if (angleDialUI != null)
         {
@@ -356,5 +435,75 @@ public class FlowerHUD : MonoBehaviour
 
         if (angleDialUI != null && angleDialUI.gameObject.activeSelf != visible)
             angleDialUI.gameObject.SetActive(visible);
+
+        if (angleQualityLabel != null && angleQualityLabel.gameObject.activeSelf != visible)
+            angleQualityLabel.gameObject.SetActive(visible);
+    }
+
+    // ───────────────────────── Result Splash builder ─────────────────────────
+
+    private void BuildResultSplash(FlowerGameBrain.EvaluationResult eval, int finalScore, int daysAlive)
+    {
+        if (resultSplashLabel == null)
+            return;
+
+        if (!resultSplashLabel.gameObject.activeSelf)
+            resultSplashLabel.gameObject.SetActive(true);
+
+        // Defaults if the brain / ideal are missing
+        float stemError = 0f;
+        float angleError = 0f;
+        int totalParts = 0;
+        int attachedParts = 0;
+        int perfectParts = 0;
+        int witheredParts = 0;
+
+        if (brain != null)
+        {
+            // Stem length error
+            if (brain.stem != null && brain.ideal != null)
+            {
+                float stemLen = brain.stem.CurrentLength;
+                float idealLen = brain.ideal.idealStemLength;
+                stemError = Mathf.Abs(stemLen - idealLen);
+
+                // Angle error (same calibrated 0..180 model)
+                float rawAngle = brain.stem.GetCurrentCutAngleDeg(Vector3.up);
+                float calibrated = Mathf.DeltaAngle(rawAngle, brain.angleOffsetDeg);
+                float cutAngle = Mathf.Clamp(Mathf.Abs(calibrated), 0f, 180f);
+                float idealAngle = Mathf.Clamp(Mathf.Abs(brain.ideal.idealCutAngleDeg), 0f, 180f);
+                angleError = Mathf.Abs(cutAngle - idealAngle);
+            }
+
+            // Parts counts
+            foreach (var part in brain.parts)
+            {
+                if (part == null) continue;
+                totalParts++;
+
+                if (part.isAttached) attachedParts++;
+                if (part.condition == FlowerPartCondition.Perfect) perfectParts++;
+                if (part.condition == FlowerPartCondition.Withered) witheredParts++;
+            }
+        }
+
+        // Build from template
+        string splash = splashTemplate;
+
+        splash = splash.Replace("{DAYS}", Mathf.Max(daysAlive, 0).ToString());
+        splash = splash.Replace("{SCORE}", Mathf.Max(finalScore, 0).ToString());
+        splash = splash.Replace("{STEM_DELTA}", stemError.ToString("0.###"));
+        splash = splash.Replace("{ANGLE_DELTA}", angleError.ToString("0.#"));
+        splash = splash.Replace("{PERFECT}", perfectParts.ToString());
+        splash = splash.Replace("{WITHERED}", witheredParts.ToString());
+        splash = splash.Replace("{ATTACHED}", attachedParts.ToString());
+        splash = splash.Replace("{TOTAL}", totalParts.ToString());
+
+        // Wrap <stat>...</stat> in color tags
+        string statHex = ColorUtility.ToHtmlStringRGB(splashStatColor);
+        splash = splash.Replace("<stat>", "<color=#" + statHex + ">");
+        splash = splash.Replace("</stat>", "</color>");
+
+        resultSplashLabel.text = splash;
     }
 }

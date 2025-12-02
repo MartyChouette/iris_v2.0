@@ -13,9 +13,9 @@ namespace DynamicMeshCutter
     /// - Press toggleKey to enter/exit tilt mode.
     /// - While in tilt mode, Mouse X tilts the plane around the chosen axis.
     /// 
-    /// New: You can choose which local axis (X/Y/Z) to tilt around,
-    ///      and optionally lock world-space Y in tilt mode so stage 2
-    ///      is purely about angle, not height.
+    /// You can choose which local axis (X/Y/Z) to tilt around,
+    /// and optionally lock world-space Y in tilt mode so stage 2
+    /// is purely about angle, not height.
     /// </summary>
     [DisallowMultipleComponent]
     public class PlaneAngleTiltController : MonoBehaviour
