@@ -230,11 +230,18 @@ public class FlowerHUD : MonoBehaviour
 
             // Use the same calibrated angle that scoring uses.
             float rawAngle = brain.stem.GetCurrentCutAngleDeg(Vector3.up);
-            float cutAngle = Mathf.DeltaAngle(rawAngle, brain.angleOffsetDeg);
-            float idealAngle = brain.ideal.idealCutAngleDeg;
-            float deltaAngle = Mathf.DeltaAngle(cutAngle, idealAngle);
 
-            sb.AppendLine($"Cut angle:   {cutAngle:0.#}° (ideal {idealAngle:0.#}°, Δ {deltaAngle:+0.#;-0.#;0}°)");
+            // Calibrated cut angle, mapped into 0..180 for display.
+            float calibrated = Mathf.DeltaAngle(rawAngle, brain.angleOffsetDeg);
+            float cutAngle = Mathf.Clamp(Mathf.Abs(calibrated), 0f, 180f);
+
+            // Ideal angle, also treated as a 0..180 target.
+            float idealAngle = Mathf.Clamp(Mathf.Abs(brain.ideal.idealCutAngleDeg), 0f, 180f);
+
+            // Non-negative difference between cut and ideal.
+            float deltaAngle = Mathf.Abs(cutAngle - idealAngle);
+
+            sb.AppendLine($"Cut angle:   {cutAngle:0.#}° (ideal {idealAngle:0.#}°, Δ {deltaAngle:0.#}°)");
         }
 
         // ───────── PARTS READOUT ─────────
@@ -303,16 +310,23 @@ public class FlowerHUD : MonoBehaviour
 
         // Measure current cut angle (relative to world up), then apply calibration so HUD matches scoring.
         float rawAngle = stemForAngle.GetCurrentCutAngleDeg(Vector3.up);
-        float currentAngle = Mathf.DeltaAngle(rawAngle, angleOffsetDeg);
-        float deltaAngle = Mathf.DeltaAngle(currentAngle, targetAngleDeg);
-        float absDelta = Mathf.Abs(deltaAngle);
+        float calibrated = Mathf.DeltaAngle(rawAngle, angleOffsetDeg);
+
+        // Map calibrated angle into 0..180 range for player display.
+        float currentAngle = Mathf.Clamp(Mathf.Abs(calibrated), 0f, 180f);
+
+        // Target angle is likewise treated as 0..180.
+        float targetAngle = Mathf.Clamp(Mathf.Abs(targetAngleDeg), 0f, 180f);
+
+        // Non-negative difference between current and target.
+        float absDelta = Mathf.Abs(currentAngle - targetAngle);
         bool onTarget = absDelta <= angleOnTargetTolerance;
 
         // Text label
         if (angleLabel != null)
         {
             angleLabel.text =
-                $"Angle: {currentAngle:0.#}° / Target: {targetAngleDeg:0.#}° (Δ {deltaAngle:+0.#;-0.#;0}°)";
+                $"Angle: {currentAngle:0.#}° / Target: {targetAngle:0.#}° (Δ {absDelta:0.#}°)";
 
             angleLabel.color = onTarget ? angleOnTargetColor : angleNormalColor;
         }

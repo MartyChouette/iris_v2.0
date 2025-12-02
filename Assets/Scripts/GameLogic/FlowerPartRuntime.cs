@@ -99,23 +99,23 @@ public class FlowerPartRuntime : MonoBehaviour
             xyJoint.onBroke.RemoveListener(OnXYJointBroke);
     }
 
+
+
     private void Update()
     {
-        // Failsafe: if this is a crown piece that has already detached
-        // and it falls below a world-space Y threshold, force a game over.
         if (enableCrownYFailsafe &&
             kind == FlowerPartKind.Crown &&
             !_crownFallFailTriggered &&
-            !isAttached &&
             session != null)
         {
             if (transform.position.y < crownFailY)
             {
                 _crownFallFailTriggered = true;
-                session.ForceGameOver("Crown fell too far.");
+                session.ForceGameOver("Crown fell too low.");
             }
         }
     }
+
 
     // Unity built-in: any 3D Joint on THIS object breaking will call this.
     private void OnJointBreak(float breakForce)

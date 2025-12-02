@@ -13,7 +13,9 @@ namespace DynamicMeshCutter
     /// - Press toggleKey to enter/exit tilt mode.
     /// - While in tilt mode, Mouse X tilts the plane around the chosen axis.
     /// 
-    /// New: You can choose which local axis (X/Y/Z) to tilt around.
+    /// New: You can choose which local axis (X/Y/Z) to tilt around,
+    ///      and optionally lock world-space Y in tilt mode so stage 2
+    ///      is purely about angle, not height.
     /// </summary>
     [DisallowMultipleComponent]
     public class PlaneAngleTiltController : MonoBehaviour
@@ -48,11 +50,27 @@ namespace DynamicMeshCutter
         [Tooltip("Maximum angle in degrees on the chosen axis (in -180..180 range).")]
         public float maxAngleDeg = 80f;
 
+        [Header("Height Lock")]
+        [Tooltip("If true, when tilt mode (stage 2) is active, the plane's world-space Y is locked " +
+                 "to the height it had when tilt mode was entered. This makes stage 2 purely about angle.")]
+        public bool lockYInTiltMode = true;
+
+        [Tooltip("Debug: stored world-space Y captured when tilt mode was entered.")]
+        public float lockedWorldY;
+
         [Header("Debug")]
         public bool debugLogs = false;
 
+        // Internal state
+        [SerializeField]
         private bool _tiltModeActive = false;
         private float _currentAngleDeg;
+
+        /// <summary>
+        /// Public read-only access so other scripts (like CuttingPlaneController)
+        /// can know when tilt mode is active and stop moving Y.
+        /// </summary>
+        public bool TiltModeActive => _tiltModeActive;
 
         private void Awake()
         {
@@ -64,10 +82,13 @@ namespace DynamicMeshCutter
             _currentAngleDeg = GetAxisAngleFromEuler(euler);
             _currentAngleDeg = NormalizeAngle(_currentAngleDeg);
 
+            // Initial locked Y is just whatever height we're currently at.
+            lockedWorldY = planeTransform.position.y;
+
             if (debugLogs)
             {
                 Debug.Log(
-                    $"[PlaneAngleTiltController] Awake; initial axis {tiltAxis}, angle = {_currentAngleDeg}",
+                    $"[PlaneAngleTiltController] Awake; initial axis {tiltAxis}, angle = {_currentAngleDeg}, lockedY = {lockedWorldY}",
                     this
                 );
             }
@@ -79,6 +100,10 @@ namespace DynamicMeshCutter
 
             if (_tiltModeActive)
             {
+                // Stage 2: lock height, only change angle.
+                if (lockYInTiltMode)
+                    LockHeightY();
+
                 HandleTilt();
             }
 
@@ -101,10 +126,13 @@ namespace DynamicMeshCutter
                 _currentAngleDeg = GetAxisAngleFromEuler(euler);
                 _currentAngleDeg = NormalizeAngle(_currentAngleDeg);
 
+                // Capture the current world-space Y so height is fixed for stage 2
+                lockedWorldY = planeTransform.position.y;
+
                 if (debugLogs)
                 {
                     Debug.Log(
-                        $"[PlaneAngleTiltController] Tilt mode ON. Current {tiltAxis} angle = {_currentAngleDeg}",
+                        $"[PlaneAngleTiltController] Tilt mode ON. Axis {tiltAxis}, angle = {_currentAngleDeg}, lockedY = {lockedWorldY}",
                         this
                     );
                 }
@@ -135,6 +163,19 @@ namespace DynamicMeshCutter
             Vector3 euler = planeTransform.localEulerAngles;
             euler = SetAxisAngleOnEuler(euler, _currentAngleDeg);
             planeTransform.localEulerAngles = euler;
+        }
+
+        // ───────────────────────────────── Height Lock ─────────────────────────────────
+
+        /// <summary>
+        /// Keeps the plane's world-space Y locked to the value captured when
+        /// tilt mode was entered. This is what makes stage 2 purely about angle.
+        /// </summary>
+        private void LockHeightY()
+        {
+            Vector3 pos = planeTransform.position;
+            pos.y = lockedWorldY;
+            planeTransform.position = pos;
         }
 
         // ───────────────────────────────── Visual Sync ─────────────────────────────────

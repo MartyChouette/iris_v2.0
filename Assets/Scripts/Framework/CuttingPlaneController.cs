@@ -34,6 +34,13 @@ public class CuttingPlaneController : MonoBehaviour
     public InputActionReference pointerPositionAction;
     public InputActionReference cutAction;
 
+    [Header("Angle Tilt Integration")]
+    [Tooltip("Optional: if assigned, this controller will NOT move Y while angle tilt mode is active, so stage 2 is purely about angle.")]
+    public PlaneAngleTiltController angleTiltController;
+
+    [Tooltip("If true, disables all Y movement (axis + mouse-height) when angle tilt mode is active.")]
+    public bool disableYMovementWhenAngleTiltActive = true;
+
     Transform _planeTransform;
 
     void Reset()
@@ -54,6 +61,10 @@ public class CuttingPlaneController : MonoBehaviour
             minY = maxY;
             maxY = tmp;
         }
+
+        // Try auto-wire the tilt controller if it's on the same object.
+        if (angleTiltController == null)
+            angleTiltController = GetComponent<PlaneAngleTiltController>();
     }
 
     void OnEnable()
@@ -98,10 +109,16 @@ public class CuttingPlaneController : MonoBehaviour
                 break;
         }
 
+        // Check if tilt mode is active (second stage).
+        bool tiltLockActive =
+            disableYMovementWhenAngleTiltActive &&
+            angleTiltController != null &&
+            angleTiltController.TiltModeActive;
+
         Vector3 pos = _planeTransform.position;
 
         // ───────── Axis movement ─────────
-        if (useAxis)
+        if (useAxis && !tiltLockActive)
         {
             float axis = ReadAxis(moveYAction);
             if (Mathf.Abs(axis) > 0.0001f)
@@ -109,7 +126,7 @@ public class CuttingPlaneController : MonoBehaviour
         }
 
         // ───────── Pointer-based height ─────────
-        if (usePointer && useMouseHeight &&
+        if (usePointer && useMouseHeight && !tiltLockActive &&
             pointerPositionAction != null &&
             pointerPositionAction.action != null &&
             pointerPositionAction.action.enabled)
@@ -121,6 +138,7 @@ public class CuttingPlaneController : MonoBehaviour
             pos.y = Mathf.Lerp(pos.y, targetY, mouseFollowSpeed * Time.deltaTime);
         }
 
+        // Even if tiltLockActive, clamping is harmless because we haven't changed pos.y.
         pos.y = Mathf.Clamp(pos.y, minY, maxY);
         _planeTransform.position = pos;
 
