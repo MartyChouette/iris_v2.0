@@ -196,25 +196,53 @@ public class FlowerJointRebinder : MonoBehaviour
         foreach (var xy in joints)
         {
             if (xy == null) continue;
-            if (xy.connectedBody == null) continue;
 
             var ownerRb = xy.GetComponent<Rigidbody>();
             if (ownerRb == null) continue;
 
-            // We only want XY joints that were attached DIRECTLY to stem pieces.
-            // Leaves & petals attached to crown / attachment nodes should keep
-            // their existing connectedBody.
-            if (!stemSet.Contains(xy.connectedBody))
+            // If connectedBody is gone or no longer a valid stem piece, we treat this as a leaf
+            // that needs to be reattached to the closest stem segment.
+            bool needsRebind = false;
+
+            if (xy.connectedBody == null)
+            {
+                needsRebind = true;
+            }
+            else if (!stemSet.Contains(xy.connectedBody))
+            {
+                // connectedBody exists but is NOT one of our known stem pieces.
+                // This is very likely an old / destroyed stem or an attachment that
+                // no longer has the right rigidbody – we rebind it.
+                needsRebind = true;
+            }
+            else
+            {
+                // connectedBody IS a stem piece, but we still want to update it to the
+                // nearest new stem piece after the cut, same as petals.
+                needsRebind = true;
+            }
+
+            if (!needsRebind)
                 continue;
 
+            // Use the XY joint's own helper to reconnect, so it can rebuild
+            // its internal ConfigurableJoint, rest distance, etc.
             Vector3 refPos = xy.transform.position;
             var newBody = FindClosestStemPiece(refPos, stemPieces, ownerRb);
             if (newBody == null || newBody == ownerRb)
                 continue;
 
-            xy.connectedBody = newBody;
+            if (xy.connectedBody != newBody)
+            {
+                if (xy.debugLogs)
+                    Debug.Log($"[Rebinder] XYTetherJoint '{xy.name}' reconnected from '{xy.connectedBody?.name ?? "null"}' to '{newBody.name}'", xy);
+
+                // This recreates the underlying ConfigurableJoint with correct anchors.
+                xy.SetConnectedBody(newBody);
+            }
         }
     }
+
 
     /// <summary>
     /// Finds the closest stem piece to a given world-space point, using collider.ClosestPoint

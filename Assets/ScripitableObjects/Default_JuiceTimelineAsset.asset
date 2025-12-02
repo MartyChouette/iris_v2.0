@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08f527c40a4a91d47a23a616452657e7, type: 3}
+  m_Name: Default_JuiceTimelineAsset
+  m_EditorClassIdentifier: Assembly-CSharp::JuiceTimelineAsset
+  timelineId: Default
+  preHoldDuration: 0.15
+  freezeDuration: 0.06
+  slowMoInDuration: 0.18
+  slowMoSustainDuration: 0.1
+  slowMoOutDuration: 0.35
+  settleDuration: 0.25
+  useCameraPush: 1
+  useSlowMo: 1
+  useFreezeFrame: 1
+  useShake: 1
+  useFOVBurst: 1
+  useBloomPulse: 1
+  useChromaticFlash: 1
+  useMotionBlurSpike: 1
+  useRumble: 1
+  useScreenRipple: 1
+  triggerStartEvents: 1
+  triggerImpactEvents: 1
+  triggerEndEvents: 0

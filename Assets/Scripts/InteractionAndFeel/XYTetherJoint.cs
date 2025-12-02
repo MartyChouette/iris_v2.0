@@ -117,17 +117,36 @@ public class XYTetherJoint : MonoBehaviour
     private InteractionEngagement _engagement;
 
     // ───────────────────────── Static cut suppression ─────────────────────────
-    // During stem cuts we suppress physics-based breaks so leaves don't pop off.
+    // During stem cuts / juice moments we suppress physics-based breaks
+    // so leaves don't pop off.
+
     public static bool cutBreakSuppressed = false;
 
+    /// <summary>Read-only so external systems (JuiceMomentController) can check state.</summary>
+    public static bool IsCutBreakSuppressed => cutBreakSuppressed;
+
+    /// <summary>
+    /// Globally toggle suppression. When ON:
+    /// - All joints have breakForce/torque set to Infinity.
+    /// - Their travel / pluck timers are reset so they don't immediately pop
+    ///   on the first frame after suppression ends.
+    /// </summary>
     public static void SetCutBreakSuppressed(bool on)
     {
         cutBreakSuppressed = on;
 
-        // Update existing joints’ breakForce so they respect the new state.
         var all = FindObjectsByType<XYTetherJoint>(FindObjectsSortMode.None);
         foreach (var t in all)
         {
+            if (t == null) continue;
+
+            if (on)
+            {
+                // Clear accumulated break conditions so we don't insta-snap
+                // when suppression is lifted.
+                t.ResetBreakAccumulators();
+            }
+
             t.ApplyBreakForceToJoint();
         }
     }
@@ -246,7 +265,6 @@ public class XYTetherJoint : MonoBehaviour
                 lastTension = tension;
             }
         }
-
 
         if (Time.time >= armedAt)
         {
@@ -554,7 +572,9 @@ public class XYTetherJoint : MonoBehaviour
         }
     }
 
-    // helper to sync joint.breakForce with suppression state
+    /// <summary>
+    /// Sync joint.breakForce / breakTorque with the current suppression state.
+    /// </summary>
     void ApplyBreakForceToJoint()
     {
         if (!joint) return;
@@ -569,6 +589,19 @@ public class XYTetherJoint : MonoBehaviour
             joint.breakForce = ((criteria & BreakCriteria.Force) != 0) ? breakForce : Mathf.Infinity;
             joint.breakTorque = Mathf.Infinity;
         }
+    }
+
+    /// <summary>
+    /// Used when turning suppression ON: clear accumulated travel/pluck state
+    /// and re-arm the joint so it doesn't instantly pop when suppression ends.
+    /// </summary>
+    void ResetBreakAccumulators()
+    {
+        absoluteTravel = 0f;
+        relativeTravel = 0f;
+        pluckTimer = 0f;
+        wasAbovePluckThreshold = false;
+        armedAt = Time.time + Mathf.Max(0f, armDelay);
     }
 
     void DestroyJoint()
