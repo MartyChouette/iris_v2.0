@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 157a770866f4047a5b8a08e6aca2f1bf
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 63067
+  packageName: Obi Fluid
+  packageVersion: 7.1
+  assetPath: Assets/Obi/Resources/Compute/Rigidbody.cginc
+  uploadId: 765501

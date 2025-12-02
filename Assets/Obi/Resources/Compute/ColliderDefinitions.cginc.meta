@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: fe486a46344cd4c299b4475a4e046796
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 63067
+  packageName: Obi Fluid
+  packageVersion: 7.1
+  assetPath: Assets/Obi/Resources/Compute/ColliderDefinitions.cginc
+  uploadId: 765501

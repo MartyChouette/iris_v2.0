@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: bc807595df1f54350ac0027aaf7cb91b
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 63067
+  packageName: Obi Fluid
+  packageVersion: 7.1
+  assetPath: Assets/Obi/Resources/ObiMaterials/Common/ObiEllipsoidsHDRP.cginc
+  uploadId: 765501
