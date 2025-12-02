@@ -1517,12 +1517,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 209410524}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.3218, y: -3.16, z: 2.58975}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.64808, y: -8.94502, z: 2.25129}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 910095638}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &237365709
 GameObject:
@@ -2045,6 +2045,7 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 892ffc274577ca34a8b2c78feda00b7d, type: 2}
+  - {fileID: 2100000, guid: 892ffc274577ca34a8b2c78feda00b7d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2077,7 +2078,7 @@ ParticleSystemRenderer:
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
-  m_RenderAlignment: 0
+  m_RenderAlignment: 2
   m_Pivot: {x: 0, y: 0, z: 0}
   m_Flip: {x: 0, y: 0, z: 0}
   m_EnableGPUInstancing: 1
@@ -2085,7 +2086,7 @@ ParticleSystemRenderer:
   m_AllowRoll: 1
   m_FreeformStretching: 0
   m_RotateWithStretchDirection: 1
-  m_UseCustomVertexStreams: 0
+  m_UseCustomVertexStreams: 1
   m_VertexStreams: 00010304
   m_UseCustomTrailVertexStreams: 0
   m_TrailVertexStreams: 00010304
@@ -2114,7 +2115,7 @@ ParticleSystem:
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
   looping: 1
-  prewarm: 0
+  prewarm: 1
   playOnAwake: 1
   useUnscaledTime: 0
   autoRandomSeed: 1
@@ -2173,7 +2174,7 @@ ParticleSystem:
       m_RotationOrder: 4
   moveWithTransform: 1
   moveWithCustomTransform: {fileID: 0}
-  scalingMode: 0
+  scalingMode: 1
   randomSeed: 0
   InitialModule:
     serializedVersion: 3
@@ -2181,7 +2182,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 8
+      scalar: 20
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -2288,7 +2289,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 0.95894516, b: 0.73899364, a: 1}
+      maxColor: {r: 1, g: 1, b: 1, a: 0.39607844}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -2352,7 +2353,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.04
+      scalar: 0.5
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -2669,7 +2670,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 1500
+    maxNumParticles: 50
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -2729,7 +2730,7 @@ ParticleSystem:
   ShapeModule:
     serializedVersion: 6
     enabled: 1
-    type: 16
+    type: 5
     angle: 25
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
@@ -2737,7 +2738,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 60, y: 60, z: 60}
+    m_Scale: {x: 60, y: 60, z: 63.5}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -2935,7 +2936,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 100
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -3203,7 +3204,7 @@ ParticleSystem:
         m_RotationOrder: 4
     separateAxes: 0
   RotationModule:
-    enabled: 0
+    enabled: 1
     x:
       serializedVersion: 2
       minMaxState: 0
@@ -4754,7 +4755,7 @@ ParticleSystem:
     strength:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.03
+      scalar: 0.08
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -4911,7 +4912,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     separateAxes: 0
-    frequency: 0.01
+    frequency: 2.44
     damping: 1
     octaves: 1
     octaveMultiplier: 0.5
@@ -4920,7 +4921,7 @@ ParticleSystem:
     scrollSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.01
+      scalar: 0.66
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -5290,7 +5291,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
   SizeBySpeedModule:
-    enabled: 0
+    enabled: 1
     curve:
       serializedVersion: 2
       minMaxState: 1
@@ -5450,8 +5451,8 @@ ParticleSystem:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-    range: {x: 0, y: 1}
-    separateAxes: 0
+    range: {x: 1.09, y: 0.44}
+    separateAxes: 1
   RotationBySpeedModule:
     enabled: 0
     x:
@@ -5999,7 +6000,7 @@ ParticleSystem:
         m_RotationOrder: 4
     maxLights: 20
   TrailModule:
-    enabled: 0
+    enabled: 1
     mode: 0
     ratio: 1
     lifetime:
@@ -6830,7 +6831,7 @@ Transform:
   m_GameObject: {fileID: 348233546}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.32628, y: 5.78502, z: 0.33846}
+  m_LocalPosition: {x: 0.32628, y: 5.78502, z: 29.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7006,6 +7007,27 @@ MonoBehaviour:
   AsyncThreadAmount: -1
   VertexCreationThreshold: 0
   DefaultMaterial: {fileID: -2813467912831258332, guid: 27c3960524809a84bad7c57438920b62, type: 3}
+  ignoreWhenPointerOverUI: 1
+  raycastMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  maxRayDistance: 20
+  fallbackDepth: 3
+  audioSource: {fileID: 0}
+  dragStartClip: {fileID: 0}
+  genericSliceClip: {fileID: 0}
+  pitchMin: 0.95
+  pitchMax: 1.05
+  stemSliceClip: {fileID: 8300000, guid: f3a968da51d99a1419667b6a3921aa49, type: 3}
+  leafSliceClip: {fileID: 8300000, guid: 0715d0ce6bd9d2b449f53dde6a3bfb4c, type: 3}
+  petalSliceClip: {fileID: 8300000, guid: c5fd828cf83e743439df804787283dff, type: 3}
+  planeCutFX: {fileID: 0}
+  genericCutFXPrefab: {fileID: 0}
+  stemCutFXPrefab: {fileID: 0}
+  leafCutFXPrefab: {fileID: 0}
+  petalCutFXPrefab: {fileID: 0}
+  alignVFXToCamera: 1
+  goreIntensity: 1
 --- !u!1 &355396346
 GameObject:
   m_ObjectHideFlags: 0
@@ -7822,6 +7844,133 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 417548374}
   m_CullTransparentMesh: 1
+--- !u!1 &489653401
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 489653404}
+  - component: {fileID: 489653403}
+  - component: {fileID: 489653402}
+  m_Layer: 0
+  m_Name: Spot Light
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &489653402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 489653401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
+--- !u!108 &489653403
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 489653401}
+  m_Enabled: 1
+  serializedVersion: 11
+  m_Type: 0
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Intensity: 1
+  m_Range: 26.7
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 29.26
+  m_CookieSize: 10
+  m_Shadows:
+    m_Type: 0
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
+--- !u!4 &489653404
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 489653401}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -1.7, y: 23.37, z: 0.39}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &503696353
 GameObject:
   m_ObjectHideFlags: 0
@@ -8832,17 +8981,17 @@ AudioReverbZone:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 856363180}
   m_Enabled: 1
-  m_MinDistance: 10
-  m_MaxDistance: 15
-  m_ReverbPreset: 1
+  m_MinDistance: 7.7830305
+  m_MaxDistance: 26.92182
+  m_ReverbPreset: 5
   m_Room: -1000
-  m_RoomHF: -100
-  m_DecayTime: 1.49
-  m_DecayHFRatio: 0.83
-  m_Reflections: -2602
-  m_ReflectionsDelay: 0.007
-  m_Reverb: 200
-  m_ReverbDelay: 0.011
+  m_RoomHF: -6000
+  m_DecayTime: 0.5
+  m_DecayHFRatio: 0.1
+  m_Reflections: -1376
+  m_ReflectionsDelay: 0.003
+  m_Reverb: -1104
+  m_ReverbDelay: 0.004
   m_HFReference: 5000
   m_Diffusion: 100
   m_Density: 100
@@ -9314,6 +9463,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 910095638}
+  - component: {fileID: 910095639}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -9337,8 +9487,23 @@ Transform:
   - {fileID: 1757028359}
   - {fileID: 1712208316}
   - {fileID: 1336091879}
+  - {fileID: 209410526}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &910095639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910095637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a22ffa254e0cc44c9bcc7daf0d90dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  objectToToggle: {fileID: 381303909}
+  objectToToggle2: {fileID: 237365709}
 --- !u!1 &915255833
 GameObject:
   m_ObjectHideFlags: 0
@@ -10755,7 +10920,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: cf5afdd310b64c54da3b46a475c400af, type: 3}
+  m_Resource: {fileID: 8300000, guid: 90dcdee533c485c4db9d33073d302735, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -11053,13 +11218,13 @@ MonoBehaviour:
   cutDetectionMask:
     serializedVersion: 2
     m_Bits: 712
-  stemCutPrimary: {fileID: 0}
+  stemCutPrimary: {fileID: 8300000, guid: 6c9000b3aae3e5f4190b63b2198a9e8d, type: 3}
   stemCutSecondary: {fileID: 0}
   stemSecondaryDelay: 0.08
-  leafCutPrimary: {fileID: 0}
+  leafCutPrimary: {fileID: 8300000, guid: 943f381c5a99f2a4db238e12e844256e, type: 3}
   leafCutSecondary: {fileID: 0}
   leafSecondaryDelay: 0.08
-  petalCutPrimary: {fileID: 0}
+  petalCutPrimary: {fileID: 8300000, guid: 673bc71a260fdbe42b3116d8af52e48b, type: 3}
   petalCutSecondary: {fileID: 0}
   petalSecondaryDelay: 0.08
   genericFluidPlane: {fileID: 0}
@@ -11109,7 +11274,9 @@ MonoBehaviour:
   planeVisual: {fileID: 1842010382}
   toggleKey: 9
   tiltAxis: 0
-  rotateSpeedDegPerUnit: 10
+  rotateSpeedDegPerUnit: 15
+  useScrollWheel: 1
+  scrollSpeedDegPerNotch: 40
   minAngleDeg: -90
   maxAngleDeg: 90
   lockYInTiltMode: 1
@@ -14985,8 +15152,8 @@ RectTransform:
   - {fileID: 1758946209}
   m_Father: {fileID: 1579394753}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 800, y: 600}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -15612,7 +15779,6 @@ SceneRoots:
   - {fileID: 1027841182}
   - {fileID: 1679489889}
   - {fileID: 49592312}
-  - {fileID: 209410526}
   - {fileID: 870683352}
   - {fileID: 1538139613}
   - {fileID: 310742131}
@@ -15624,3 +15790,4 @@ SceneRoots:
   - {fileID: 856363182}
   - {fileID: 910095638}
   - {fileID: 348233549}
+  - {fileID: 489653404}

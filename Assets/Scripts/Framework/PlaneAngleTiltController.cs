@@ -11,7 +11,7 @@ namespace DynamicMeshCutter
     /// - Attach this to the same GameObject as the cutter plane (or a parent).
     /// - planeTransform should point at the PlaneBehaviour's transform.
     /// - Press toggleKey to enter/exit tilt mode.
-    /// - While in tilt mode, Mouse X tilts the plane around the chosen axis.
+    /// - While in tilt mode, Mouse X (and optional scroll wheel) tilts the plane.
     /// 
     /// You can choose which local axis (X/Y/Z) to tilt around,
     /// and optionally lock world-space Y in tilt mode so stage 2
@@ -43,6 +43,13 @@ namespace DynamicMeshCutter
 
         [Tooltip("Degrees per Mouse X unit per second.")]
         public float rotateSpeedDegPerUnit = 120f;
+
+        [Header("Scroll Wheel Tilt")]
+        [Tooltip("If true, mouse scroll wheel also tilts the plane.")]
+        public bool useScrollWheel = true;
+
+        [Tooltip("Degrees per scroll wheel notch (Mouse ScrollWheel units).")]
+        public float scrollSpeedDegPerNotch = 40f;
 
         [Tooltip("Minimum angle in degrees on the chosen axis (in -180..180 range).")]
         public float minAngleDeg = -80f;
@@ -150,11 +157,30 @@ namespace DynamicMeshCutter
 
         private void HandleTilt()
         {
+            // Mouse X (continuous, frame-rate scaled)
             float mouseX = Input.GetAxisRaw("Mouse X");
-            if (Mathf.Abs(mouseX) < 0.0001f)
+
+            // Scroll wheel (step-based, *not* scaled by deltaTime)
+            float scroll = useScrollWheel ? Input.GetAxisRaw("Mouse ScrollWheel") : 0f;
+
+            float deltaAngle = 0f;
+
+            // Mouse X tilt
+            if (Mathf.Abs(mouseX) > 0.0001f)
+            {
+                deltaAngle += mouseX * rotateSpeedDegPerUnit * Time.deltaTime;
+            }
+
+            // Scroll wheel tilt
+            if (Mathf.Abs(scroll) > 0.0001f)
+            {
+                deltaAngle += scroll * scrollSpeedDegPerNotch;
+            }
+
+            if (Mathf.Abs(deltaAngle) < 0.0001f)
                 return;
 
-            _currentAngleDeg += mouseX * rotateSpeedDegPerUnit * Time.deltaTime;
+            _currentAngleDeg += deltaAngle;
 
             // Normalize & clamp to -180..180 then within min/max
             _currentAngleDeg = NormalizeAngle(_currentAngleDeg);
