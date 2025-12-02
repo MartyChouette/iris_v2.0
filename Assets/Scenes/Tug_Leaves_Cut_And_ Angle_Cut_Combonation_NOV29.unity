@@ -514,7 +514,7 @@ PrefabInstance:
       objectReference: {fileID: 330585545}
     - target: {fileID: 454477287960826527, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 460887102287742593, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: m_IncludeLayers.m_Bits
@@ -546,7 +546,7 @@ PrefabInstance:
       objectReference: {fileID: 330585545}
     - target: {fileID: 1082934113060552226, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 1114982361995586277, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: m_IncludeLayers.m_Bits
@@ -570,7 +570,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1930340733601352926, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 2214357841021642041, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: m_TagString
@@ -590,11 +590,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2695786462197416103, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 3110070733151328953, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 3335916023339231117, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: m_IncludeLayers.m_Bits
@@ -702,11 +702,11 @@ PrefabInstance:
       objectReference: {fileID: 330585545}
     - target: {fileID: 6850669293754249085, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 7128819164888450287, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 7288625889274731292, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: m_TagString
@@ -726,7 +726,7 @@ PrefabInstance:
       objectReference: {fileID: 330585545}
     - target: {fileID: 7893503663659657547, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 7906754887595190452, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: breakForce
@@ -738,7 +738,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8197700699443551098, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 8302847303598276158, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: m_IncludeLayers.m_Bits
@@ -746,7 +746,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8684104319694175572, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: passiveMultiplierOverride
-      value: 0.52
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 8801095483921953520, guid: f6f4cec1802eea149b0a8cc50aa1c527, type: 3}
       propertyPath: m_IncludeLayers.m_Bits
@@ -7013,6 +7013,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   maxRayDistance: 20
   fallbackDepth: 3
+  suppressJointBreaksDuringCut: 1
   audioSource: {fileID: 0}
   dragStartClip: {fileID: 0}
   genericSliceClip: {fileID: 0}
@@ -7021,11 +7022,13 @@ MonoBehaviour:
   stemSliceClip: {fileID: 8300000, guid: f3a968da51d99a1419667b6a3921aa49, type: 3}
   leafSliceClip: {fileID: 8300000, guid: 0715d0ce6bd9d2b449f53dde6a3bfb4c, type: 3}
   petalSliceClip: {fileID: 8300000, guid: c5fd828cf83e743439df804787283dff, type: 3}
+  crownSliceClip: {fileID: 0}
   planeCutFX: {fileID: 0}
   genericCutFXPrefab: {fileID: 0}
   stemCutFXPrefab: {fileID: 0}
   leafCutFXPrefab: {fileID: 0}
   petalCutFXPrefab: {fileID: 0}
+  crownCutFXPrefab: {fileID: 0}
   alignVFXToCamera: 1
   goreIntensity: 1
 --- !u!1 &355396346
@@ -9041,7 +9044,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &870683349
 MonoBehaviour:
   m_ObjectHideFlags: 0
