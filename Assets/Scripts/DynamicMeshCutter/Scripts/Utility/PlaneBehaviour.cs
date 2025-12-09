@@ -166,9 +166,6 @@ namespace DynamicMeshCutter
             if (cData == null)
                 return;
 
-            // ***** REMOVED: we no longer toggle suppression here
-            // XYTetherJoint.SetCutBreakSuppressed(true);
-
             // Let DMC move/offset the created objects first
             MeshCreation.TranslateCreatedObjects(info,
                                                  cData.CreatedObjects,
@@ -181,7 +178,6 @@ namespace DynamicMeshCutter
                 : null;
 
             // Stem that owns this mesh
-
             var stemRuntime = info.MeshTarget.GetComponentInParent<FlowerStemRuntime>();
 
             for (int i = 0; i < cData.CreatedTargets.Length; i++)
@@ -222,7 +218,6 @@ namespace DynamicMeshCutter
                 }
             }
 
-
             // ─────────────────────────────────────────────
             // Inform the flower stem & session AFTER the cut
             // ─────────────────────────────────────────────
@@ -247,6 +242,13 @@ namespace DynamicMeshCutter
                 if (session == null)
                     session = UnityEngine.Object.FindFirstObjectByType<FlowerSessionController>();
 
+                // 🔥 SAP HOOK: spray from both ends on straight cuts too
+                var sap = stem.GetComponentInParent<FlowerSapController>();
+                if (sap != null)
+                {
+                    sap.EmitStemCut(planePoint, planeNormal);
+                }
+
                 // suppress detach events during cut + rebind
                 if (session != null) session.suppressDetachEvents = true;
                 try
@@ -267,15 +269,11 @@ namespace DynamicMeshCutter
                 finally
                 {
                     if (session != null)
-                    {
-                        // ***** REMOVED: suppression is handled at the top-level Cut() now
-                        // XYTetherJoint.SetCutBreakSuppressed(false);
                         session.suppressDetachEvents = false;
-                    }
                 }
-
             }
         }
+
 
         void CopyComponentsFromSource(GameObject source, GameObject piece)
         {

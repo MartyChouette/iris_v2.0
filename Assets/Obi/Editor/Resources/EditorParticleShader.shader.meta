@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: f909e74f185674832ad45806b9c6e60f
+timeCreated: 1438934781
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 63067
+  packageName: Obi Fluid
+  packageVersion: 7.1
+  assetPath: Assets/Obi/Editor/Resources/EditorParticleShader.shader
+  uploadId: 765501

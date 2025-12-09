@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4905102761511322909}
   m_Layer: 9
   m_Name: Crown
-  m_TagString: Untagged
+  m_TagString: Crown
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -61,6 +61,37 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!1 &689608821537695385
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9074866434402020908}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9074866434402020908
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 689608821537695385}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.14852628, y: -0.52995354, z: -0.28631952, w: -0.7842898}
+  m_LocalPosition: {x: -0.0037281513, y: 0.02837592, z: -0.06314801}
+  m_LocalScale: {x: 0.09002764, y: 1.2600359, z: 0.51701176}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5748094368169586635}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &969089590696797957
 GameObject:
   m_ObjectHideFlags: 0
@@ -125,9 +156,10 @@ GameObject:
   - component: {fileID: 6565067318493313646}
   - component: {fileID: 8304842457430827527}
   - component: {fileID: 1671132382507589980}
+  - component: {fileID: 1171011225203202006}
   m_Layer: 3
   m_Name: Daisy_Leaf_L
-  m_TagString: Untagged
+  m_TagString: Leaf
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -144,7 +176,8 @@ Transform:
   m_LocalPosition: {x: 0.83, y: 8.545, z: -4.194}
   m_LocalScale: {x: 8.021908, y: 85.45991, z: 204.39343}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8104128550215071335}
   m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: -130.071, y: -75.25598, z: 61.288002}
 --- !u!33 &4721859760037306932
@@ -213,7 +246,7 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -270,6 +303,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 60
   maxSpeed: 12
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &7906754887595190452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -289,7 +331,7 @@ MonoBehaviour:
   criteria: 3
   testSpace: 0
   armDelay: 0.05
-  breakForce: 40
+  breakForce: 45
   relativeSpeedThreshold: 6
   ownSpeedThreshold: 8
   absoluteTravelThreshold: 5
@@ -440,6 +482,52 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &1171011225203202006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1240776200526331645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 0
+  bleedPoint: {fileID: 8104128550215071335}
+  sapController: {fileID: 4073005392948897334}
+--- !u!1 &1314192575859029142
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8104128550215071335}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8104128550215071335
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1314192575859029142}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.34267595, y: 0.38804784, z: -0.27049747, w: 0.8116792}
+  m_LocalPosition: {x: 0.0023, y: 0.00386, z: -0.01051}
+  m_LocalScale: {x: 0.06390224, y: 2.0578163, z: 0.5399033}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8477496628403874827}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1629132496362626701
 GameObject:
   m_ObjectHideFlags: 0
@@ -459,9 +547,10 @@ GameObject:
   - component: {fileID: 2937513710028057408}
   - component: {fileID: 8873713761765573043}
   - component: {fileID: 3482452993454200180}
+  - component: {fileID: 8898273169591102943}
   m_Layer: 3
   m_Name: Petals
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -478,7 +567,8 @@ Transform:
   m_LocalPosition: {x: 5.416915, y: 9.956656, z: -0.7327814}
   m_LocalScale: {x: 9.486185, y: 46.66871, z: 150.03017}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3518239352424488191}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5373815505830925906
@@ -604,6 +694,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &8197700699443551098
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -674,7 +773,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -775,6 +874,21 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &8898273169591102943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629132496362626701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 3518239352424488191}
+  sapController: {fileID: 4073005392948897334}
 --- !u!1 &2214357841021642041
 GameObject:
   m_ObjectHideFlags: 0
@@ -794,9 +908,10 @@ GameObject:
   - component: {fileID: 2750969283354826712}
   - component: {fileID: 1870781213425333736}
   - component: {fileID: 7641311882819069488}
+  - component: {fileID: 770528330349396120}
   m_Layer: 3
   m_Name: Petals.001
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -813,7 +928,8 @@ Transform:
   m_LocalPosition: {x: 5.416915, y: 9.956656, z: -0.7327814}
   m_LocalScale: {x: 100, y: 100.000015, z: 100.00004}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2340686881296552581}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8754702162783865536
@@ -939,6 +1055,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &1082934113060552226
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1009,7 +1134,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -1110,6 +1235,52 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &770528330349396120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2214357841021642041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 2340686881296552581}
+  sapController: {fileID: 4073005392948897334}
+--- !u!1 &2981356975071333246
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7835447809961173340}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7835447809961173340
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2981356975071333246}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5274813, y: 0.1522786, z: 0.41387612, w: 0.7261414}
+  m_LocalPosition: {x: 0.2118794, y: 0.13229088, z: 0.018438343}
+  m_LocalScale: {x: 0.23953106, y: 1.0352252, z: 1.1027473}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8582902772342034947}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3455973610173840327
 GameObject:
   m_ObjectHideFlags: 0
@@ -1129,9 +1300,10 @@ GameObject:
   - component: {fileID: 3081611298494686289}
   - component: {fileID: 6686953167476818753}
   - component: {fileID: 2973216400945697830}
+  - component: {fileID: 1742488151923149573}
   m_Layer: 3
   m_Name: Petals.008
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1148,7 +1320,8 @@ Transform:
   m_LocalPosition: {x: 5.5045176, y: 9.963979, z: -0.73381424}
   m_LocalScale: {x: 9.769333, y: 48.06171, z: 154.50835}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8122985746128126631}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4644665124835059352
@@ -1274,6 +1447,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &1930340733601352926
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1344,7 +1526,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -1445,6 +1627,52 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &1742488151923149573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3455973610173840327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 8122985746128126631}
+  sapController: {fileID: 4073005392948897334}
+--- !u!1 &3527906409854197167
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6231209169615457993}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6231209169615457993
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3527906409854197167}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.12155931, y: 0.31026462, z: 0.5033347, w: 0.7972536}
+  m_LocalPosition: {x: -0.07700175, y: 0.1423254, z: -0.013312925}
+  m_LocalScale: {x: 0.15620242, y: 2.3556387, z: 0.543882}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3107526117615376819}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4099787641865176019
 GameObject:
   m_ObjectHideFlags: 0
@@ -1479,6 +1707,37 @@ Transform:
   - {fileID: 447385147862574464}
   m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4209140027349923882
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7578753931550703987}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7578753931550703987
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4209140027349923882}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.08621594, y: -0.51501554, z: -0.2216921, w: -0.82351583}
+  m_LocalPosition: {x: 0.020872034, y: 0.06695589, z: -0.040914044}
+  m_LocalScale: {x: 0.07333044, y: 3.1677072, z: 1.1847829}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8412570015225433350}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4292744285590588290
 GameObject:
   m_ObjectHideFlags: 0
@@ -1498,9 +1757,10 @@ GameObject:
   - component: {fileID: 2776903261968550425}
   - component: {fileID: 4674455882216906975}
   - component: {fileID: 7803890332437222229}
+  - component: {fileID: 4306697742569302426}
   m_Layer: 3
   m_Name: Petals.004
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1517,7 +1777,8 @@ Transform:
   m_LocalPosition: {x: 5.4169145, y: 10.232674, z: -0.73278093}
   m_LocalScale: {x: 9.486182, y: 46.6687, z: 150.03015}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 6450150877489632161}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &9164677826777061009
@@ -1643,6 +1904,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &2695786462197416103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1713,7 +1983,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -1814,6 +2084,52 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &4306697742569302426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4292744285590588290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 6450150877489632161}
+  sapController: {fileID: 4073005392948897334}
+--- !u!1 &4472691291937363151
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6450150877489632161}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6450150877489632161
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4472691291937363151}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7874595, y: 0.16813947, z: 0.438996, w: 0.39864662}
+  m_LocalPosition: {x: 0.23303089, y: 0.07332652, z: 0.039280664}
+  m_LocalScale: {x: 0.13397804, y: 1.1607445, z: 1.6987406}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3724992903486921784}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4586192847055717791
 GameObject:
   m_ObjectHideFlags: 0
@@ -1833,9 +2149,10 @@ GameObject:
   - component: {fileID: 7135103338214279269}
   - component: {fileID: 3324038461072046409}
   - component: {fileID: 1758523606914436970}
+  - component: {fileID: 7670344281006351103}
   m_Layer: 3
   m_Name: Petals.002
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1852,7 +2169,8 @@ Transform:
   m_LocalPosition: {x: 4.9009094, y: 9.995209, z: -0.72669697}
   m_LocalScale: {x: 9.486179, y: 46.668716, z: 150.03015}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 6231209169615457993}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3960887644587987055
@@ -1978,6 +2296,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &7128819164888450287
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2048,7 +2375,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -2149,6 +2476,52 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &7670344281006351103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4586192847055717791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 6231209169615457993}
+  sapController: {fileID: 4073005392948897334}
+--- !u!1 &4907759979993388093
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2340686881296552581}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2340686881296552581
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4907759979993388093}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.35170287, y: -0.56116533, z: -0.043784633, w: -0.747985}
+  m_LocalPosition: {x: 0.0015536358, y: -0.01336651, z: -0.06758075}
+  m_LocalScale: {x: 0.09002766, y: 1.2600358, z: 0.5170117}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3629868976547866811}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5070192658512020074
 GameObject:
   m_ObjectHideFlags: 0
@@ -2167,9 +2540,10 @@ GameObject:
   - component: {fileID: 4056452791584144822}
   - component: {fileID: 1517942348145943185}
   - component: {fileID: 4190970223672590170}
+  - component: {fileID: 8383633163747172027}
   m_Layer: 3
   m_Name: Daisy_Leaf_R
-  m_TagString: Untagged
+  m_TagString: Leaf
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2186,7 +2560,8 @@ Transform:
   m_LocalPosition: {x: -2.16, y: 8.312, z: -3.333}
   m_LocalScale: {x: 9.002765, y: 126.003624, z: 51.70117}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 4912545640395894971}
   m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: -19.94, y: 34.345, z: -110.187}
 --- !u!33 &4821779323113916634
@@ -2255,7 +2630,7 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -2312,6 +2687,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 60
   maxSpeed: 12
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &346623718633278755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2331,7 +2715,7 @@ MonoBehaviour:
   criteria: 3
   testSpace: 0
   armDelay: 0.05
-  breakForce: 40
+  breakForce: 45
   relativeSpeedThreshold: 6
   ownSpeedThreshold: 8
   absoluteTravelThreshold: 5
@@ -2469,6 +2853,52 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &8383633163747172027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5070192658512020074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 0
+  bleedPoint: {fileID: 4912545640395894971}
+  sapController: {fileID: 4073005392948897334}
+--- !u!1 &5141568083721488197
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8122985746128126631}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8122985746128126631
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5141568083721488197}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.78447497, y: 0.06376336, z: 0.48143607, w: 0.38568443}
+  m_LocalPosition: {x: 0.16276416, y: 0.049887992, z: 0.040548336}
+  m_LocalScale: {x: 0.099527046, y: 1.3617456, z: 1.761362}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5662208666715156353}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5314689234489813321
 GameObject:
   m_ObjectHideFlags: 0
@@ -2488,9 +2918,10 @@ GameObject:
   - component: {fileID: 1660017730100424578}
   - component: {fileID: 4017004320146080872}
   - component: {fileID: 2632878871978231534}
+  - component: {fileID: 8606087971155912359}
   m_Layer: 3
   m_Name: Petals.005
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2507,7 +2938,8 @@ Transform:
   m_LocalPosition: {x: 5.4162774, y: 10.124928, z: -0.7868495}
   m_LocalScale: {x: 9.486183, y: 46.668724, z: 150.03015}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 686710129652910387}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5515752699859962594
@@ -2633,6 +3065,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &7893503663659657547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2703,7 +3144,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -2804,6 +3245,21 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &8606087971155912359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5314689234489813321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 686710129652910387}
+  sapController: {fileID: 4073005392948897334}
 --- !u!1 &5326607233462012353
 GameObject:
   m_ObjectHideFlags: 0
@@ -2825,10 +3281,11 @@ GameObject:
   - component: {fileID: 8075709354355552181}
   - component: {fileID: 7968358097009675452}
   - component: {fileID: 8015329153449627934}
+  - component: {fileID: 4373377638576990153}
   - component: {fileID: 5381549879417796548}
   m_Layer: 7
   m_Name: Stem
-  m_TagString: Untagged
+  m_TagString: Stem
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2845,7 +3302,8 @@ Transform:
   m_LocalPosition: {x: -0.84000015, y: 1, z: -4.79}
   m_LocalScale: {x: 100, y: 99.999985, z: 99.999985}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3664763788098013250}
   m_Father: {fileID: 6233228201949715265}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7910132646512638531
@@ -2914,7 +3372,7 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 8
@@ -2971,6 +3429,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 60
   maxSpeed: 12
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &824632589644842973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3093,6 +3560,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
   isEngaged: 0
   passiveIntensity: 0.25
+--- !u!114 &4373377638576990153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5326607233462012353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 2
+  bleedPoint: {fileID: 3664763788098013250}
+  sapController: {fileID: 4073005392948897334}
 --- !u!114 &5381549879417796548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3330,6 +3812,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50b8598af48af3142bae19fab4f627be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!1 &6288282744146464605
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 686710129652910387}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &686710129652910387
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6288282744146464605}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.6167795, y: 0.1447572, z: 0.38018015, w: 0.6738631}
+  m_LocalPosition: {x: 0.28105682, y: 0.11766318, z: 0.023699729}
+  m_LocalScale: {x: 0.23829655, y: 0.9395417, z: 1.5076059}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8159011113070143297}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7127011884221172709
 GameObject:
   m_ObjectHideFlags: 0
@@ -3418,9 +3931,10 @@ GameObject:
   - component: {fileID: 7622477914628950403}
   - component: {fileID: 1867186498043317885}
   - component: {fileID: 2485944220341676047}
+  - component: {fileID: 5855626628587814517}
   m_Layer: 3
   m_Name: Petals.007
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3437,7 +3951,8 @@ Transform:
   m_LocalPosition: {x: 5.0850315, y: 9.995209, z: -0.7971964}
   m_LocalScale: {x: 9.486184, y: 46.668747, z: 150.03015}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1749452097000182979}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &834304895488710388
@@ -3563,6 +4078,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &6850669293754249085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3633,7 +4157,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -3734,6 +4258,52 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &5855626628587814517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7288625889274731292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 1749452097000182979}
+  sapController: {fileID: 4073005392948897334}
+--- !u!1 &7299777268770062190
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3664763788098013250}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3664763788098013250
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7299777268770062190}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.2599498, y: -0.51177055, z: -0.09612149, w: -0.81318974}
+  m_LocalPosition: {x: 0.0064725527, y: 0.0038295228, z: 0.05788682}
+  m_LocalScale: {x: 0.09002773, y: 1.2600366, z: 0.51701194}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9139188167376853586}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7526729523255490388
 GameObject:
   m_ObjectHideFlags: 0
@@ -3753,9 +4323,10 @@ GameObject:
   - component: {fileID: 8739587756852830064}
   - component: {fileID: 1268381719619357134}
   - component: {fileID: 7441305783875633065}
+  - component: {fileID: 3668339669190720896}
   m_Layer: 3
   m_Name: Petals.006
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3772,7 +4343,8 @@ Transform:
   m_LocalPosition: {x: 5.4134784, y: 9.956656, z: -1.024231}
   m_LocalScale: {x: 100, y: 100.000015, z: 100.000015}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 9074866434402020908}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5481346086814225912
@@ -3898,6 +4470,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &8684104319694175572
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3968,7 +4549,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -4069,6 +4650,21 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &3668339669190720896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526729523255490388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 9074866434402020908}
+  sapController: {fileID: 4073005392948897334}
 --- !u!1 &7666263945407161078
 GameObject:
   m_ObjectHideFlags: 0
@@ -4100,6 +4696,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6056292307205435292}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7816995471159098923
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3518239352424488191}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3518239352424488191
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7816995471159098923}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.35740292, y: -0.5196824, z: -0.03284297, w: -0.7753159}
+  m_LocalPosition: {x: 0.09046822, y: -0.02816225, z: -0.044721555}
+  m_LocalScale: {x: 0.081867896, y: 1.8532556, z: 1.8315827}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 575365170620706452}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7968407410608574840
 GameObject:
   m_ObjectHideFlags: 0
@@ -4119,9 +4746,10 @@ GameObject:
   - component: {fileID: 3793005633059329408}
   - component: {fileID: 6382113683161978035}
   - component: {fileID: 454988291891726181}
+  - component: {fileID: 3699426761476045251}
   m_Layer: 3
   m_Name: Petals.009
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4138,7 +4766,8 @@ Transform:
   m_LocalPosition: {x: 5.416915, y: 9.956657, z: -0.7327814}
   m_LocalScale: {x: 9.486178, y: 46.668705, z: 150.03017}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7578753931550703987}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2922835123998050999
@@ -4264,6 +4893,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &454477287960826527
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4334,7 +4972,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -4435,6 +5073,83 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &3699426761476045251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7968407410608574840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 7578753931550703987}
+  sapController: {fileID: 4073005392948897334}
+--- !u!1 &8106934785328027935
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4912545640395894971}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4912545640395894971
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8106934785328027935}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.088, y: 0.01462, z: -0.0093}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8658300951072714129}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8714130043451633840
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1749452097000182979}
+  m_Layer: 3
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1749452097000182979
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8714130043451633840}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.34653768, y: 0.3019739, z: 0.41747108, w: 0.78386307}
+  m_LocalPosition: {x: 0.102144174, y: 0.14773661, z: 0.00009196737}
+  m_LocalScale: {x: 0.21440174, y: 1.2035501, z: 0.8689032}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7360575210255379860}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8718823069848491255
 GameObject:
   m_ObjectHideFlags: 0
@@ -4545,7 +5260,7 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -4602,6 +5317,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 60
   maxSpeed: 12
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &389446206363744042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4840,9 +5564,10 @@ GameObject:
   - component: {fileID: 587937046150827434}
   - component: {fileID: 9032000319790388847}
   - component: {fileID: 8527897029025731255}
+  - component: {fileID: 5303630533295801933}
   m_Layer: 3
   m_Name: Petals.003
-  m_TagString: Untagged
+  m_TagString: Petal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4859,7 +5584,8 @@ Transform:
   m_LocalPosition: {x: 5.416915, y: 10.124928, z: -0.7327814}
   m_LocalScale: {x: 9.486181, y: 46.66872, z: 150.03018}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7835447809961173340}
   m_Father: {fileID: 2491490619276510798}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3650963552987282363
@@ -4985,6 +5711,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 100
   maxSpeed: 15
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &3110070733151328953
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5055,7 +5790,7 @@ MonoBehaviour:
       m_Calls: []
   useEngagementScaling: 1
   engagedMultiplier: 1
-  passiveMultiplierOverride: 0
+  passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   onBroke:
     m_PersistentCalls:
@@ -5156,6 +5891,21 @@ MonoBehaviour:
   secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
   secondaryDelay: 0.15
   debugLogs: 0
+--- !u!114 &5303630533295801933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8896250196363821573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 1
+  bleedPoint: {fileID: 7835447809961173340}
+  sapController: {fileID: 4073005392948897334}
 --- !u!1 &8972161866650211016
 GameObject:
   m_ObjectHideFlags: 0
@@ -5266,7 +6016,7 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -5323,6 +6073,15 @@ MonoBehaviour:
   grabDamper: 18
   maxAccel: 60
   maxSpeed: 12
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
 --- !u!114 &5445834702183120020
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5557,6 +6316,7 @@ GameObject:
   - component: {fileID: 2148140104094420840}
   - component: {fileID: 232145106645487097}
   - component: {fileID: 7400225432268500986}
+  - component: {fileID: 4073005392948897334}
   m_Layer: 0
   m_Name: Flower_Daisy
   m_TagString: Untagged
@@ -5771,3 +6531,37 @@ MonoBehaviour:
   makeTopDynamic: 0
   topUseGravity: 1
   topConstraints: 126
+--- !u!114 &4073005392948897334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9219504238569956344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a73c5f0db94c7d4295f75589235ec82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerSapController
+  emitterPrefab: {fileID: 4615614034825461725, guid: ffe4fc008102b44409c86d32f25782f8, type: 3}
+  poolSize: 20
+  poolRoot: {fileID: 0}
+  stemEndOffset: 0
+  stemTopBurst:
+    speed: 18
+    duration: 0.25
+    angleJitter: 8
+  stemBottomBurst:
+    speed: 12
+    duration: 0.2
+    angleJitter: 6
+  leafTearBurst:
+    speed: 8
+    duration: 0.18
+    angleJitter: 12
+  petalTearBurst:
+    speed: 6
+    duration: 0.15
+    angleJitter: 15
+  sapIntensity: 1
+  maxEffectiveSpeed: 200

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5b1df68bf523b4106a6b113980018d93
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 63067
+  packageName: Obi Fluid
+  packageVersion: 7.1
+  assetPath: Assets/Obi/Resources/Compute/DistanceFunctions.cginc
+  uploadId: 765501

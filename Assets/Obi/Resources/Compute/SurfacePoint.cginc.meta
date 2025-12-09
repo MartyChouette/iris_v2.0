@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b54db800f0f884467b02edb24ca317d4
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 63067
+  packageName: Obi Fluid
+  packageVersion: 7.1
+  assetPath: Assets/Obi/Resources/Compute/SurfacePoint.cginc
+  uploadId: 765501

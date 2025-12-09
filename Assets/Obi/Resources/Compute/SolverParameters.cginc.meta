@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 57c61c65170924f0aa225156e164ceb8
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 63067
+  packageName: Obi Fluid
+  packageVersion: 7.1
+  assetPath: Assets/Obi/Resources/Compute/SolverParameters.cginc
+  uploadId: 765501

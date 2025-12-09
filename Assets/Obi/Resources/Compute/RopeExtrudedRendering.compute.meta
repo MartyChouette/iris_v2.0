@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0d389c799c83d43f38f2486ab16fe902
+ComputeShaderImporter:
+  externalObjects: {}
+  currentAPIMask: 65536
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 63067
+  packageName: Obi Fluid
+  packageVersion: 7.1
+  assetPath: Assets/Obi/Resources/Compute/RopeExtrudedRendering.compute
+  uploadId: 765501

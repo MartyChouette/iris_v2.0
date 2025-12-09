@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 312fa8266af38654e8741206d0bbbfbd, type: 3}
   m_Name: Daisy
   m_EditorClassIdentifier: Assembly-CSharp::IdealFlowerDefinition
-  idealStemLength: 11.791715
-  stemHardFailDelta: 5
+  idealStemLength: 3.48
+  stemHardFailDelta: 4.5
   stemPerfectDelta: 0.05
-  stemScoreWeight: 0.4
+  stemScoreWeight: 0.529
   stemCanCauseGameOver: 0
   stemContributesToScore: 1
-  idealCutAngleDeg: 45
+  idealCutAngleDeg: 38.9
   cutAngleHardFailDelta: 15
   cutAnglePerfectDelta: 3
   cutAngleScoreWeight: 0.4

@@ -1,12 +1,20 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace DynamicMeshCutter
 {
     /// <summary>
-    /// Plane-based cutter that stores the current plane (point + normal) and
-    /// optionally previews angle. This sits on your AnglePlane object.
+    /// Plane-based cutter for the ANGLE STAGE.
+    /// - Stores plane (point + normal) from this transform
+    /// - Lets HUD query the plane
+    /// - Performs cuts using the real DMC API with OnCreated
+    /// - Applies guard rails (XYTether suppression, session suppressDetachEvents)
+    /// - Sets up rigidbodies so bottom stem piece is anchored, top pieces fall
+    /// - Notifies FlowerStemRuntime + FlowerSessionController + FlowerJointRebinder
+    /// - Optionally triggers FlowerSapController on stem cuts
     /// </summary>
+    [DisallowMultipleComponent]
     public class AngleStagePlaneBehaviour : CutterBehaviour
     {
         [Header("Debug")]
@@ -40,11 +48,9 @@ namespace DynamicMeshCutter
         [Tooltip("Used by FlowerHUD to know if the angle stage is currently armed.")]
         private bool isAngleStageArmed = false;
 
-        // At the top of the class:
         [Header("Targets")]
         [Tooltip("MeshTargets that this angle plane will cut. Drag your stem MeshTarget(s) here.")]
         public MeshTarget[] angleTargets;
-
 
         // ───────────────────── Cached plane (for other systems / UI) ─────────────────────
 
@@ -77,19 +83,23 @@ namespace DynamicMeshCutter
             if (previewBeforeCut)
             {
                 CachePlaneFromTransform();
+                PreviewAgainstFlower();
             }
+
+            // Let CutterBehaviour process async work
+            base.Update();
         }
 
         // ───────────────────── Public API ─────────────────────
 
         /// <summary>
         /// Rebuild the cached plane from the current transform.
-        /// *** This is where we fix the 90° issue: the plane normal is transform.forward. ***
+        /// Plane normal is transform.up (aligned with your gizmo).
         /// </summary>
         public void CachePlaneFromTransform()
         {
             _lastPlanePoint = transform.position;
-            _lastPlaneNormal = transform.up;   // ← plane normal
+            _lastPlaneNormal = transform.up;
         }
 
         /// <summary>
@@ -114,7 +124,6 @@ namespace DynamicMeshCutter
 
         /// <summary>
         /// Used by FlowerHUD to decide what icon/state to show.
-        /// Signature kept to satisfy existing code.
         /// </summary>
         public bool IsAngleStageArmed()
         {
@@ -122,11 +131,34 @@ namespace DynamicMeshCutter
         }
 
         /// <summary>
-        /// Perform the actual mesh cut, using the plane defined by this component.
-        /// This finds the first MeshTarget on the base CutterBehaviour via reflection
-        /// and calls CutterBehaviour.Cut(target, point, normal, null).
+        /// Stage 1: preview – same idea as PlaneBehaviour.PreviewAgainstFlower.
         /// </summary>
-        // Replace old PerformCut() with this:
+        public void PreviewAgainstFlower()
+        {
+            FlowerStemRuntime stem = previewStemOverride;
+            if (stem == null)
+                stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
+
+            if (stem == null)
+                return;
+
+            Vector3 planePoint = _lastPlanePoint;
+            Vector3 planeNormal = _lastPlaneNormal;
+
+            stem.ApplyCutFromPlane(planePoint, planeNormal);
+
+            if (debugLogs)
+            {
+                float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
+                float len = stem.CurrentLength;
+                Debug.Log($"[AngleStagePlaneBehaviour] PREVIEW angle:{angle:F1}°, length:{len:F3}", stem);
+            }
+        }
+
+        /// <summary>
+        /// Stage 2: actually perform the cut on all angleTargets.
+        /// Uses the real DMC API with OnCreated callback, plus XYTether suppression.
+        /// </summary>
         public void PerformCut()
         {
             CachePlaneFromTransform();
@@ -137,23 +169,186 @@ namespace DynamicMeshCutter
                 return;
             }
 
-            bool anyCut = false;
+            if (debugLogs)
+                Debug.Log($"[AngleStagePlaneBehaviour] Cutting with plane point:{_lastPlanePoint}, normal:{_lastPlaneNormal}", this);
 
-            foreach (var mt in angleTargets)
+            // suppress detach events on all sessions while slicing
+            var sessions = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(
+                FindObjectsSortMode.None
+            );
+
+            foreach (var s in sessions)
+                if (s != null) s.suppressDetachEvents = true;
+
+            // suppress XYTether force-breaks for the entire cut
+            XYTetherJoint.SetCutBreakSuppressed(true);
+
+            try
             {
-                if (mt == null) continue;
+                bool anyCut = false;
 
-                // This is the real DynamicMeshCutter API.
-                base.Cut(mt, _lastPlanePoint, _lastPlaneNormal, null);
-                anyCut = true;
+                foreach (var target in angleTargets)
+                {
+                    if (target == null)
+                        continue;
+
+                    // Must actually have a mesh
+                    var mf = target.GetComponent<MeshFilter>();
+                    var smr = target.GetComponent<SkinnedMeshRenderer>();
+                    bool hasMesh =
+                        (mf != null && mf.sharedMesh != null) ||
+                        (smr != null && smr.sharedMesh != null);
+
+                    if (!hasMesh)
+                        continue;
+
+                    // Must belong to a stem hierarchy
+                    var stemRuntime = target.GetComponentInParent<FlowerStemRuntime>();
+                    if (stemRuntime == null)
+                        continue;
+
+                    // Must NOT be leaves / petals / crown (FlowerPartRuntime)
+                    if (target.GetComponent<FlowerPartRuntime>() != null)
+                        continue;
+
+                    try
+                    {
+                        Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreated);
+                        anyCut = true;
+                    }
+                    catch (System.Exception e)
+                    {
+                        if (debugLogs)
+                            Debug.LogWarning($"[AngleStagePlaneBehaviour] Skipped cutting '{target.name}' due to error: {e.Message}", target);
+                    }
+                }
+
+                if (!anyCut && debugLogs)
+                {
+                    Debug.LogWarning("[AngleStagePlaneBehaviour] PerformCut: angleTargets contained no valid stem MeshTargets.");
+                }
             }
-
-            if (!anyCut)
+            finally
             {
-                Debug.LogWarning("[AngleStagePlaneBehaviour] PerformCut: All entries in angleTargets are null.");
+                XYTetherJoint.SetCutBreakSuppressed(false);
+
+                foreach (var s in sessions)
+                    if (s != null) s.suppressDetachEvents = false;
             }
         }
 
+        // ───────────────────── DMC callback ─────────────────────
+        // This is essentially the same logic as PlaneBehaviour.OnCreated,
+        // with a small hook for sap.
+
+        private void OnCreated(Info info, MeshCreationData cData)
+        {
+            if (cData == null)
+                return;
+
+            // Let DMC move/offset the created objects first
+            MeshCreation.TranslateCreatedObjects(info,
+                                                 cData.CreatedObjects,
+                                                 cData.CreatedTargets,
+                                                 Separation);
+
+            var stemRuntime = info.MeshTarget.GetComponentInParent<FlowerStemRuntime>();
+
+            // create rigidbodies + marker for each piece
+            var pieceBodies = new List<Rigidbody>();
+
+            for (int i = 0; i < cData.CreatedTargets.Length; i++)
+            {
+                var createdTarget = cData.CreatedTargets[i];
+                if (createdTarget == null)
+                    continue;
+
+                GameObject piece = createdTarget.gameObject;
+
+                if (stemRuntime != null)
+                {
+                    var marker = piece.AddComponent<StemPieceMarker>();
+                    marker.stemRuntime = stemRuntime;
+
+                    bool isBottom = info.BT != null &&
+                                    i < info.BT.Length &&
+                                    info.BT[i] == 0;
+
+                    var rb = piece.GetComponent<Rigidbody>() ?? piece.AddComponent<Rigidbody>();
+                    rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+                    pieceBodies.Add(rb);
+
+                    if (isBottom)
+                    {
+                        rb.isKinematic = true;
+                        rb.useGravity = false;
+                        rb.constraints = RigidbodyConstraints.FreezeAll;
+                    }
+                    else
+                    {
+                        rb.isKinematic = false;
+                        rb.useGravity = true;
+                        rb.constraints = RigidbodyConstraints.None;
+                    }
+                }
+            }
+
+            // ─────────────────────────────────────────────
+            // Inform the flower stem & session AFTER the cut
+            // ─────────────────────────────────────────────
+
+            var stem = info.MeshTarget != null
+                ? info.MeshTarget.GetComponentInParent<FlowerStemRuntime>()
+                : null;
+
+            if (stem == null)
+                stem = previewStemOverride;
+            if (stem == null)
+                stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
+
+            if (stem != null)
+            {
+                Vector3 planePoint = info.Plane.WorldPosition;
+                Vector3 planeNormal = info.Plane.WorldNormal;
+
+                var session = previewSessionOverride;
+                if (session == null)
+                    session = stem.GetComponentInParent<FlowerSessionController>();
+                if (session == null)
+                    session = UnityEngine.Object.FindFirstObjectByType<FlowerSessionController>();
+
+                // 🔥 SAP HOOK: spray from both ends on angle cuts too
+                var sap = stem.GetComponentInParent<FlowerSapController>();
+                if (sap != null)
+                {
+                    sap.EmitStemCut(planePoint, planeNormal);
+                }
+
+                // suppress detach events during cut + rebind
+                if (session != null) session.suppressDetachEvents = true;
+                try
+                {
+                    stem.ApplyCutFromPlane(planePoint, planeNormal);
+
+                    float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
+                    float len = stem.CurrentLength;
+                    if (debugLogs)
+                        Debug.Log($"[AngleStagePlaneBehaviour] Stem cut angle:{angle:F1}°, length:{len:F3}", stem);
+
+                    session?.CheckStemCutImmediate();
+
+                    // rebind leaves/petals to nearest stem chunk
+                    var rebinder = stem.GetComponentInParent<FlowerJointRebinder>();
+                    rebinder?.RebindAllPartsToClosestStemPiece();
+                }
+                finally
+                {
+                    if (session != null)
+                        session.suppressDetachEvents = false;
+                }
+            }
+        }
 
         // ───────────────────── Debug drawing ─────────────────────
 
