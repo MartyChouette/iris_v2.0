@@ -1,8 +1,9 @@
 using UnityEngine;
+// using Obi; // Uncomment when you have Obi imported
+
 /// <summary>
-/// Placeholder / wrapper for later Obi integration.
-/// Right now it just exposes a Squirt(intensity) API and optional ParticleSystem,
-/// so you can test gore intensity without needing Obi in the project yet.
+/// Placeholder / wrapper for Obi integration.
+/// Now handles positioning itself at the source of the spray.
 /// </summary>
 public class FluidSquirter : MonoBehaviour
 {
@@ -12,17 +13,56 @@ public class FluidSquirter : MonoBehaviour
     [Tooltip("Base spawn amount / intensity for this emitter (1 = normal).")]
     public float baseIntensity = 1f;
 
+    /// <summary>
+    /// Legacy overload: Squirts at the current transform position.
+    /// </summary>
     public void Squirt(float goreIntensity)
+    {
+        Squirt(goreIntensity, transform.position, transform.forward);
+    }
+
+    /// <summary>
+    /// New Overload: Moves the emitter to the specific position/normal, then squirts.
+    /// </summary>
+    public void Squirt(float goreIntensity, Vector3 position, Vector3 normal)
     {
         float final = Mathf.Clamp01(goreIntensity) * baseIntensity;
         if (final <= 0f) return;
 
+        // 1. Move to the exact contact point
+        transform.position = position;
+
+        // 2. Rotate to face the spray direction
+        if (normal.sqrMagnitude > 0.001f)
+        {
+            transform.rotation = Quaternion.LookRotation(normal);
+        }
+
+        // 3. Emit fallback particles (if assigned)
         if (fallbackParticles != null)
         {
+            // If the particle system is a child, ensure it uses Local simulation space
+            // or we just rely on moving the parent transform before emission.
             int emitCount = Mathf.CeilToInt(10 * final);
             fallbackParticles.Emit(emitCount);
         }
 
-        // Later: replace this with Obi emitter calls.
+        // 4. Emit Obi Fluid (Integration)
+        /*
+        var obiEmitter = GetComponent<Obi.ObiEmitter>();
+        if (obiEmitter != null) 
+        {
+            // Kill velocity so it doesn't streak from the old position
+            obiEmitter.KillAll(); 
+            
+            // Speed hack for burst intensity
+            float originalSpeed = obiEmitter.speed;
+            obiEmitter.speed = 10f * final; 
+
+            // Note: Obi emitters are continuous. You usually need a Coroutine 
+            // to turn 'obiEmitter.speed' back to 0 after a fraction of a second,
+            // similar to how FlowerSapController.Burst works.
+        }
+        */
     }
 }

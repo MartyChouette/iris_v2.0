@@ -77,7 +77,7 @@ public class FlowerGradingUI : MonoBehaviour
         // Auto-find session if not wired.
         if (session == null)
         {
-            session = FindObjectOfType<FlowerSessionController>();
+            session = FindFirstObjectByType<FlowerSessionController>();
             if (debugLogs)
             {
                 if (session != null)

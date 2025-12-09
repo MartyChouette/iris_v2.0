@@ -21,7 +21,7 @@ public class IdealFlowerHUDIcon : MonoBehaviour
     {
         if (session == null)
         {
-            session = FindObjectOfType<FlowerSessionController>();
+            session = Object.FindFirstObjectByType<FlowerSessionController>();
         }
 
         if (targetImage == null)

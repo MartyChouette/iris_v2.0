@@ -1,0 +1,200 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6140236051084395464
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 306344798492615617}
+  - component: {fileID: 9054064565613302591}
+  - component: {fileID: 8666070856158485413}
+  - component: {fileID: 3253622498289091100}
+  - component: {fileID: 2534801762010412854}
+  m_Layer: 8
+  m_Name: Faucet_Emitter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &306344798492615617
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6140236051084395464}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -0.099999905, y: 2.395, z: 0.002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!114 &9054064565613302591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6140236051084395464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78c37f4b1f0174c6ebfdf0e7b8af64a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  solverIndices:
+    serializedContents: 
+    m_AlignBytes: 16
+  groupID: 3
+  m_CollisionMaterial: {fileID: 0}
+  m_SurfaceCollisions: 0
+  m_MassScale: 1
+  emitterBlueprint: {fileID: 11400000, guid: eae3f4de6f75a4bef942d5ef885b4677, type: 2}
+  filter: -65534
+  emissionMethod: 0
+  minPoolSize: 0.5
+  speed: 1.5
+  lifespan: 100
+  randomDirection: 0
+  inheritVelocity: 0
+  useShapeColor: 1
+  emitterShapes: []
+--- !u!114 &8666070856158485413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6140236051084395464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e0f9dbc2f19b44f58bd186fa841f61a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  emitter: {fileID: 9054064565613302591}
+  color: {r: 0, g: 0.08176088, b: 0.011923456, a: 1}
+  particleSize: 0.07937005
+  distribution:
+  - position: {x: 0, y: 0, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.07937005, y: 0, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.039685022, y: 0.068736486, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.03968503, y: 0.06873648, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.07937005, y: -0.0000000069387505, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.03968502, y: -0.068736486, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.03968502, y: -0.068736486, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.1587401, y: 0, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.1388976, y: 0.07684972, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.08433069, y: 0.134487, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.008681112, y: 0.15850255, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.06913874, y: 0.14289246, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.12967393, y: 0.09155924, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.1577906, y: 0.017336242, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.14645965, y: -0.061220814, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.0985138, y: -0.1244727, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.025939466, y: -0.15660639, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.053119726, y: -0.14958848, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.11889893, y: -0.10517349, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.15495346, y: -0.034465093, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  radius: 0.2
+  edgeEmission: 0
+--- !u!114 &3253622498289091100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6140236051084395464}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 099cf6d70aee642098e249011347b909, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pass: {fileID: 11400000, guid: 19c28312b2d804273a1e22439c99f4c1, type: 2}
+--- !u!114 &2534801762010412854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6140236051084395464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8b45ebbf86be4df6b0e6cd933812af2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  material: {fileID: 2100000, guid: fb88690dea2394644849cde5abd037f9, type: 2}
+  renderParameters:
+    layer: 8
+    lightProbeUsage: 1
+    reflectionProbeUsage: 1
+    shadowCastingMode: 1
+    receiveShadows: 1
+    motionVectors: 0
+    renderingLayerMask: 4294967295
+  <particleColor>k__BackingField: {r: 0, g: 1, b: 0.113800526, a: 1}
+  <radiusScale>k__BackingField: 1

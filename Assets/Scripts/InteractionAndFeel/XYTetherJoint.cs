@@ -354,7 +354,7 @@ public class XYTetherJoint : MonoBehaviour
         {
             if (absoluteTravel >= absoluteTravelThreshold)
             {
-                ForceBreak($"AbsoluteTravel {absoluteTravel:F2} ≥ {absoluteTravelThreshold:F2}");
+                ForceBreak($"AbsoluteTravel {absoluteTravel:F2} \u2265 {absoluteTravelThreshold:F2}");
                 return;
             }
         }
@@ -364,7 +364,7 @@ public class XYTetherJoint : MonoBehaviour
         {
             if (relativeTravel >= relativeTravelThreshold)
             {
-                ForceBreak($"RelativeTravel {relativeTravel:F2} ≥ {relativeTravelThreshold:F2}");
+                ForceBreak($"RelativeTravel {relativeTravel:F2} \u2265 {relativeTravelThreshold:F2}");
                 return;
             }
         }
@@ -406,8 +406,9 @@ public class XYTetherJoint : MonoBehaviour
         if ((criteria & BreakCriteria.Force) != 0 && debugLogs)
             Debug.Log($"[XYTetherJoint] Joint broke by physics force = {force:F1}.", this);
 
-        // Play audio if present
+        // --- NEW: Trigger both Audio AND Fluid on Physics Break ---
         TriggerBreakAudio();
+        TriggerBreakFluid();
 
         joint = null;
         onBroke?.Invoke();
@@ -438,19 +439,19 @@ public class XYTetherJoint : MonoBehaviour
             }
         }
 
-        if (debugLogs) Debug.Log($"[XYTetherJoint] Break → {reason}", this);
+        if (debugLogs) Debug.Log($"[XYTetherJoint] Break \u2192 {reason}", this);
 
         DestroyJoint();
 
-        // Play audio if present
+        // --- NEW: Trigger both Audio AND Fluid on Logic Break ---
         TriggerBreakAudio();
+        TriggerBreakFluid();
 
         onBroke?.Invoke();
     }
 
     /// <summary>
     /// Finds a JointBreakAudioResponder on this GameObject and fires its audio.
-    /// This is used both for physics breaks (OnJointBreak) and scripted ForceBreak.
     /// </summary>
     private void TriggerBreakAudio()
     {
@@ -458,6 +459,18 @@ public class XYTetherJoint : MonoBehaviour
         if (audio != null)
         {
             audio.OnJointBroken();
+        }
+    }
+
+    /// <summary>
+    /// Finds a JointBreakFluidResponder on this GameObject and fires its fluid.
+    /// </summary>
+    private void TriggerBreakFluid()
+    {
+        var fluid = GetComponent<JointBreakFluidResponder>();
+        if (fluid != null)
+        {
+            fluid.OnJointBroken();
         }
     }
 
@@ -567,8 +580,8 @@ public class XYTetherJoint : MonoBehaviour
 
         if (debugLogs)
         {
-            string bf = float.IsInfinity(joint.breakForce) ? "∞" : joint.breakForce.ToString("F0");
-            Debug.Log($"[XYTetherJoint] Created → Spring={spring}, Damper={damper}, StretchMax={maxDistance}, DriveMax={driveMaxForce}, BreakForce={bf}, Criteria={criteria}, VelMode={velocityMode}, Projection={(useJointProjection ? "On" : "Off")}", this);
+            string bf = float.IsInfinity(joint.breakForce) ? "\u221E" : joint.breakForce.ToString("F0");
+            Debug.Log($"[XYTetherJoint] Created \u2192 Spring={spring}, Damper={damper}, StretchMax={maxDistance}, DriveMax={driveMaxForce}, BreakForce={bf}, Criteria={criteria}, VelMode={velocityMode}, Projection={(useJointProjection ? "On" : "Off")}", this);
         }
     }
 
