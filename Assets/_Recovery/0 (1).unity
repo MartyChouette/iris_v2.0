@@ -7421,13 +7421,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
+  tether: {fileID: 0}
   beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!1 &1459541712
 GameObject:
   m_ObjectHideFlags: 0
@@ -13782,13 +13781,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
+  tether: {fileID: 0}
   beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!4 &6039931498097459755
 Transform:
   m_ObjectHideFlags: 0
@@ -14138,13 +14136,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 6416859612401791235}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!23 &6438564038001590558
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -14612,13 +14609,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 6599678323577143053}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 20
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!33 &6635618321783358775
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -14850,13 +14846,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
+  tether: {fileID: 0}
   beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!33 &7086281294885519644
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -15189,13 +15184,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
+  tether: {fileID: 7240802656111149254}
   beatsPerMinute: 20
-  timeOffset: 0.2
-  stretchAxis: {x: 1, y: 0, z: 0}
+  timeOffset: 0
+  stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 1, z: 0}
-  moveMagnitude: 0.1
 --- !u!1 &7354005482645672518
 GameObject:
   m_ObjectHideFlags: 0
@@ -15486,13 +15480,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 7627441760446394685}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!23 &7836976888343162327
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -15734,13 +15727,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
+  tether: {fileID: 0}
   beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!23 &7872537620994814810
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -16037,13 +16029,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 8267910595929441122}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!23 &8312075418746837612
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -16567,13 +16558,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 8418495102803915915}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!1 &8520849189601858191
 GameObject:
   m_ObjectHideFlags: 0
@@ -16782,13 +16772,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 8612123659171615103}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!23 &8625476554561420364
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -17014,13 +17003,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 8625476554561420367}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!33 &8635797664965889136
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -17441,13 +17429,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 8676136758897000157}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!1 &8702806165067242472
 GameObject:
   m_ObjectHideFlags: 0
@@ -17649,13 +17636,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 8702806165067242475}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!4 &8739252893829663601
 Transform:
   m_ObjectHideFlags: 0
@@ -17848,13 +17834,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  tether: {fileID: 8739252893829663604}
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
-  moveMagnitude: 0.05
 --- !u!33 &8868436661678676147
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -17986,13 +17971,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
+  tether: {fileID: 8868436661678676148}
   beatsPerMinute: 20
-  timeOffset: 0.2
-  stretchAxis: {x: 1, y: 0, z: 0}
+  timeOffset: 0
+  stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 1, z: 0}
-  moveMagnitude: 0.1
 --- !u!4 &9010563338615425077
 Transform:
   m_ObjectHideFlags: 0

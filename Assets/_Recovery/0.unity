@@ -7426,7 +7426,7 @@ MonoBehaviour:
   stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
+  moveDirection: {x: 0, y: 1, z: 0}
   moveMagnitude: 0.05
 --- !u!1 &1459541712
 GameObject:
@@ -13787,7 +13787,7 @@ MonoBehaviour:
   stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
+  moveDirection: {x: 0, y: 1, z: 0}
   moveMagnitude: 0.05
 --- !u!4 &6039931498097459755
 Transform:
@@ -14138,10 +14138,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -14612,10 +14612,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -14652,7 +14652,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 61ca7bd9b69b6e346bd388ed16ab8609, type: 2}
+  - {fileID: -2813467912831258332, guid: 27c3960524809a84bad7c57438920b62, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -14855,7 +14855,7 @@ MonoBehaviour:
   stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
+  moveDirection: {x: 0, y: 1, z: 0}
   moveMagnitude: 0.05
 --- !u!33 &7086281294885519644
 MeshFilter:
@@ -15190,12 +15190,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
   beatsPerMinute: 20
-  timeOffset: 0.2
-  stretchAxis: {x: 1, y: 0, z: 0}
+  timeOffset: 0
+  stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 1, z: 0}
-  moveMagnitude: 0.1
+  moveDirection: {x: 0, y: 0, z: 0}
+  moveMagnitude: 0.05
 --- !u!1 &7354005482645672518
 GameObject:
   m_ObjectHideFlags: 0
@@ -15486,10 +15486,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -15739,7 +15739,7 @@ MonoBehaviour:
   stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 0, z: 0}
+  moveDirection: {x: 0, y: 1, z: 0}
   moveMagnitude: 0.05
 --- !u!23 &7872537620994814810
 MeshRenderer:
@@ -16037,10 +16037,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -16567,10 +16567,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -16782,10 +16782,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -17014,10 +17014,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -17441,10 +17441,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -17649,10 +17649,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -17848,10 +17848,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d04b472c775dda4b98984b6a225229a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
-  beatsPerMinute: 3
+  beatsPerMinute: 20
   timeOffset: 0
   stretchAxis: {x: 0, y: 1, z: 0}
-  stretchMagnitude: 0.08
+  stretchMagnitude: 0.1
   preserveVolume: 1
   moveDirection: {x: 0, y: 0, z: 0}
   moveMagnitude: 0.05
@@ -17987,12 +17987,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParametricBreathing
   beatsPerMinute: 20
-  timeOffset: 0.2
-  stretchAxis: {x: 1, y: 0, z: 0}
+  timeOffset: 0
+  stretchAxis: {x: 0, y: 1, z: 0}
   stretchMagnitude: 0.1
   preserveVolume: 1
-  moveDirection: {x: 0, y: 1, z: 0}
-  moveMagnitude: 0.1
+  moveDirection: {x: 0, y: 0, z: 0}
+  moveMagnitude: 0.05
 --- !u!4 &9010563338615425077
 Transform:
   m_ObjectHideFlags: 0
