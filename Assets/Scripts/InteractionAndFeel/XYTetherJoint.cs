@@ -116,6 +116,14 @@ public class XYTetherJoint : MonoBehaviour
 
     private InteractionEngagement _engagement;
 
+    // ───────────────────────── FEEDBACK TOGGLES (These were missing!) ─────────────────────────
+    [Header("Feedback")]
+    [Tooltip("If true, attempts to find and trigger JointBreakAudioResponder.")]
+    public bool enableAudio = true;
+
+    [Tooltip("If true, attempts to find and trigger JointBreakFluidResponder.")]
+    public bool enableFluid = true;
+
     // ───────────────────────── Static cut suppression ─────────────────────────
     // During stem cuts / juice moments we suppress physics-based breaks
     // so leaves don't pop off.
@@ -125,12 +133,6 @@ public class XYTetherJoint : MonoBehaviour
     /// <summary>Read-only so external systems (JuiceMomentController) can check state.</summary>
     public static bool IsCutBreakSuppressed => cutBreakSuppressed;
 
-    /// <summary>
-    /// Globally toggle suppression. When ON:
-    /// - All joints have breakForce/torque set to Infinity.
-    /// - Their travel / pluck timers are reset so they don't immediately pop
-    ///   on the first frame after suppression ends.
-    /// </summary>
     public static void SetCutBreakSuppressed(bool on)
     {
         cutBreakSuppressed = on;
@@ -142,8 +144,6 @@ public class XYTetherJoint : MonoBehaviour
 
             if (on)
             {
-                // Clear accumulated break conditions so we don't insta-snap
-                // when suppression is lifted.
                 t.ResetBreakAccumulators();
             }
 
@@ -194,7 +194,6 @@ public class XYTetherJoint : MonoBehaviour
 
         if (enforceXYConstraints)
         {
-            // don't overwrite constraints, only add freezes
             rb.constraints |= RigidbodyConstraints.FreezePositionZ
                             | RigidbodyConstraints.FreezeRotationX
                             | RigidbodyConstraints.FreezeRotationY
@@ -250,7 +249,7 @@ public class XYTetherJoint : MonoBehaviour
             float springMult = Mathf.Lerp(minSpringMultiplier, maxSpringMultiplier, tension);
             float damperMult = Mathf.Lerp(minDamperMultiplier, maxDamperMultiplier, tension);
 
-            // scale by engagement factor (1.0 when engaged, ~0.4 when passive, etc.)
+            // scale by engagement factor
             float engageFactor = GetEngagementFactor();
 
             var drive = joint.xDrive;
@@ -395,7 +394,6 @@ public class XYTetherJoint : MonoBehaviour
 
     void OnJointBreak(float force)
     {
-        // During a cut, completely ignore physics auto-breaks.
         if (cutBreakSuppressed)
         {
             if (debugLogs)
@@ -406,7 +404,6 @@ public class XYTetherJoint : MonoBehaviour
         if ((criteria & BreakCriteria.Force) != 0 && debugLogs)
             Debug.Log($"[XYTetherJoint] Joint broke by physics force = {force:F1}.", this);
 
-        // --- NEW: Trigger both Audio AND Fluid on Physics Break ---
         TriggerBreakAudio();
         TriggerBreakFluid();
 
@@ -414,12 +411,8 @@ public class XYTetherJoint : MonoBehaviour
         onBroke?.Invoke();
     }
 
-    /// <summary>
-    /// Called by scripts to intentionally break the joint.
-    /// </summary>
     public void ForceBreak(string reason = "Forced")
     {
-        // Also suppress scripted breaks during a cut, so nothing detaches mid-slice.
         if (cutBreakSuppressed)
         {
             if (debugLogs)
@@ -427,7 +420,6 @@ public class XYTetherJoint : MonoBehaviour
             return;
         }
 
-        // optionally suppress breaks if this part is not engaged
         if (onlyBreakWhenEngaged)
         {
             bool isEngagedNow = (_engagement != null && _engagement.isEngaged);
@@ -443,18 +435,18 @@ public class XYTetherJoint : MonoBehaviour
 
         DestroyJoint();
 
-        // --- NEW: Trigger both Audio AND Fluid on Logic Break ---
         TriggerBreakAudio();
         TriggerBreakFluid();
 
         onBroke?.Invoke();
     }
 
-    /// <summary>
-    /// Finds a JointBreakAudioResponder on this GameObject and fires its audio.
-    /// </summary>
+    // ───────────────────────── FEEDBACK HELPERS ─────────────────────────
+
     private void TriggerBreakAudio()
     {
+        if (!enableAudio) return; // Toggle Check restored
+
         var audio = GetComponent<JointBreakAudioResponder>();
         if (audio != null)
         {
@@ -462,11 +454,10 @@ public class XYTetherJoint : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Finds a JointBreakFluidResponder on this GameObject and fires its fluid.
-    /// </summary>
     private void TriggerBreakFluid()
     {
+        if (!enableFluid) return; // Toggle Check restored
+
         var fluid = GetComponent<JointBreakFluidResponder>();
         if (fluid != null)
         {
@@ -563,7 +554,6 @@ public class XYTetherJoint : MonoBehaviour
             joint.projectionMode = JointProjectionMode.None;
         }
 
-        // apply correct breakForce / breakTorque based on cut suppression
         ApplyBreakForceToJoint();
 
         Vector3 a = transform.TransformPoint(joint.anchor);
@@ -585,9 +575,6 @@ public class XYTetherJoint : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Sync joint.breakForce / breakTorque with the current suppression state.
-    /// </summary>
     void ApplyBreakForceToJoint()
     {
         if (!joint) return;
@@ -604,10 +591,6 @@ public class XYTetherJoint : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Used when turning suppression ON: clear accumulated travel/pluck state
-    /// and re-arm the joint so it doesn't instantly pop when suppression ends.
-    /// </summary>
     void ResetBreakAccumulators()
     {
         absoluteTravel = 0f;

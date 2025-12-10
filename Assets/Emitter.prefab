@@ -57,10 +57,10 @@ MonoBehaviour:
   emitterBlueprint: {fileID: 11400000, guid: eae3f4de6f75a4bef942d5ef885b4677, type: 2}
   filter: -65534
   emissionMethod: 0
-  minPoolSize: 0.5
-  speed: 1.5
-  lifespan: 100
-  randomDirection: 0
+  minPoolSize: 0.587
+  speed: 3
+  lifespan: 20
+  randomDirection: 0.077
   inheritVelocity: 0
   useShapeColor: 1
   emitterShapes:
@@ -78,7 +78,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   emitter: {fileID: 4615614034825461725}
-  color: {r: 0, g: 0.6334241, b: 0.8867924, a: 1}
+  color: {r: 0, g: 0.29559743, b: 0.10875759, a: 1}
   particleSize: 0.07937005
   distribution:
   - position: {x: 0, y: 0, z: 0, w: 0}
@@ -161,7 +161,83 @@ MonoBehaviour:
     direction: {x: 0, y: 0, z: 1, w: 0}
     velocity: {x: 0, y: 0, z: 0, w: 0}
     color: {r: 1, g: 1, b: 1, a: 1}
-  radius: 0.2
+  - position: {x: 0.23811015, y: 0, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.22488181, y: 0.07825993, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.1866666, y: 0.1478243, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.12771066, y: 0.20096377, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.054564625, y: 0.23177391, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.024644142, y: 0.2368314, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.101114646, y: 0.21557428, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.16635023, y: 0.17036445, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.21310242, y: 0.10622526, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.23617657, y: 0.03028327, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.23300888, y: -0.049023584, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.2039513, y: -0.12288331, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.1522325, y: -0.18308936, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.08359897, y: -0.22295214, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: -0.0056765615, y: -0.23804249, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.072876476, y: -0.22668363, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.14333212, y: -0.19013771, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.19786198, y: -0.13246539, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - position: {x: 0.2304072, y: -0.060074702, z: 0, w: 0}
+    direction: {x: 0, y: 0, z: 1, w: 0}
+    velocity: {x: 0, y: 0, z: 0, w: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+  radius: 0.28
   edgeEmission: 0
 --- !u!114 &1511092395811620114
 MonoBehaviour:

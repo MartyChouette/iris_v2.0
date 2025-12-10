@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;   // for IsPointerOverGameObject
+using UnityEngine.EventSystems;
 using DynamicMeshCutter;
 
 [DisallowMultipleComponent]
@@ -13,8 +13,8 @@ public class CuttingPlaneController : MonoBehaviour
     public ControlMode controlMode = ControlMode.MouseAndKeyboard;
 
     [Header("References")]
-    [Tooltip("PlaneBehaviour that actually performs the cut.")]
     public PlaneBehaviour plane;
+    public ScissorsVisualController scissorsVisuals; // <--- This is required!
 
     [Header("Movement Settings")]
     public float axisMoveSpeed = 2f;
@@ -23,7 +23,7 @@ public class CuttingPlaneController : MonoBehaviour
     public float maxY = 1f;
     public bool useMouseHeight = true;
 
-    [Header("Input Actions (New Input System)")]
+    [Header("Input Actions")]
     public InputActionReference moveYAction;
     public InputActionReference pointerPositionAction;
     public InputActionReference cutAction;
@@ -54,7 +54,7 @@ public class CuttingPlaneController : MonoBehaviour
     public AudioClip petalCutSecondary;
     public float petalSecondaryDelay = 0.08f;
 
-    [Header("Cut Fluids (Plane-Level Emitters)")]
+    [Header("Cut Fluids")]
     public FluidSquirter genericFluidPlane;
     public FluidSquirter stemFluidPlane;
     public FluidSquirter leafFluidPlane;
@@ -74,7 +74,7 @@ public class CuttingPlaneController : MonoBehaviour
 
     void Awake()
     {
-        if (plane == null) plane = GetComponent<PlaneBehaviour>();
+        if (plane == null) plane = GetComponentInChildren<PlaneBehaviour>();
         _planeTransform = plane != null ? plane.transform : transform;
         if (minY > maxY) { float tmp = minY; minY = maxY; maxY = tmp; }
         if (angleTiltController == null) angleTiltController = GetComponent<PlaneAngleTiltController>();
@@ -98,6 +98,7 @@ public class CuttingPlaneController : MonoBehaviour
     {
         if (_planeTransform == null) return;
 
+        // --- MOVEMENT LOGIC ---
         bool useAxis = false;
         bool usePointer = false;
 
@@ -132,12 +133,24 @@ public class CuttingPlaneController : MonoBehaviour
         pos.y = Mathf.Clamp(pos.y, minY, maxY);
         _planeTransform.position = pos;
 
+        // --- CUT LOGIC ---
         if (cutAction != null && cutAction.action != null && cutAction.action.WasPerformedThisFrame())
         {
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
             if (plane != null && plane.enabled)
             {
+                // 1. ASK PERMISSION FROM VISUALS (HANDLES COOLDOWN)
+                if (scissorsVisuals != null)
+                {
+                    // If AttemptSnip returns false, we are on cooldown. STOP HERE.
+                    if (scissorsVisuals.AttemptSnip() == false)
+                    {
+                        return;
+                    }
+                }
+
+                // 2. IF PERMISSION GRANTED, DO THE CUT
                 HandleCutEffects();
                 plane.Cut();
             }
@@ -188,9 +201,11 @@ public class CuttingPlaneController : MonoBehaviour
         CutHitKind kind = CutHitKind.None;
         Collider chosen = null;
 
-        if (leafCol != null) { kind = CutHitKind.Leaf; chosen = leafCol; }
+        // --- UPDATED PRIORITY LOGIC ---
+        // We now check Stem first. If we hit a stem, we ignore leaves/petals nearby.
+        if (stemCol != null) { kind = CutHitKind.Stem; chosen = stemCol; }
+        else if (leafCol != null) { kind = CutHitKind.Leaf; chosen = leafCol; }
         else if (petalCol != null) { kind = CutHitKind.Petal; chosen = petalCol; }
-        else if (stemCol != null) { kind = CutHitKind.Stem; chosen = stemCol; }
 
         switch (kind)
         {
@@ -220,27 +235,20 @@ public class CuttingPlaneController : MonoBehaviour
         else AudioManager.Instance.PlaySFX(first);
     }
 
-    /// <summary>
-    /// Triggers fluid on both the plane-level squirter and any squirters found on the object.
-    /// Passes exact positional data to fix the (0,0,0) spawn bug.
-    /// </summary>
     void TriggerFluid(FluidSquirter planeSquirter, Collider exampleCol)
     {
         float intensity = Mathf.Clamp01(goreIntensity);
         if (intensity <= 0f) return;
 
-        // 1. Plane-level squirter (moves to the plane's position)
         if (planeSquirter != null)
         {
             planeSquirter.Squirt(intensity, _planeTransform.position, _planeTransform.forward);
         }
 
-        // 2. Hit-object squirters (moves to the exact contact point on the object)
         if (exampleCol != null)
         {
-            // Calculate the closest point on the hit object to the cutting plane
             Vector3 hitPoint = exampleCol.ClosestPoint(_planeTransform.position);
-            Vector3 hitNormal = exampleCol.transform.up; // Rough approximation for stem sprays
+            Vector3 hitNormal = exampleCol.transform.up;
 
             var squirters = exampleCol.GetComponentsInParent<FluidSquirter>();
             foreach (var fs in squirters)
