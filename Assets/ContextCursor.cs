@@ -1,0 +1,80 @@
+using UnityEngine;
+
+public class CursorContext : MonoBehaviour
+{
+    [Header("Cursor Textures")]
+    public Texture2D defaultCursor;
+    public Texture2D hoverCursor;
+
+    [Header("Settings")]
+    // We changed this from a single string to an array (string[])
+    public string[] targetTags;
+
+    public Vector2 hotSpot = Vector2.zero;
+
+    private bool isHovering = false;
+    private Camera mainCamera;
+
+    void Start()
+    {
+        mainCamera = Camera.main;
+        SetCursor(false);
+    }
+
+    void Update()
+    {
+        CheckUnderMouse();
+    }
+
+    void CheckUnderMouse()
+    {
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            // Check the object we hit against ALL our allowed tags
+            if (HasValidTag(hit.collider.gameObject))
+            {
+                if (!isHovering)
+                {
+                    SetCursor(true);
+                }
+                return; // Found a match, stop looking
+            }
+        }
+
+        // If we hit nothing, or hit an object with no matching tag
+        if (isHovering)
+        {
+            SetCursor(false);
+        }
+    }
+
+    // Helper function to check the list of tags
+    bool HasValidTag(GameObject obj)
+    {
+        foreach (string tag in targetTags)
+        {
+            if (obj.CompareTag(tag))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void SetCursor(bool hovering)
+    {
+        isHovering = hovering;
+
+        if (isHovering)
+        {
+            Cursor.SetCursor(hoverCursor, hotSpot, CursorMode.Auto);
+        }
+        else
+        {
+            Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        }
+    }
+}

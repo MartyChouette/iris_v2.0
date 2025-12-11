@@ -442,24 +442,6 @@ MonoBehaviour:
     m_GlyphIndex: 86
     m_Scale: 1
   - m_ElementType: 1
-    m_Unicode: 916
-    m_GlyphIndex: 839
-    m_Scale: 1
-  m_AtlasTextures:
-  - {fileID: 28268798066460806}
-  m_AtlasTextureIndex: 0
-  m_IsMultiAtlasTexturesEnabled: 1
-  m_GetFontFeatures: 1
-  m_ClearDynamicDataOnBuild: 1
-  m_AtlasWidth: 512
-  m_AtlasHeight: 512
-  m_AtlasPadding: 9
-  m_AtlasRenderMode: 4169
-  m_UsedGlyphRects:
-  - m_X: 0
-    m_Y: 0
-    m_Width: 72
-    m_Height: 78
   - m_X: 72
     m_Y: 0
     m_Width: 70
