@@ -25,7 +25,7 @@ public class GrabPull : MonoBehaviour
     public float genericGrabSecondaryDelay = 0.05f;
 
     Rigidbody rb;
-    bool grabbing;
+    public bool grabbing;
     Vector3 grabWorld;
 
     // who we mark as "engaged" while grabbing

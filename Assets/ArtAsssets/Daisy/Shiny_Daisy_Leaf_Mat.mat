@@ -102,11 +102,13 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _GlowStrength: 0.8
+    - _GlowStrength: 4
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Offset: 0
     - _Parallax: 0.005
+    - _PulseDuration: 1
+    - _PulseScale: 0.1
     - _PulseSpeed: 1
     - _QueueControl: 0
     - _QueueOffset: 0
@@ -123,6 +125,7 @@ Material:
     - _StencilOp: 0
     - _StencilZFail: 0
     - _Surface: 0
+    - _WaitTime: 3
     - _WorkflowMode: 1
     - _WriteMask: 255
     - _XRMotionVectorsPass: 1
@@ -131,7 +134,7 @@ Material:
     m_Colors:
     - _BaseColor: {r: 0.13725491, g: 0.23921569, b: 0.05490196, a: 1}
     - _Color: {r: 0.13725486, g: 0.23921564, b: 0.054901943, a: 1}
-    - _EmissionColor: {r: 1, g: 0.9521147, b: 0.49056602, a: 1}
+    - _EmissionColor: {r: 0.9528302, g: 0.91347855, b: 0.23820755, a: 1}
     - _NeonColor: {r: 0.13725491, g: 0.23921569, b: 0.05490196, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
