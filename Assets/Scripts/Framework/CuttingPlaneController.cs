@@ -235,6 +235,8 @@ public class CuttingPlaneController : MonoBehaviour
         else AudioManager.Instance.PlaySFX(first);
     }
 
+
+
     void TriggerFluid(FluidSquirter planeSquirter, Collider exampleCol)
     {
         float intensity = Mathf.Clamp01(goreIntensity);
