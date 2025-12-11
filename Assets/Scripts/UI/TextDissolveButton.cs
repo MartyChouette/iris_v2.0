@@ -1,30 +1,39 @@
 using UnityEngine;
-using TMPro; // Required for TextMeshPro
-using UnityEngine.EventSystems; // Required for Mouse Detection
+using TMPro;
+using UnityEngine.EventSystems;
 
 public class TextDissolveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [Header("Settings")]
+    [Header("Animation Settings")]
     public float animationSpeed = 5f;
-    
-    [Header("Blur Settings")]
-    [Range(0f, 1f)] public float normalSoftness = 0f;
-    [Range(0f, 1f)] public float blurredSoftness = 1f; // 1 is fully blurry
 
-    [Header("Dissolve Settings")]
+    [Header("Blur / Softness")]
+    [Range(0f, 1f)] public float normalSoftness = 0f;
+    [Range(0f, 1f)] public float blurredSoftness = 1f; 
+
+    [Header("Dissolve / Dilate")]
     [Range(-1f, 1f)] public float normalDilate = 0f;
-    [Range(-1f, 1f)] public float dissolvedDilate = -1f; // -1 makes text invisible (eroded)
+    [Range(-1f, 1f)] public float dissolvedDilate = -0.5f; // Don't go to -1, stick to -0.5 for better blur
+
+    [Header("Scale (The Blur Booster)")]
+    public float normalScale = 1.0f;
+    public float blurredScale = 1.2f; // Expanding makes the blur look bigger
+
+    [Header("Alpha Fade")]
+    [Range(0f, 1f)] public float normalAlpha = 1f;
+    [Range(0f, 1f)] public float blurredAlpha = 0f; // Fade out to hide hard edges
 
     private TextMeshProUGUI textMesh;
     private Material textMat;
-    
-    // Target values
-    private float targetSoftness;
-    private float targetDilate;
-    private float currentSoftness;
-    private float currentDilate;
+    private Transform textTransform;
 
-    // Shader Property IDs (Optimization)
+    // Current & Target Values
+    private float targetSoftness, currentSoftness;
+    private float targetDilate, currentDilate;
+    private float targetScale, currentScale;
+    private float targetAlpha, currentAlpha;
+
+    // Shader IDs
     private int softnessID;
     private int faceDilateID;
 
@@ -34,18 +43,23 @@ public class TextDissolveButton : MonoBehaviour, IPointerEnterHandler, IPointerE
 
         if (textMesh != null)
         {
-            // Create a material instance so we don't effect ALL text in the game
-            textMat = new Material(textMesh.fontMaterial); 
+            textTransform = textMesh.transform;
+
+            // Create material instance
+            textMat = new Material(textMesh.fontMaterial);
             textMesh.fontMaterial = textMat;
 
-            // Cache Shader IDs
+            // Cache IDs
             softnessID = Shader.PropertyToID("_OutlineSoftness");
             faceDilateID = Shader.PropertyToID("_FaceDilate");
 
-            // Set Initial State
+            // Initialize Defaults
             currentSoftness = normalSoftness;
             currentDilate = normalDilate;
-            SetTargets(normalSoftness, normalDilate);
+            currentScale = normalScale;
+            currentAlpha = normalAlpha;
+
+            SetTargets(normalSoftness, normalDilate, normalScale, normalAlpha);
         }
     }
 
@@ -53,33 +67,42 @@ public class TextDissolveButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         if (textMat == null) return;
 
-        // Smoothly interpolate current values to target values
-        currentSoftness = Mathf.Lerp(currentSoftness, targetSoftness, Time.deltaTime * animationSpeed);
-        currentDilate = Mathf.Lerp(currentDilate, targetDilate, Time.deltaTime * animationSpeed);
+        float dt = Time.deltaTime * animationSpeed;
 
-        // Apply to the material
+        // 1. Interpolate Values
+        currentSoftness = Mathf.Lerp(currentSoftness, targetSoftness, dt);
+        currentDilate = Mathf.Lerp(currentDilate, targetDilate, dt);
+        currentScale = Mathf.Lerp(currentScale, targetScale, dt);
+        currentAlpha = Mathf.Lerp(currentAlpha, targetAlpha, dt);
+
+        // 2. Apply Shader Properties
         textMat.SetFloat(softnessID, currentSoftness);
         textMat.SetFloat(faceDilateID, currentDilate);
-        
-        // Update the mesh to reflect changes
-        textMesh.SetAllDirty();
+
+        // 3. Apply Transform Scale (Creates the "Super Blur" illusion)
+        textTransform.localScale = Vector3.one * currentScale;
+
+        // 4. Apply Alpha (Hides artifacts)
+        textMesh.alpha = currentAlpha;
     }
 
-    // Triggered when Mouse Enters
     public void OnPointerEnter(PointerEventData eventData)
     {
-        SetTargets(blurredSoftness, dissolvedDilate);
+        // Go to Blurry/Invisible State
+        SetTargets(blurredSoftness, dissolvedDilate, blurredScale, blurredAlpha);
     }
 
-    // Triggered when Mouse Exits
     public void OnPointerExit(PointerEventData eventData)
     {
-        SetTargets(normalSoftness, normalDilate);
+        // Return to Normal State
+        SetTargets(normalSoftness, normalDilate, normalScale, normalAlpha);
     }
 
-    private void SetTargets(float soft, float dilate)
+    private void SetTargets(float soft, float dilate, float scale, float alpha)
     {
         targetSoftness = soft;
         targetDilate = dilate;
+        targetScale = scale;
+        targetAlpha = alpha;
     }
 }

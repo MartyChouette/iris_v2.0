@@ -1915,6 +1915,10 @@ MonoBehaviour:
   blurredSoftness: 1
   normalDilate: 0
   dissolvedDilate: -1
+  normalScale: 1
+  blurredScale: 1.2
+  normalAlpha: 1
+  blurredAlpha: 0.4
 --- !u!1 &1966487755
 GameObject:
   m_ObjectHideFlags: 0
@@ -2280,11 +2284,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed78b763cffb8eb4186b688657d57106, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TextDissolveButton
-  animationSpeed: 5
+  animationSpeed: 2
   normalSoftness: 0
   blurredSoftness: 1
   normalDilate: 0
   dissolvedDilate: -1
+  normalScale: 1
+  blurredScale: 1.2
+  normalAlpha: 1
+  blurredAlpha: 0.4
 --- !u!1 &2091644491
 GameObject:
   m_ObjectHideFlags: 0
@@ -2526,6 +2534,10 @@ MonoBehaviour:
   blurredSoftness: 1
   normalDilate: 0
   dissolvedDilate: -1
+  normalScale: 1
+  blurredScale: 1.2
+  normalAlpha: 1
+  blurredAlpha: 0.4
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
