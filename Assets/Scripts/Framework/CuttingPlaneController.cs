@@ -14,7 +14,7 @@ public class CuttingPlaneController : MonoBehaviour
 
     [Header("References")]
     public PlaneBehaviour plane;
-    public ScissorsVisualController scissorsVisuals; // <--- This is required!
+    public ScissorsVisualController scissorsVisuals;
 
     [Header("Movement Settings")]
     public float axisMoveSpeed = 2f;
@@ -37,7 +37,7 @@ public class CuttingPlaneController : MonoBehaviour
     // ─────────────────────────────────────────────────────────────
 
     [Header("Cut Detection Volume")]
-    public float cutSenseRadius = 0.02f;
+    public float cutSenseRadius = 0.04f; // Increased slightly to ensure stem detection
     public float cutSenseLength = 1.0f;
     public LayerMask cutDetectionMask = ~0;
 
@@ -140,17 +140,9 @@ public class CuttingPlaneController : MonoBehaviour
 
             if (plane != null && plane.enabled)
             {
-                // 1. ASK PERMISSION FROM VISUALS (HANDLES COOLDOWN)
-                if (scissorsVisuals != null)
-                {
-                    // If AttemptSnip returns false, we are on cooldown. STOP HERE.
-                    if (scissorsVisuals.AttemptSnip() == false)
-                    {
-                        return;
-                    }
-                }
+                if (scissorsVisuals != null && scissorsVisuals.AttemptSnip() == false)
+                    return;
 
-                // 2. IF PERMISSION GRANTED, DO THE CUT
                 HandleCutEffects();
                 plane.Cut();
             }
@@ -169,6 +161,9 @@ public class CuttingPlaneController : MonoBehaviour
         return 0f;
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // IMPROVED CUT DETECTION
+    // ─────────────────────────────────────────────────────────────
     void HandleCutEffects()
     {
         if (_planeTransform == null) return;
@@ -193,16 +188,34 @@ public class CuttingPlaneController : MonoBehaviour
         foreach (var col in hits)
         {
             if (col == null) continue;
-            if (col.CompareTag("Leaf")) leafCol = col;
-            else if (col.CompareTag("Petal") && petalCol == null) petalCol = col;
-            else if (col.CompareTag("Stem") && stemCol == null) stemCol = col;
+
+            // --- SMART COMPONENT CHECK ---
+            // A Stem has a StemRuntime in its parent hierarchy, but NOT a PartRuntime.
+            // A Leaf/Petal has a PartRuntime.
+            var part = col.GetComponentInParent<FlowerPartRuntime>();
+            var stem = col.GetComponentInParent<FlowerStemRuntime>();
+
+            if (part != null)
+            {
+                if (part.kind == FlowerPartKind.Leaf) leafCol = col;
+                else if (part.kind == FlowerPartKind.Petal) petalCol = col;
+            }
+            else if (stem != null)
+            {
+                // It has a stem parent but is not a part => It is the Stem!
+                if (stemCol == null) stemCol = col;
+            }
+            // Fallback to tags if scripts are missing
+            else if (col.CompareTag("Stem")) stemCol = col;
+            else if (col.CompareTag("Leaf")) leafCol = col;
+            else if (col.CompareTag("Petal")) petalCol = col;
         }
 
         CutHitKind kind = CutHitKind.None;
         Collider chosen = null;
 
-        // --- UPDATED PRIORITY LOGIC ---
-        // We now check Stem first. If we hit a stem, we ignore leaves/petals nearby.
+        // PRIORITY: Stem > Leaf > Petal
+        // If we hit a stem, we assume that was the intended target, even if a leaf was also grazed.
         if (stemCol != null) { kind = CutHitKind.Stem; chosen = stemCol; }
         else if (leafCol != null) { kind = CutHitKind.Leaf; chosen = leafCol; }
         else if (petalCol != null) { kind = CutHitKind.Petal; chosen = petalCol; }
@@ -235,27 +248,32 @@ public class CuttingPlaneController : MonoBehaviour
         else AudioManager.Instance.PlaySFX(first);
     }
 
-
-
     void TriggerFluid(FluidSquirter planeSquirter, Collider exampleCol)
     {
         float intensity = Mathf.Clamp01(goreIntensity);
         if (intensity <= 0f) return;
 
+        // Option A: Move the generic "Cut Plane" squirter to the cut location and fire
         if (planeSquirter != null)
         {
             planeSquirter.Squirt(intensity, _planeTransform.position, _planeTransform.forward);
         }
 
+        // Option B: If the object itself has specific squirters attached (rare for stems, common for bosses)
         if (exampleCol != null)
         {
-            Vector3 hitPoint = exampleCol.ClosestPoint(_planeTransform.position);
-            Vector3 hitNormal = exampleCol.transform.up;
-
             var squirters = exampleCol.GetComponentsInParent<FluidSquirter>();
-            foreach (var fs in squirters)
+            if (squirters != null && squirters.Length > 0)
             {
-                fs.Squirt(intensity, hitPoint, hitNormal);
+                Vector3 hitPoint = exampleCol.ClosestPoint(_planeTransform.position);
+                Vector3 hitNormal = exampleCol.transform.up;
+
+                foreach (var fs in squirters)
+                {
+                    // Don't double fire if it's the same one we just fired
+                    if (fs != planeSquirter)
+                        fs.Squirt(intensity, hitPoint, hitNormal);
+                }
             }
         }
     }

@@ -3,25 +3,13 @@ using UnityEngine;
 
 namespace DynamicMeshCutter
 {
-    /* 
-        Use the following to delegates to create callback functions that can be passed into the 
+    /* Use the following to delegates to create callback functions that can be passed into the 
         public void Cut(MeshTarget target, Vector3 worldPosition, Vector3 worldNormal, OnCut onCut = null, OnCreated onCreated = null, object boxedUserData = null)
         function of this script.
-
-        "OnCut" will be invoked immediately before the cutting algorithm has finished, but before any new meshes have been created. You can inspect the details of the cut inside the
-        Info class.
-
-        "OnCreated" is invoked in the virtual function "CreateGameObjects" found below. Since it is invoked after the mesh creation, it carries the data of the newle created
-        GameObjects inside "MeshCreationData" as well as the "Info" that the "OnCut" callback has access to.
-
-        For most cases you likely want to add your callbacks to the latter, for example if you want to add sound effects or particle effects to the cut.
     */
     public delegate void OnCut(bool success, Info info);
     public delegate void OnCreated(Info info, MeshCreationData creationData);
 
-    /*
-        Class that gets populated during the cut and returned in the "OnCut" and "OnCreated" callbacks after the cut has finished.
-    */
     public class Info
     {
         //basic info
@@ -43,7 +31,7 @@ namespace DynamicMeshCutter
             MeshCreation.GetMeshInfo(target, out TargetOriginalMesh, out Bindposes);
             TargetVirtualMesh = new VirtualMesh(TargetOriginalMesh);
 
-            if (target.DynamicRagdoll != null) //dynamic ragdoll could be missing
+            if (target.DynamicRagdoll != null)
             {
                 TargetVirtualMesh.AssignRagdoll(target.DynamicRagdoll);
             }
@@ -69,10 +57,6 @@ namespace DynamicMeshCutter
         }
     }
 
-    /*
-        This is the entry class to the algorithm. You need one CutterBehaviour in your scene and invoke its "Cut" function to start the algorithm.
-    */
-
     public abstract class CutterBehaviour : MonoBehaviour
     {
         public float Separation = 0.02f;
@@ -80,7 +64,7 @@ namespace DynamicMeshCutter
         public bool DestroyTargets = true;
         [Tooltip("Use multiple threads to cut. Drastically reduces lag. Recommend ON")]
         public bool UseAsync = true;
-        [Tooltip("If UseAsync=true, designates the amount of threads able to run the cutting algorithm. If left negative, SystemInfo.processorCount-1 will be used. Otherwise the minimum of AsyncThreadAmount and SystemInfo.processorCount-1 will be used.")]
+        [Tooltip("If UseAsync=true, designates the amount of threads able to run the cutting algorithm.")]
         public int AsyncThreadAmount = -1;
         [Tooltip("Cut objects whose vertices are LESS than this will NOT be created")]
         public int VertexCreationThreshold = 0;
@@ -124,6 +108,9 @@ namespace DynamicMeshCutter
         void Terminate()
         {
             _asyncWorker = null;
+            // --- FIX START: Reset flag so worker restarts when enabled again ---
+            _isInitialized = false;
+            // --- FIX END ---
         }
 
         private void OnApplicationQuit()
@@ -199,7 +186,6 @@ namespace DynamicMeshCutter
 
             //Get Local Position
             Vector4 worldP = new Vector4(worldPosition.x, worldPosition.y, worldPosition.z, 1f);
-            Vector4[] worldPColumn = new Vector4[4];
             Vector3 localP = worldToLocalMatrix * worldP;
 
             //Get Local Normal
@@ -218,8 +204,6 @@ namespace DynamicMeshCutter
 
             VirtualPlane plane = new VirtualPlane(localP, localN, worldPosition, worldNormal);
             Info info = new Info(target, plane, onCut, onCreated, boxedUserData);
-
-
 
             if (!UseAsync)
             {
@@ -268,7 +252,7 @@ namespace DynamicMeshCutter
             {
                 if (creationInfo.CreatedObjects[i] == null)
                 {
-                    Debug.Log("Dynamic Mesh Cutter: Cut supressed creation of object due to VertexCreationThreshold. Make sure you handle NullReferenceExceptions!");
+                    Debug.Log("Dynamic Mesh Cutter: Cut supressed creation of object due to VertexCreationThreshold.");
                 }
             }
 

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections; // Required for IEnumerator
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace DynamicMeshCutter
@@ -67,16 +68,17 @@ namespace DynamicMeshCutter
 
             var roots = SceneManager.GetActiveScene().GetRootGameObjects();
 
-            // suppress detach events on all sessions while slicing
+            // Find sessions to manage grace windows
             var sessions = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(
                 FindObjectsSortMode.None
             );
 
+            // 1. LOCK PHYSICS & EVENTS IMMEDIATELY
+            // This prevents leaves from falling off due to the physics calculation jolt
+            XYTetherJoint.SetCutBreakSuppressed(true);
+
             foreach (var s in sessions)
                 if (s != null) s.suppressDetachEvents = true;
-
-            // ***** ADDED: suppress XYTether force-breaks for the entire cut
-            XYTetherJoint.SetCutBreakSuppressed(true);
 
             try
             {
@@ -119,17 +121,35 @@ namespace DynamicMeshCutter
                             if (debugLogs)
                                 Debug.LogWarning($"[PlaneBehaviour] Skipped cutting '{target.name}' due to error: {e.Message}", target);
                         }
-
                     }
                 }
             }
-            finally
+            catch
             {
-                // ***** ADDED: always restore suppression + detach flags
+                // If the code CRASHES here, we must unlock immediately so the game doesn't break.
                 XYTetherJoint.SetCutBreakSuppressed(false);
+                foreach (var s in sessions) if (s != null) s.suppressDetachEvents = false;
+                throw;
+            }
 
-                foreach (var s in sessions)
-                    if (s != null) s.suppressDetachEvents = false;
+            // 2. SCHEDULE UNLOCK
+            // We wait 0.3s to allow Async calculations + Physics Jolt to finish safely.
+            StartCoroutine(ReleaseLocksAfterDelay(0.3f, sessions));
+        }
+
+        // --- NEW: Coroutine to hold the lock for a moment ---
+        private IEnumerator ReleaseLocksAfterDelay(float delay, FlowerSessionController[] sessions)
+        {
+            // Wait for the cut calculation and the resulting physics jolt to settle
+            yield return new WaitForSeconds(delay);
+
+            // 3. RELEASE LOCKS
+            XYTetherJoint.SetCutBreakSuppressed(false);
+
+            // Transition sessions to their internal grace timer (handles the tail end of effects)
+            foreach (var s in sessions)
+            {
+                if (s != null) s.StartCutGraceWindow();
             }
         }
 
@@ -249,8 +269,9 @@ namespace DynamicMeshCutter
                     sap.EmitStemCut(planePoint, planeNormal);
                 }
 
-                // suppress detach events during cut + rebind
-                if (session != null) session.suppressDetachEvents = true;
+                // IMPORTANT: We do NOT toggle suppression here anymore.
+                // The Cut() function handles the suppression timing via Coroutine.
+
                 try
                 {
                     stem.ApplyCutFromPlane(planePoint, planeNormal);
@@ -268,8 +289,7 @@ namespace DynamicMeshCutter
                 }
                 finally
                 {
-                    if (session != null)
-                        session.suppressDetachEvents = false;
+                    // Do NOT set false here. The Cut() function handles it via Grace Window.
                 }
             }
         }

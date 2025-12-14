@@ -6,7 +6,7 @@ using UnityEngine;
 /// Attach this wherever your XYTetherJoint lives (leaf or petal anchor).
 /// </summary>
 [RequireComponent(typeof(XYTetherJoint))]
-public class SapOnXYTetherBreak : MonoBehaviour
+public class SapOnXYTether : MonoBehaviour
 {
     public enum PartKind
     {
@@ -26,11 +26,15 @@ public class SapOnXYTetherBreak : MonoBehaviour
 
     private XYTetherJoint _joint;
     private FlowerSapController _sap;
+    private FlowerSessionController _session; // Reference to check for grace window
+
+    private bool _hasFired = false; // One-shot flag
 
     private void Awake()
     {
         _joint = GetComponent<XYTetherJoint>();
         _sap = GetComponentInParent<FlowerSapController>();
+        _session = GetComponentInParent<FlowerSessionController>(); // Attempt to find session in parent
     }
 
     private void OnEnable()
@@ -47,8 +51,30 @@ public class SapOnXYTetherBreak : MonoBehaviour
 
     private void OnJointBroke()
     {
-        if (_sap == null)
-            return;
+        // 1. One-Shot Check: If we already fired, stop.
+        if (_hasFired) return;
+
+        // 2. References Check
+        if (_sap == null) return;
+
+        // 3. Grace Window Check: 
+        // If the session says we are suppressing detaches (e.g. right after a stem cut),
+        // we should NOT fire the fluid. This prevents leaves from squirting due to cut shock.
+        if (_session == null)
+        {
+            // Try to find it one last time (e.g. if we were reparented)
+            _session = GetComponentInParent<FlowerSessionController>();
+            if (_session == null)
+                _session = Object.FindFirstObjectByType<FlowerSessionController>();
+        }
+
+        if (_session != null && _session.suppressDetachEvents)
+        {
+            return; // Silently fail -> we assume this break was caused by the stem cut shock
+        }
+
+        // --- FIRE ---
+        _hasFired = true;
 
         // Convert local offset/normal to world space:
         Vector3 worldPos = transform.TransformPoint(localOffset);
@@ -66,5 +92,9 @@ public class SapOnXYTetherBreak : MonoBehaviour
                 _sap.EmitPetalTear(worldPos, worldNormal);
                 break;
         }
+
+        // Optimization: We can safely remove the listener now since we won't fire again
+        if (_joint != null)
+            _joint.onBroke.RemoveListener(OnJointBroke);
     }
 }

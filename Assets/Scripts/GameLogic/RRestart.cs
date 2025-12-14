@@ -1,17 +1,16 @@
 using UnityEngine;
-using UnityEngine.SceneManagement; // Required for reloading scenes
+using UnityEngine.SceneManagement;
 
 public class RRestart : MonoBehaviour
 {
     void Update()
     {
-        // Press 'R' to restart
         if (Input.GetKeyDown(KeyCode.R))
         {
-            // Get the currently active scene
+            // 1. IMPORTANT: Unpause the game before/during reload
+            Time.timeScale = 1.0f;
+
             Scene currentScene = SceneManager.GetActiveScene();
-            
-            // Reload it
             SceneManager.LoadScene(currentScene.name);
         }
     }

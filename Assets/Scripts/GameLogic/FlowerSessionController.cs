@@ -57,7 +57,7 @@ public class FlowerSessionController : MonoBehaviour
 
     private void Update()
     {
-        // Manage cut grace window timer, if enabled.
+        // 1. Manage cut grace window timer
         if (useCutGraceWindow && suppressDetachEvents)
         {
             _cutGraceTimer -= Time.deltaTime;
@@ -65,6 +65,12 @@ public class FlowerSessionController : MonoBehaviour
             {
                 suppressDetachEvents = false;
             }
+        }
+
+        // 2. NEW: Check for 'E' key to Evaluate
+        if (!sessionEnded && Input.GetKeyDown(KeyCode.E))
+        {
+            EvaluateCurrentFlower();
         }
     }
 

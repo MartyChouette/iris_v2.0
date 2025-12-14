@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Daisy
   m_EditorClassIdentifier: Assembly-CSharp::IdealFlowerDefinition
   idealStemLength: 3.48
-  stemHardFailDelta: 4.5
+  stemHardFailDelta: 6.5
   stemPerfectDelta: 0.05
   stemScoreWeight: 0.529
   stemCanCauseGameOver: 0
