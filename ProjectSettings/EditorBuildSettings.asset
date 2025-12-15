@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Scenes/Main_Menu.unity
+    path: Assets/Scenes/M_Main_Menu.unity
     guid: 56a62065624f5354cbe557340696239e
   - enabled: 0
     path: Assets/Scenes/Tug_Leaves_Cut_And_ Angle_Cut_Combonation_NOV29.unity
