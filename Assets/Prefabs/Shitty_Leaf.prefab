@@ -1,0 +1,286 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5361662614469364547
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5552232867321885460}
+  - component: {fileID: 4540855398461646109}
+  - component: {fileID: 1107920920220521055}
+  - component: {fileID: 7291650636675671145}
+  - component: {fileID: 513978754582793061}
+  - component: {fileID: 3274260996452533356}
+  - component: {fileID: 6659394840641134296}
+  - component: {fileID: 4519942266624173844}
+  m_Layer: 6
+  m_Name: Shitty_Leaf
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5552232867321885460
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.739056, y: 0.40555862, z: -0.19343852, w: 0.5018963}
+  m_LocalPosition: {x: 0.64, y: 6.55, z: -4.18}
+  m_LocalScale: {x: 70, y: 70, z: 70}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: -35.8, y: 121.3, z: -101.9}
+--- !u!33 &4540855398461646109
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Mesh: {fileID: -471007333490975877, guid: 25c9431b462db044ab6389f6011293c7, type: 3}
+--- !u!23 &1107920920220521055
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 645a071e7b078da46b5df8067e55bb9d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!54 &7291650636675671145
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 1
+--- !u!114 &513978754582793061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7eeb2f61cb23e44aced1d5dd42f0fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabPull
+  cam: {fileID: 0}
+  grabKey: 323
+  grabSpring: 120
+  grabDamper: 18
+  maxAccel: 60
+  maxSpeed: 12
+  leafGrabPrimary: {fileID: 0}
+  leafGrabSecondary: {fileID: 0}
+  leafGrabSecondaryDelay: 0.06
+  petalGrabPrimary: {fileID: 0}
+  petalGrabSecondary: {fileID: 0}
+  petalGrabSecondaryDelay: 0.06
+  genericGrabPrimary: {fileID: 0}
+  genericGrabSecondary: {fileID: 0}
+  genericGrabSecondaryDelay: 0.05
+  grabbing: 0
+--- !u!114 &3274260996452533356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d19a921f89f71064b89a0e60462aaaa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
+  connectedBody: {fileID: 0}
+  maxDistance: 0.75
+  spring: 400
+  damper: 30
+  criteria: 3
+  testSpace: 0
+  armDelay: 0.05
+  breakForce: 20
+  relativeSpeedThreshold: 6
+  ownSpeedThreshold: 8
+  absoluteTravelThreshold: 5
+  relativeTravelThreshold: 5
+  velocityMode: 0
+  velocitySmoothing: 0.1
+  driveMaxForce: 200
+  useJointProjection: 1
+  projectionDistance: 0.02
+  enforceXYConstraints: 1
+  useAdaptiveDrive: 0
+  softZoneFraction: 0.6
+  tensionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minSpringMultiplier: 0.25
+  maxSpringMultiplier: 1.5
+  minDamperMultiplier: 0.25
+  maxDamperMultiplier: 1.5
+  usePluckDwell: 0
+  pluckThresholdFraction: 0.8
+  pluckDwellSeconds: 0.08
+  breakOnReleaseFromHighStretch: 0
+  releasePopThresholdFraction: 0.4
+  onTensionChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  useEngagementScaling: 1
+  engagedMultiplier: 1
+  passiveMultiplierOverride: 0
+  onlyBreakWhenEngaged: 1
+  enableAudio: 1
+  enableFluid: 1
+  onBroke:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogs: 1
+  drawGizmos: 1
+  logLiveDistance: 0
+  lineColor: {r: 0, g: 1, b: 1, a: 0.9}
+  limitColor: {r: 1, g: 0.3, b: 0, a: 0.6}
+--- !u!114 &6659394840641134296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab326a6940a01c4589fa0b352e4d1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Intensity: 1
+  Mass: 10
+  stiffness: 1
+  damping: 0.75
+  dragRadius: 3
+  dragStrength: 1
+  moveThreshold: 0.6
+  moveGain: 0.35
+  velocityMoveGain: 0.02
+  maxMoveSpeed: 6
+  enforceXYConstraints: 1
+  addRigidbodyIfMissing: 1
+  driveRigidbodyFromDrag: 1
+  dragAcceleration: 40
+  hardMaxSpeed: 20
+  coupledStem: {fileID: 0}
+  stemAttachPoint: {fileID: 0}
+  stemTugRadius: 0.35
+  stemTugStrength: 0.7
+--- !u!64 &4519942266624173844
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -471007333490975877, guid: 25c9431b462db044ab6389f6011293c7, type: 3}
