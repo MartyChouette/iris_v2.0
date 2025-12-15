@@ -8,6 +8,7 @@ TagManager:
   - Stem
   - Petal
   - Crown
+  - InteractiveObject
   layers:
   - Default
   - TransparentFX

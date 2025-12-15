@@ -11,12 +11,18 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Tug_Leaves_Cut_And_ Angle_Cut_Combonation_NOV29.unity
     guid: def88226479021a49a98e9abc154fc5f
+  - enabled: 0
+    path: Assets/Scenes/G_Flower_DEC8.unity
+    guid: f08ccae2574f0bc47ac5f5936bd1306a
   - enabled: 1
     path: Assets/Scenes/L_Main_Menu.unity
     guid: 69ed910976aaf0f479e132549d270ba2
   - enabled: 1
-    path: Assets/Scenes/G_Flower_DEC8.unity
-    guid: f08ccae2574f0bc47ac5f5936bd1306a
+    path: Assets/Scenes/M_Living_Room.unity
+    guid: 9a49c6b7d2db8ad4683df37d8d974bc2
+  - enabled: 1
+    path: Assets/Scenes/G_Flower_DEC14.unity
+    guid: 058acf0ee14c7cc4185e6817383041d9
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
