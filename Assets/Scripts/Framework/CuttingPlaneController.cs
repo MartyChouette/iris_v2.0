@@ -37,8 +37,13 @@ public class CuttingPlaneController : MonoBehaviour
     // ─────────────────────────────────────────────────────────────
 
     [Header("Cut Detection Volume")]
-    public float cutSenseRadius = 0.04f; // Increased slightly to ensure stem detection
+    [Tooltip("Radius/thickness of the overlap volume. Keep small.")]
+    public float cutSenseRadius = 0.04f;
+
+    [Tooltip("Length of the overlap volume along the plane's local X axis.")]
     public float cutSenseLength = 1.0f;
+
+    [Tooltip("IMPORTANT: set this to ONLY the layers containing Stem/Leaf/Petal colliders. Exclude CrownCore/References/UI/etc.")]
     public LayerMask cutDetectionMask = ~0;
 
     [Header("Cut SFX")]
@@ -68,7 +73,11 @@ public class CuttingPlaneController : MonoBehaviour
     public bool drawDetectionGizmo = true;
     public Color detectionGizmoColor = new Color(1f, 0f, 0f, 0.25f);
 
-    Transform _planeTransform;
+    private Transform _planeTransform;
+
+    // NonAlloc buffer (avoids per-cut allocations)
+    private const int HIT_BUFFER_SIZE = 64;
+    private readonly Collider[] _hitBuffer = new Collider[HIT_BUFFER_SIZE];
 
     void Reset() => plane = GetComponent<PlaneBehaviour>();
 
@@ -121,7 +130,8 @@ public class CuttingPlaneController : MonoBehaviour
                 pos.y += axis * axisMoveSpeed * Time.deltaTime;
         }
 
-        if (usePointer && useMouseHeight && !tiltLockActive && pointerPositionAction != null && pointerPositionAction.action != null && pointerPositionAction.action.enabled)
+        if (usePointer && useMouseHeight && !tiltLockActive &&
+            pointerPositionAction != null && pointerPositionAction.action != null && pointerPositionAction.action.enabled)
         {
             Vector2 screenPos = pointerPositionAction.action.ReadValue<Vector2>();
             float screenHeight = Mathf.Max(1f, Screen.height);
@@ -137,15 +147,16 @@ public class CuttingPlaneController : MonoBehaviour
         if (cutAction != null && cutAction.action != null && cutAction.action.WasPerformedThisFrame())
         {
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+            if (plane == null || !plane.enabled) return;
 
-            if (plane != null && plane.enabled)
-            {
-                if (scissorsVisuals != null && scissorsVisuals.AttemptSnip() == false)
-                    return;
+            if (scissorsVisuals != null && scissorsVisuals.AttemptSnip() == false)
+                return;
 
-                HandleCutEffects();
-                plane.Cut();
-            }
+            // 1) Perform the actual cut first (so effects match reality)
+            plane.Cut();
+
+            // 2) Now resolve what we actually cut and fire feedback
+            HandleCutEffects_AfterCut();
         }
     }
 
@@ -162,120 +173,177 @@ public class CuttingPlaneController : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────────────────────
-    // IMPROVED CUT DETECTION
+    // EFFECTS (AFTER the cut)
     // ─────────────────────────────────────────────────────────────
-    void HandleCutEffects()
+
+    void HandleCutEffects_AfterCut()
     {
         if (_planeTransform == null) return;
 
         bool hasAnySfx = stemCutPrimary || stemCutSecondary || leafCutPrimary || leafCutSecondary || petalCutPrimary || petalCutSecondary;
         if (!hasAnySfx && goreIntensity <= 0f) return;
 
-        Vector3 center = _planeTransform.position;
+        Vector3 planePos = _planeTransform.position;
+        Vector3 planeNormal = _planeTransform.forward; // your "cut direction"
+
+        // Overlap volume centered on plane
         Vector3 halfExtents = new Vector3(cutSenseLength * 0.5f, cutSenseRadius, cutSenseRadius);
         Quaternion rotation = _planeTransform.rotation;
 
-        Collider[] hits = Physics.OverlapBox(center, halfExtents, rotation, cutDetectionMask, QueryTriggerInteraction.Ignore);
+        int hitCount = Physics.OverlapBoxNonAlloc(
+            planePos,
+            halfExtents,
+            _hitBuffer,
+            rotation,
+            cutDetectionMask,
+            QueryTriggerInteraction.Ignore);
 
-        if (hits == null || hits.Length == 0)
+        if (hitCount <= 0)
         {
-            TriggerFluid(genericFluidPlane, null);
+            // Nothing detected -> generic feedback only
+            PlayCutDual(stemCutPrimary, stemCutSecondary, stemSecondaryDelay);
+            TriggerPlaneFluid(genericFluidPlane, planePos, planeNormal);
             return;
         }
 
-        Collider leafCol = null, petalCol = null, stemCol = null;
+        // Choose the closest valid target to the plane position, with priority rules.
+        CutHitKind bestKind = CutHitKind.None;
+        Collider bestCol = null;
+        float bestDistSq = float.MaxValue;
 
-        foreach (var col in hits)
+        // We track best candidate per kind, then choose by priority with distance sanity
+        Collider bestStem = null, bestLeaf = null, bestPetal = null;
+        float bestStemD = float.MaxValue, bestLeafD = float.MaxValue, bestPetalD = float.MaxValue;
+
+        for (int i = 0; i < hitCount; i++)
         {
+            var col = _hitBuffer[i];
             if (col == null) continue;
 
-            // --- SMART COMPONENT CHECK ---
-            // A Stem has a StemRuntime in its parent hierarchy, but NOT a PartRuntime.
-            // A Leaf/Petal has a PartRuntime.
-            var part = col.GetComponentInParent<FlowerPartRuntime>();
-            var stem = col.GetComponentInParent<FlowerStemRuntime>();
+            // Compute distance to plane center using closest point
+            Vector3 cp = col.ClosestPoint(planePos);
+            float d = (cp - planePos).sqrMagnitude;
 
+            // Classify
+            var part = col.GetComponentInParent<FlowerPartRuntime>();
             if (part != null)
             {
-                if (part.kind == FlowerPartKind.Leaf) leafCol = col;
-                else if (part.kind == FlowerPartKind.Petal) petalCol = col;
+                if (part.kind == FlowerPartKind.Leaf)
+                {
+                    if (d < bestLeafD) { bestLeafD = d; bestLeaf = col; }
+                }
+                else if (part.kind == FlowerPartKind.Petal)
+                {
+                    if (d < bestPetalD) { bestPetalD = d; bestPetal = col; }
+                }
+                continue;
             }
-            else if (stem != null)
+
+            // Stem: prefer real stem runtime markers (or stem runtime in parents)
+            var stem = col.GetComponentInParent<FlowerStemRuntime>();
+            if (stem != null)
             {
-                // It has a stem parent but is not a part => It is the Stem!
-                if (stemCol == null) stemCol = col;
+                if (d < bestStemD) { bestStemD = d; bestStem = col; }
+                continue;
             }
-            // Fallback to tags if scripts are missing
-            else if (col.CompareTag("Stem")) stemCol = col;
-            else if (col.CompareTag("Leaf")) leafCol = col;
-            else if (col.CompareTag("Petal")) petalCol = col;
+
+            // fallback tags (only if your project still uses them)
+            if (col.CompareTag("Stem"))
+            {
+                if (d < bestStemD) { bestStemD = d; bestStem = col; }
+            }
+            else if (col.CompareTag("Leaf"))
+            {
+                if (d < bestLeafD) { bestLeafD = d; bestLeaf = col; }
+            }
+            else if (col.CompareTag("Petal"))
+            {
+                if (d < bestPetalD) { bestPetalD = d; bestPetal = col; }
+            }
         }
 
-        CutHitKind kind = CutHitKind.None;
-        Collider chosen = null;
+        // Final selection:
+        // - If we have a stem candidate, take it UNLESS it's much farther than leaf/petal (prevents grazing stem from overriding a clear leaf cut).
+        const float STEM_DISTANCE_OVERRIDE_FACTOR = 4f; // tweak: higher = stem wins more often
 
-        // PRIORITY: Stem > Leaf > Petal
-        // If we hit a stem, we assume that was the intended target, even if a leaf was also grazed.
-        if (stemCol != null) { kind = CutHitKind.Stem; chosen = stemCol; }
-        else if (leafCol != null) { kind = CutHitKind.Leaf; chosen = leafCol; }
-        else if (petalCol != null) { kind = CutHitKind.Petal; chosen = petalCol; }
-
-        switch (kind)
+        if (bestStem != null)
         {
-            case CutHitKind.Leaf:
-                PlayCutDual(leafCutPrimary, leafCutSecondary, leafSecondaryDelay);
-                TriggerFluid(leafFluidPlane, chosen);
-                break;
-            case CutHitKind.Petal:
-                PlayCutDual(petalCutPrimary, petalCutSecondary, petalSecondaryDelay);
-                TriggerFluid(petalFluidPlane, chosen);
-                break;
+            float minNonStem = Mathf.Min(bestLeafD, bestPetalD);
+            bool stemClearlyTooFar = (minNonStem < float.MaxValue) && (bestStemD > minNonStem * STEM_DISTANCE_OVERRIDE_FACTOR);
+
+            if (!stemClearlyTooFar)
+            {
+                bestKind = CutHitKind.Stem;
+                bestCol = bestStem;
+                bestDistSq = bestStemD;
+            }
+        }
+
+        if (bestKind == CutHitKind.None && bestLeaf != null)
+        {
+            bestKind = CutHitKind.Leaf;
+            bestCol = bestLeaf;
+            bestDistSq = bestLeafD;
+        }
+
+        if (bestKind == CutHitKind.None && bestPetal != null)
+        {
+            bestKind = CutHitKind.Petal;
+            bestCol = bestPetal;
+            bestDistSq = bestPetalD;
+        }
+
+        // Compute final hit point from chosen collider
+        Vector3 hitPoint = (bestCol != null) ? bestCol.ClosestPoint(planePos) : planePos;
+
+        if (debugLogs)
+            Debug.Log($"[CutEffects] kind={bestKind} col={(bestCol ? bestCol.name : "null")} distSq={bestDistSq:F6} hitPoint={hitPoint}", bestCol);
+
+        // Fire SFX + Plane fluid at hit point
+        switch (bestKind)
+        {
             case CutHitKind.Stem:
                 PlayCutDual(stemCutPrimary, stemCutSecondary, stemSecondaryDelay);
-                TriggerFluid(stemFluidPlane, chosen);
+                TriggerPlaneFluid(stemFluidPlane, hitPoint, planeNormal);
                 break;
+
+            case CutHitKind.Leaf:
+                PlayCutDual(leafCutPrimary, leafCutSecondary, leafSecondaryDelay);
+                TriggerPlaneFluid(leafFluidPlane, hitPoint, planeNormal);
+                break;
+
+            case CutHitKind.Petal:
+                PlayCutDual(petalCutPrimary, petalCutSecondary, petalSecondaryDelay);
+                TriggerPlaneFluid(petalFluidPlane, hitPoint, planeNormal);
+                break;
+
             default:
                 PlayCutDual(stemCutPrimary, stemCutSecondary, stemSecondaryDelay);
-                TriggerFluid(genericFluidPlane, chosen);
+                TriggerPlaneFluid(genericFluidPlane, hitPoint, planeNormal);
                 break;
         }
+
+        // Clear buffer refs (not required, but helps debugging / avoids holding dead refs)
+        for (int i = 0; i < hitCount; i++) _hitBuffer[i] = null;
     }
 
     void PlayCutDual(AudioClip first, AudioClip second, float delay)
     {
         if (AudioManager.Instance == null || (first == null && second == null)) return;
-        if (second != null || delay > 0f) AudioManager.Instance.PlayDualSFX(first, second, delay);
-        else AudioManager.Instance.PlaySFX(first);
+
+        if (second != null || delay > 0f)
+            AudioManager.Instance.PlayDualSFX(first, second, delay);
+        else
+            AudioManager.Instance.PlaySFX(first);
     }
 
-    void TriggerFluid(FluidSquirter planeSquirter, Collider exampleCol)
+    void TriggerPlaneFluid(FluidSquirter planeSquirter, Vector3 pos, Vector3 normal)
     {
         float intensity = Mathf.Clamp01(goreIntensity);
         if (intensity <= 0f) return;
 
-        // Option A: Move the generic "Cut Plane" squirter to the cut location and fire
         if (planeSquirter != null)
-        {
-            planeSquirter.Squirt(intensity, _planeTransform.position, _planeTransform.forward);
-        }
-
-        // Option B: If the object itself has specific squirters attached (rare for stems, common for bosses)
-        if (exampleCol != null)
-        {
-            var squirters = exampleCol.GetComponentsInParent<FluidSquirter>();
-            if (squirters != null && squirters.Length > 0)
-            {
-                Vector3 hitPoint = exampleCol.ClosestPoint(_planeTransform.position);
-                Vector3 hitNormal = exampleCol.transform.up;
-
-                foreach (var fs in squirters)
-                {
-                    // Don't double fire if it's the same one we just fired
-                    if (fs != planeSquirter)
-                        fs.Squirt(intensity, hitPoint, hitNormal);
-                }
-            }
-        }
+            planeSquirter.Squirt(intensity, pos, normal.normalized);
     }
 
 #if UNITY_EDITOR
@@ -287,6 +355,7 @@ public class CuttingPlaneController : MonoBehaviour
         Gizmos.DrawLine(pMin, pMax);
 
         if (!drawDetectionGizmo) return;
+
         Transform t = Application.isPlaying && plane != null ? plane.transform : transform;
         Gizmos.color = detectionGizmoColor;
         Matrix4x4 prev = Gizmos.matrix;

@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3524622854534500939
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6412518918037664882}
+  m_Layer: 6
+  m_Name: BleedPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6412518918037664882
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3524622854534500939}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.9337405, y: -0.013274444, z: 0.3214933, w: 0.1568264}
+  m_LocalPosition: {x: 0.0062, y: 0.0043, z: -0.0196}
+  m_LocalScale: {x: 0.11898734, y: 2.4810398, z: 0.6412289}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5552232867321885460}
+  m_LocalEulerAnglesHint: {x: 175.1, y: 51.8, z: -15.634}
 --- !u!1 &5361662614469364547
 GameObject:
   m_ObjectHideFlags: 0
@@ -16,6 +47,11 @@ GameObject:
   - component: {fileID: 3274260996452533356}
   - component: {fileID: 6659394840641134296}
   - component: {fileID: 4519942266624173844}
+  - component: {fileID: 633536175815418152}
+  - component: {fileID: 750564329544417037}
+  - component: {fileID: 3254018034948600709}
+  - component: {fileID: 6284184260450131766}
+  - component: {fileID: 6501826396328177457}
   m_Layer: 6
   m_Name: Shitty_Leaf
   m_TagString: Untagged
@@ -35,7 +71,8 @@ Transform:
   m_LocalPosition: {x: 0.64, y: 6.55, z: -4.18}
   m_LocalScale: {x: 70, y: 70, z: 70}
   m_ConstrainProportionsScale: 1
-  m_Children: []
+  m_Children:
+  - {fileID: 6412518918037664882}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -35.8, y: 121.3, z: -101.9}
 --- !u!33 &4540855398461646109
@@ -223,6 +260,7 @@ MonoBehaviour:
   onlyBreakWhenEngaged: 1
   enableAudio: 1
   enableFluid: 1
+  preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
       m_Calls: []
@@ -284,3 +322,94 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -471007333490975877, guid: 25c9431b462db044ab6389f6011293c7, type: 3}
+--- !u!114 &633536175815418152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerPartRuntime
+  PartId: Daisy_Leaf_L_Shitty
+  kind: 0
+  condition: 1
+  isAttached: 1
+  permanentlyDetached: 0
+  lastDetachReason: 0
+  canCauseGameOver: 0
+  isSpecial: 0
+  contributesToScore: 1
+  allowedWithered: 1
+  allowedMissing: 0
+  scoreWeight: 1
+  idealLocalPosition: {x: 0, y: 0, z: 0}
+  idealLocalEuler: {x: 0, y: 0, z: 0}
+  session: {fileID: 0}
+  brain: {fileID: 0}
+  xyJoint: {fileID: 3274260996452533356}
+  unityJoints:
+  - {fileID: 0}
+  enableCrownYFailsafe: 1
+  crownFailY: -1
+--- !u!114 &750564329544417037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 1
+--- !u!114 &3254018034948600709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c734db7f24a7714d99667fb49f04939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakAudioResponder
+  primaryBreakSound: {fileID: 8300000, guid: f3a427f604c4d4e4494bbeb7bbf585c3, type: 3}
+  secondaryBreakSound: {fileID: 8300000, guid: 5e93a53128124eb4f88e4876194b39c0, type: 3}
+  secondaryDelay: 0.15
+  debugLogs: 0
+--- !u!114 &6284184260450131766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointBreakFluidResponder
+  partType: 0
+  bleedPoint: {fileID: 6412518918037664882}
+  sapController: {fileID: 0}
+--- !u!114 &6501826396328177457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5361662614469364547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b721147e55d05429e68c82a3d4f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
+  isEngaged: 0
+  passiveIntensity: 0.181

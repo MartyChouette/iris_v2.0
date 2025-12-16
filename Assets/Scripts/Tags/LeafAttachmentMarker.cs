@@ -7,4 +7,6 @@ using UnityEngine;
 /// </summary>
 public class LeafAttachmentMarker : MonoBehaviour
 {
+    public FlowerPartRuntime owningLeaf;
+
 }

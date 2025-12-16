@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0bc52eead7d81204f9a1a0b59128f223, type: 3}
-  m_Name: Daisy_Flower_Type_00_Long
+  m_Name: Daisy_Flower_Type_00_Long_Withered
   m_EditorClassIdentifier: Assembly-CSharp::FlowerTypeDefinition
-  flowerId: authored_daisy_flower_type_00_Long
-  displayName: Authored_Daisy_Flower_Type_00_Long
+  flowerId: authored_daisy_flower_type_00_long_withered
+  displayName: Authored_Daisy_Flower_Type_00_Long_Withered
   description: A soft scent and cheerful presence, the daisy is the simplest of flowers.
   idealFlowerSprite: {fileID: 21300000, guid: 77bac899e323bce4baece751f003d334, type: 3}
   icon: {fileID: 21300000, guid: 77bac899e323bce4baece751f003d334, type: 3}

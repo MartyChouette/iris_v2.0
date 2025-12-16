@@ -3,11 +3,12 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Rebinds all joints (FixedJoint, HingeJoint, ConfigurableJoint, XYTetherJoint)
-/// under a flower / stem to the closest stem piece after a cut.
-/// Attach this to the flower root (e.g. Flower_Daisy).
-/// Call RebindAllPartsToClosestStemPiece() right after the stem is cut and
-/// new stem pieces with StemPieceMarker components have been created.
+/// Rebinds joints under a flower after a stem cut.
+/// Key rules:
+/// 1) Pick HELD stem piece using Crown joints when possible (most reliable).
+/// 2) NEVER destroy joints on Crown/head parts. If they point to the wrong chunk, rebind to HELD.
+/// 3) LeafAttachmentMarker joints should ALWAYS bind to HELD (unless their owning leaf is permanently detached).
+/// 4) Optionally, sever stem-internal joints that still connect held<->falling chunks (rare, but fixes "won't drop").
 /// </summary>
 public class FlowerJointRebinder : MonoBehaviour
 {
@@ -17,89 +18,311 @@ public class FlowerJointRebinder : MonoBehaviour
     [Tooltip("Root transform for this flower. If null, uses this.transform.")]
     public Transform flowerRoot;
 
+    [Header("Held Selection")]
+    [Tooltip("Optional explicit reference to crown/root of head. If null, we auto-find by Tag/Layer.")]
+    public Transform crownRoot;
+
+    [Header("Safety Gate")]
+    public bool requireExplicitStemSwapGate = true;
+
+    [Header("Post-Cut Behavior")]
+    [Tooltip("If true, leaf attachment points (LeafAttachmentMarker) are forced onto HELD chunk.")]
+    public bool forceLeafAttachmentsToHeld = true;
+
+    [Tooltip("If true, crown/head joints that accidentally point to falling chunk are forced onto HELD chunk.")]
+    public bool forceCrownJointsToHeld = true;
+
+    [Tooltip("If true, any joints UNDER the stemRuntime that connect to the opposite chunk are destroyed (helps ensure separation).")]
+    public bool severStemInternalCrossChunkJoints = true;
+
+    [Tooltip("If true, makes falling stem chunks dynamic & awake.")]
+    public bool forceFallingChunksDynamic = true;
+
+    [Header("Debug")]
+    public bool debugLogs = true;
+
     /// <summary>
     /// Call this AFTER the stem has been split / cut and the new stem pieces exist
     /// and have StemPieceMarker components pointing back to this stemRuntime.
     /// </summary>
-    public void RebindAllPartsToClosestStemPiece()
+    public void RebindAllPartsToClosestStemPiece(bool isStemSwapOperation = true)
     {
-        // --- Resolve references ---
-        if (flowerRoot == null)
-            flowerRoot = transform;
-
-        if (stemRuntime == null)
-            stemRuntime = flowerRoot.GetComponentInChildren<FlowerStemRuntime>();
-
-        if (stemRuntime == null)
+        if (requireExplicitStemSwapGate && !isStemSwapOperation)
             return;
 
-        // 1. Collect all stem piece rigidbodies that belong to THIS stem
+        if (flowerRoot == null) flowerRoot = transform;
+        if (stemRuntime == null) stemRuntime = flowerRoot.GetComponentInChildren<FlowerStemRuntime>();
+        if (stemRuntime == null) return;
+
+        // 1) Collect stem piece RBs
         var markers = FindObjectsByType<StemPieceMarker>(FindObjectsSortMode.None);
         var stemPieces = markers
             .Where(m => m != null && m.stemRuntime == stemRuntime)
             .Select(m => m.GetComponent<Rigidbody>())
             .Where(rb => rb != null)
+            .Distinct()
             .ToArray();
 
-        // Fallback: if no markers yet, just use any rigidbodies under the stem
         if (stemPieces.Length == 0)
             stemPieces = stemRuntime.GetComponentsInChildren<Rigidbody>(true);
 
-        if (stemPieces.Length == 0)
-            return;
+        if (stemPieces == null || stemPieces.Length == 0) return;
 
-        // Lookup set: "is this RB one of our stem pieces?"
         var stemSet = new HashSet<Rigidbody>(stemPieces);
 
-        // 2. Find ALL joints:
-        //    - joints on flowerRoot (leaves, petals, etc.)
-        //    - joints on the stem hierarchy (attachment nodes, crown, etc.)
+        // 2) Decide HELD piece robustly (use crown joints if possible)
+        Rigidbody held = ChooseHeldStemPieceByCrownJoints(stemPieces, stemSet);
+        if (held == null)
+            held = ChooseHeldStemPieceByHighestYThenProximity(stemPieces);
+
+        if (held == null) return;
+
+        var falling = stemPieces.Where(rb => rb != null && rb != held).ToArray();
+
+        if (debugLogs)
+        {
+            Debug.Log($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]", this);
+        }
+
+        // 3) Fix the exact problem you’re seeing:
+        //    - Leaf attachment points accidentally binding to FALLING chunk
+        //    - Crown joints accidentally binding to FALLING chunk
+        //    We REBIND those joints to HELD, we do NOT destroy them.
+        if (forceLeafAttachmentsToHeld)
+            ForceLeafAttachmentJointsToHeld(held, stemSet);
+
+        if (forceCrownJointsToHeld)
+            ForceCrownHeadJointsToHeld(held, stemSet);
+
+        // 4) Optional: if the stem pieces are still connected by some leftover joint inside stemRuntime,
+        //    sever only those (safe; doesn’t touch crown).
+        if (severStemInternalCrossChunkJoints)
+            SeverStemInternalCrossChunkJoints(held, stemSet);
+
+        // 5) Optional: make sure falling chunks actually fall.
+        if (forceFallingChunksDynamic && falling.Length > 0)
+            ForceChunksDynamicAndAwake(falling);
+
+        // 6) Now do your normal rebinding passes (safe now that anchors are corrected).
         var fixedJoints = CollectJoints<FixedJoint>(flowerRoot, stemRuntime);
         var hingeJoints = CollectJoints<HingeJoint>(flowerRoot, stemRuntime);
         var configurableJoints = CollectJoints<ConfigurableJoint>(flowerRoot, stemRuntime);
         var xyJoints = CollectJoints<XYTetherJoint>(flowerRoot, stemRuntime);
 
-        // 3. Rebind each joint type
         RebindFixedJoints(fixedJoints, stemPieces, stemSet);
         RebindHingeJoints(hingeJoints, stemPieces, stemSet);
         RebindConfigJoints(configurableJoints, stemPieces, stemSet);
         RebindXYTetherJoints(xyJoints, stemPieces, stemSet);
     }
 
-    // ─────────────────── Joint collection helper ───────────────────
+    // ─────────────────────────────────────────────────────────────
+    // HELD SELECTION
+    // ─────────────────────────────────────────────────────────────
+
+    private Rigidbody ChooseHeldStemPieceByCrownJoints(Rigidbody[] stemPieces, HashSet<Rigidbody> stemSet)
+    {
+        Transform crown = ResolveCrownRoot();
+        if (crown == null) return null;
+
+        // Look for any Joint under Crown that connects to a stem piece.
+        // If Front/Back both connect, we choose the most common connectedBody.
+        var joints = crown.GetComponentsInChildren<Joint>(true);
+
+        var votes = new Dictionary<Rigidbody, int>();
+        foreach (var j in joints)
+        {
+            if (j == null) continue;
+            var cb = j.connectedBody;
+            if (cb == null) continue;
+            if (!stemSet.Contains(cb)) continue;
+
+            if (!votes.ContainsKey(cb)) votes[cb] = 0;
+            votes[cb]++;
+        }
+
+        if (votes.Count == 0) return null;
+
+        var held = votes.OrderByDescending(kv => kv.Value).First().Key;
+
+        if (debugLogs)
+            Debug.Log($"[Rebinder] HELD picked by Crown joint votes: '{held.name}'", this);
+
+        return held;
+    }
+
+    private Rigidbody ChooseHeldStemPieceByHighestYThenProximity(Rigidbody[] stemPieces)
+    {
+        Vector3 refPos = (flowerRoot != null) ? flowerRoot.position : transform.position;
+
+        Rigidbody best = null;
+        float bestY = float.NegativeInfinity;
+        float bestDistSq = float.MaxValue;
+
+        foreach (var rb in stemPieces)
+        {
+            if (rb == null) continue;
+            float y = rb.worldCenterOfMass.y;
+            float d = (rb.worldCenterOfMass - refPos).sqrMagnitude;
+
+            // primary: higher Y, secondary: closer to flowerRoot
+            bool better = (y > bestY + 1e-5f) || (Mathf.Abs(y - bestY) <= 1e-5f && d < bestDistSq);
+            if (better)
+            {
+                best = rb;
+                bestY = y;
+                bestDistSq = d;
+            }
+        }
+
+        if (debugLogs && best != null)
+            Debug.Log($"[Rebinder] HELD fallback by HighestY/Proximity: '{best.name}'", this);
+
+        return best;
+    }
+
+    private Transform ResolveCrownRoot()
+    {
+        if (crownRoot != null) return crownRoot;
+
+        // Prefer Tag "Crown" if you have it (your screenshot shows Tag Crown on Crown object).
+        var tagged = GameObject.FindGameObjectsWithTag("Crown")
+            .Select(go => go.transform)
+            .FirstOrDefault(t => t != null && t.IsChildOf(flowerRoot));
+
+        if (tagged != null) return tagged;
+
+        // Fallback: search for something on layer "CrownCore"
+        int crownLayer = LayerMask.NameToLayer("CrownCore");
+        if (crownLayer >= 0)
+        {
+            var all = flowerRoot.GetComponentsInChildren<Transform>(true);
+            foreach (var t in all)
+            {
+                if (t != null && t.gameObject.layer == crownLayer && t.name == "Crown")
+                    return t;
+            }
+        }
+
+        // Final fallback: name contains Crown
+        var byName = flowerRoot.GetComponentsInChildren<Transform>(true)
+            .FirstOrDefault(t => t != null && t.name.ToLower().Contains("crown"));
+        return byName;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // TARGETED FIXES (DO NOT DESTROY CROWN JOINTS)
+    // ─────────────────────────────────────────────────────────────
+
+    private void ForceLeafAttachmentJointsToHeld(Rigidbody held, HashSet<Rigidbody> stemSet)
+    {
+        // Leaf attachment points might live outside stem hierarchy, but under flowerRoot.
+        var fixedJoints = flowerRoot.GetComponentsInChildren<FixedJoint>(true);
+
+        foreach (var fj in fixedJoints)
+        {
+            if (fj == null) continue;
+
+            var marker = fj.GetComponent<LeafAttachmentMarker>();
+            if (marker == null) continue;
+
+            // Respect permanent detach
+            if (marker.owningLeaf != null && marker.owningLeaf.permanentlyDetached)
+                continue;
+
+            if (fj.connectedBody != held)
+            {
+                if (fj.connectedBody != null && stemSet.Contains(fj.connectedBody) && debugLogs)
+                    Debug.Log($"[Rebinder] LeafAttachment '{fj.name}' redirected {fj.connectedBody.name} -> {held.name}", fj);
+
+                fj.connectedBody = held;
+            }
+        }
+    }
+
+    private void ForceCrownHeadJointsToHeld(Rigidbody held, HashSet<Rigidbody> stemSet)
+    {
+        Transform crown = ResolveCrownRoot();
+        if (crown == null) return;
+
+        var joints = crown.GetComponentsInChildren<Joint>(true);
+        foreach (var j in joints)
+        {
+            if (j == null) continue;
+            if (j.connectedBody == null) continue;
+
+            // Only redirect if the joint is currently connected to a stem piece (wrong one)
+            if (stemSet.Contains(j.connectedBody) && j.connectedBody != held)
+            {
+                if (debugLogs)
+                    Debug.Log($"[Rebinder] Crown joint '{j.name}' redirected {j.connectedBody.name} -> {held.name}", j);
+
+                j.connectedBody = held;
+            }
+        }
+    }
+
+    private void SeverStemInternalCrossChunkJoints(Rigidbody held, HashSet<Rigidbody> stemSet)
+    {
+        // Only joints UNDER the stemRuntime. This avoids touching Crown/Front/Back.
+        var joints = stemRuntime.GetComponentsInChildren<Joint>(true);
+
+        int killed = 0;
+        foreach (var j in joints)
+        {
+            if (j == null) continue;
+            if (j.connectedBody == null) continue;
+            if (!stemSet.Contains(j.connectedBody)) continue;
+
+            // If a joint under stemRuntime is connected to HELD, it might be keeping the falling chunk attached.
+            // Kill it so physics separation is guaranteed.
+            if (j.connectedBody == held)
+            {
+                if (debugLogs)
+                    Debug.Log($"[Rebinder] Severing stem-internal joint '{j.GetType().Name}' on '{j.name}' (was connected to HELD '{held.name}').", j);
+
+                Destroy(j);
+                killed++;
+            }
+        }
+
+        if (debugLogs && killed > 0)
+            Debug.Log($"[Rebinder] Severed {killed} stem-internal cross-chunk joints.", this);
+    }
+
+    private void ForceChunksDynamicAndAwake(Rigidbody[] chunks)
+    {
+        foreach (var rb in chunks)
+        {
+            if (rb == null) continue;
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.WakeUp();
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // NORMAL REBIND PASSES
+    // ─────────────────────────────────────────────────────────────
 
     private T[] CollectJoints<T>(Transform rootA, FlowerStemRuntime stem) where T : Component
     {
         var result = new List<T>();
-
-        if (rootA != null)
-            result.AddRange(rootA.GetComponentsInChildren<T>(true));
-
-        if (stem != null)
-            result.AddRange(stem.GetComponentsInChildren<T>(true));
-
-        // Remove duplicates if any object is in both hierarchies
+        if (rootA != null) result.AddRange(rootA.GetComponentsInChildren<T>(true));
+        if (stem != null) result.AddRange(stem.GetComponentsInChildren<T>(true));
         return result.Distinct().ToArray();
     }
-
-    // ─────────────────── Hierarchy helper ───────────────────
 
     private bool IsUnderStem(Transform t)
     {
         if (stemRuntime == null) return false;
         Transform stemRoot = stemRuntime.transform;
-
         while (t != null)
         {
-            if (t == stemRoot)
-                return true;
+            if (t == stemRoot) return true;
             t = t.parent;
         }
-
         return false;
     }
-
-    // ─────────────────── Joint rebind helpers ───────────────────
 
     private void RebindFixedJoints(FixedJoint[] joints, Rigidbody[] stemPieces, HashSet<Rigidbody> stemSet)
     {
@@ -111,37 +334,28 @@ public class FlowerJointRebinder : MonoBehaviour
             if (ownerRb == null) continue;
 
             bool onStemHierarchy = IsUnderStem(fj.transform);
-            bool isLeafAttachment = fj.GetComponent<LeafAttachmentMarker>() != null;
+            var leafAttachMarker = fj.GetComponent<LeafAttachmentMarker>();
+            bool isLeafAttachment = leafAttachMarker != null;
 
-            // SPECIAL CASE: Leaf attachment sphere.
-            // These are the little spheres the leaves are XY-tethered to.
-            // We always rebind them to the closest stem piece, because their
-            // connectedBody is often the old stem which may be gone or null.
             if (isLeafAttachment && onStemHierarchy)
             {
+                if (leafAttachMarker.owningLeaf != null && leafAttachMarker.owningLeaf.permanentlyDetached)
+                    continue;
+
                 Vector3 anchorWorld = fj.transform.TransformPoint(fj.anchor);
                 var newBody = FindClosestStemPiece(anchorWorld, stemPieces, ownerRb);
                 if (newBody != null && newBody != ownerRb)
-                {
-                    Debug.Log($"[Rebinder] Leaf attachment '{fj.name}' reconnected to '{newBody.name}'", fj);
                     fj.connectedBody = newBody;
-                }
-                else
-                {
-                    Debug.Log($"[Rebinder] Leaf attachment '{fj.name}' could not find a new stem piece.", fj);
-                }
+
                 continue;
             }
 
-            // ORIGINAL RULE for everything else:
             if (fj.connectedBody == null) continue;
-            if (!stemSet.Contains(fj.connectedBody))
-                continue;
+            if (!stemSet.Contains(fj.connectedBody)) continue;
 
             Vector3 anchorWorldNormal = fj.transform.TransformPoint(fj.anchor);
             var newBodyNormal = FindClosestStemPiece(anchorWorldNormal, stemPieces, ownerRb);
-            if (newBodyNormal == null || newBodyNormal == ownerRb)
-                continue; // never connect a joint to itself
+            if (newBodyNormal == null || newBodyNormal == ownerRb) continue;
 
             fj.connectedBody = newBodyNormal;
         }
@@ -157,13 +371,11 @@ public class FlowerJointRebinder : MonoBehaviour
             var ownerRb = hj.GetComponent<Rigidbody>();
             if (ownerRb == null) continue;
 
-            if (!stemSet.Contains(hj.connectedBody))
-                continue;
+            if (!stemSet.Contains(hj.connectedBody)) continue;
 
             Vector3 anchorWorld = hj.transform.TransformPoint(hj.anchor);
             var newBody = FindClosestStemPiece(anchorWorld, stemPieces, ownerRb);
-            if (newBody == null || newBody == ownerRb)
-                continue;
+            if (newBody == null || newBody == ownerRb) continue;
 
             hj.connectedBody = newBody;
         }
@@ -179,13 +391,11 @@ public class FlowerJointRebinder : MonoBehaviour
             var ownerRb = cj.GetComponent<Rigidbody>();
             if (ownerRb == null) continue;
 
-            if (!stemSet.Contains(cj.connectedBody))
-                continue;
+            if (!stemSet.Contains(cj.connectedBody)) continue;
 
             Vector3 anchorWorld = cj.transform.TransformPoint(cj.anchor);
             var newBody = FindClosestStemPiece(anchorWorld, stemPieces, ownerRb);
-            if (newBody == null || newBody == ownerRb)
-                continue;
+            if (newBody == null || newBody == ownerRb) continue;
 
             cj.connectedBody = newBody;
         }
@@ -197,59 +407,27 @@ public class FlowerJointRebinder : MonoBehaviour
         {
             if (xy == null) continue;
 
+            if (!xy.HasActiveJoint())
+                continue;
+
+            var part = xy.GetComponent<FlowerPartRuntime>();
+            if (part != null)
+            {
+                if (part.permanentlyDetached) continue;
+                if (!part.isAttached) continue;
+            }
+
             var ownerRb = xy.GetComponent<Rigidbody>();
             if (ownerRb == null) continue;
 
-            // If connectedBody is gone or no longer a valid stem piece, we treat this as a leaf
-            // that needs to be reattached to the closest stem segment.
-            bool needsRebind = false;
-
-            if (xy.connectedBody == null)
-            {
-                needsRebind = true;
-            }
-            else if (!stemSet.Contains(xy.connectedBody))
-            {
-                // connectedBody exists but is NOT one of our known stem pieces.
-                // This is very likely an old / destroyed stem or an attachment that
-                // no longer has the right rigidbody – we rebind it.
-                needsRebind = true;
-            }
-            else
-            {
-                // connectedBody IS a stem piece, but we still want to update it to the
-                // nearest new stem piece after the cut, same as petals.
-                needsRebind = true;
-            }
-
-            if (!needsRebind)
-                continue;
-
-            // Use the XY joint's own helper to reconnect, so it can rebuild
-            // its internal ConfigurableJoint, rest distance, etc.
             Vector3 refPos = xy.transform.position;
             var newBody = FindClosestStemPiece(refPos, stemPieces, ownerRb);
-            if (newBody == null || newBody == ownerRb)
-                continue;
 
-            if (xy.connectedBody != newBody)
-            {
-                if (xy.debugLogs)
-                    Debug.Log($"[Rebinder] XYTetherJoint '{xy.name}' reconnected from '{xy.connectedBody?.name ?? "null"}' to '{newBody.name}'", xy);
-
-                // This recreates the underlying ConfigurableJoint with correct anchors.
+            if (newBody != null && newBody != ownerRb && xy.connectedBody != newBody)
                 xy.SetConnectedBody(newBody);
-            }
         }
     }
 
-
-    /// <summary>
-    /// Finds the closest stem piece to a given world-space point, using collider.ClosestPoint
-    /// when available, otherwise falling back to the Rigidbody's worldCenterOfMass.
-    /// Optionally excludes a specific rigidbody (e.g. the joint owner) so we
-    /// don’t pick "self" as the connection target.
-    /// </summary>
     private Rigidbody FindClosestStemPiece(Vector3 worldPos, Rigidbody[] pieces, Rigidbody exclude = null)
     {
         Rigidbody best = null;
@@ -258,7 +436,7 @@ public class FlowerJointRebinder : MonoBehaviour
         foreach (var rb in pieces)
         {
             if (rb == null) continue;
-            if (rb == exclude) continue; // don’t allow self
+            if (rb == exclude) continue;
 
             var cols = rb.GetComponentsInChildren<Collider>(true);
 

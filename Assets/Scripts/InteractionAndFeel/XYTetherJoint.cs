@@ -1,3 +1,4 @@
+// File: XYTetherJoint.cs
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -116,7 +117,7 @@ public class XYTetherJoint : MonoBehaviour
 
     private InteractionEngagement _engagement;
 
-    // ───────────────────────── FEEDBACK TOGGLES (These were missing!) ─────────────────────────
+    // ───────────────────────── FEEDBACK TOGGLES ─────────────────────────
     [Header("Feedback")]
     [Tooltip("If true, attempts to find and trigger JointBreakAudioResponder.")]
     public bool enableAudio = true;
@@ -124,13 +125,13 @@ public class XYTetherJoint : MonoBehaviour
     [Tooltip("If true, attempts to find and trigger JointBreakFluidResponder.")]
     public bool enableFluid = true;
 
+    // ADDED: optional direct sap emission (keeps responder system intact by default)
+    [Tooltip("If true, tear sap is emitted deterministically from this joint break, instead of relying on bleedPoint.forward.")]
+    public bool preferDeterministicSapDirection = false;
+
     // ───────────────────────── Static cut suppression ─────────────────────────
-    // During stem cuts / juice moments we suppress physics-based breaks
-    // so leaves don't pop off.
 
     public static bool cutBreakSuppressed = false;
-
-    /// <summary>Read-only so external systems (JuiceMomentController) can check state.</summary>
     public static bool IsCutBreakSuppressed => cutBreakSuppressed;
 
     public static void SetCutBreakSuppressed(bool on)
@@ -143,9 +144,7 @@ public class XYTetherJoint : MonoBehaviour
             if (t == null) continue;
 
             if (on)
-            {
                 t.ResetBreakAccumulators();
-            }
 
             t.ApplyBreakForceToJoint();
         }
@@ -175,15 +174,19 @@ public class XYTetherJoint : MonoBehaviour
     private Vector3 restAB;
     private Vector3 vA_int, vB_int;
 
-    // for adaptive drive
     private float baseSpring;
     private float baseDamper;
 
-    // for pluck / pop
     private float pluckTimer;
     private bool wasAbovePluckThreshold;
 
-    private float lastTension; // for event sanity
+    private float lastTension;
+
+    // ADDED: cache part runtime so we can mark permanent detaches (stops zombie rebinding)
+    private FlowerPartRuntime _partRuntime;
+
+    // ADDED: cache session for suppression check and clarity
+    private FlowerSessionController _session;
 
     void Awake()
     {
@@ -201,6 +204,10 @@ public class XYTetherJoint : MonoBehaviour
         }
 
         _engagement = GetComponent<InteractionEngagement>();
+
+        // ADDED:
+        _partRuntime = GetComponent<FlowerPartRuntime>();
+        _session = GetComponentInParent<FlowerSessionController>();
     }
 
     void Start() => TryCreateJoint();
@@ -221,7 +228,6 @@ public class XYTetherJoint : MonoBehaviour
         vA_int = Vector3.Lerp(vA_int, vA_frame, alpha);
         vB_int = Vector3.Lerp(vB_int, vB_frame, alpha);
 
-        // travel accumulation once armed
         if (Time.time >= armedAt)
         {
             absoluteTravel += Dist(ApplySpace(a - prevA));
@@ -231,15 +237,12 @@ public class XYTetherJoint : MonoBehaviour
         prevA = a;
         prevB = b;
 
-        // Compute stretch and normalized tension for feel logic.
         float restDistance = Dist(restAB);
         float currentDistance = Dist(ApplySpace(a - b));
         float stretch = Mathf.Max(0f, currentDistance - restDistance);
         float stretchNorm = 0f;
         if (maxDistance > 0.0001f)
             stretchNorm = Mathf.Clamp01(stretch / maxDistance);
-
-        // ───── Nintendo-ish feel: adaptive tension & pluck / pop ─────
 
         if (useAdaptiveDrive && joint != null)
         {
@@ -249,7 +252,6 @@ public class XYTetherJoint : MonoBehaviour
             float springMult = Mathf.Lerp(minSpringMultiplier, maxSpringMultiplier, tension);
             float damperMult = Mathf.Lerp(minDamperMultiplier, maxDamperMultiplier, tension);
 
-            // scale by engagement factor
             float engageFactor = GetEngagementFactor();
 
             var drive = joint.xDrive;
@@ -258,11 +260,8 @@ public class XYTetherJoint : MonoBehaviour
             joint.xDrive = drive;
             joint.yDrive = drive;
 
-            if (onTensionChanged != null)
-            {
-                onTensionChanged.Invoke(tension);
-                lastTension = tension;
-            }
+            onTensionChanged?.Invoke(tension);
+            lastTension = tension;
         }
 
         if (Time.time >= armedAt)
@@ -287,9 +286,7 @@ public class XYTetherJoint : MonoBehaviour
             if (breakOnReleaseFromHighStretch)
             {
                 if (stretchNorm >= pluckThresholdFraction)
-                {
                     wasAbovePluckThreshold = true;
-                }
                 else if (wasAbovePluckThreshold && stretchNorm <= releasePopThresholdFraction)
                 {
                     ForceBreak($"Release pop (stretchNorm={stretchNorm:F2})");
@@ -298,7 +295,6 @@ public class XYTetherJoint : MonoBehaviour
             }
         }
 
-        // Optional live distance logs
         if (logLiveDistance)
         {
             logTimer += dt;
@@ -312,11 +308,9 @@ public class XYTetherJoint : MonoBehaviour
 
         if (Time.time < armedAt) return;
 
-        // choose velocity sources
         Vector3 vA = velocityMode == VelocityMode.Rigidbody ? rb.linearVelocity : vA_int;
         Vector3 vB = velocityMode == VelocityMode.Rigidbody ? connectedBody.linearVelocity : vB_int;
 
-        // (1) Stretch-from-rest
         if ((criteria & BreakCriteria.Distance) != 0)
         {
             if (stretch > Mathf.Max(0.0001f, maxDistance))
@@ -326,7 +320,6 @@ public class XYTetherJoint : MonoBehaviour
             }
         }
 
-        // (2) Relative speed
         if ((criteria & BreakCriteria.RelativeSpeed) != 0)
         {
             float relSpeed = Dist(ApplySpace(vA - vB));
@@ -337,7 +330,6 @@ public class XYTetherJoint : MonoBehaviour
             }
         }
 
-        // (3) Own speed
         if ((criteria & BreakCriteria.OwnSpeed) != 0)
         {
             float ownSpeed = Dist(ApplySpace(vA));
@@ -348,22 +340,20 @@ public class XYTetherJoint : MonoBehaviour
             }
         }
 
-        // (4) Absolute travel
         if ((criteria & BreakCriteria.AbsoluteTravel) != 0)
         {
             if (absoluteTravel >= absoluteTravelThreshold)
             {
-                ForceBreak($"AbsoluteTravel {absoluteTravel:F2} \u2265 {absoluteTravelThreshold:F2}");
+                ForceBreak($"AbsoluteTravel {absoluteTravel:F2} ≥ {absoluteTravelThreshold:F2}");
                 return;
             }
         }
 
-        // (5) Relative travel
         if ((criteria & BreakCriteria.RelativeTravel) != 0)
         {
             if (relativeTravel >= relativeTravelThreshold)
             {
-                ForceBreak($"RelativeTravel {relativeTravel:F2} \u2265 {relativeTravelThreshold:F2}");
+                ForceBreak($"RelativeTravel {relativeTravel:F2} ≥ {relativeTravelThreshold:F2}");
                 return;
             }
         }
@@ -378,10 +368,7 @@ public class XYTetherJoint : MonoBehaviour
         float passive = 0.25f;
 
         if (_engagement != null)
-        {
-            engaged = 1f;
             passive = _engagement.passiveIntensity;
-        }
 
         if (engagedMultiplier > 0f) engaged = engagedMultiplier;
         if (passiveMultiplierOverride > 0f) passive = passiveMultiplierOverride;
@@ -404,8 +391,11 @@ public class XYTetherJoint : MonoBehaviour
         if ((criteria & BreakCriteria.Force) != 0 && debugLogs)
             Debug.Log($"[XYTetherJoint] Joint broke by physics force = {force:F1}.", this);
 
+        // ADDED: authoritative permanent detach state (prevents rebinder snapping back later)
+        MarkPartDetachedAuthoritative(isPlayerAction: false, reasonText: $"Physics JointBreak force={force:F1}");
+
         TriggerBreakAudio();
-        TriggerBreakFluid();
+        TriggerBreakFluidOrDeterministicSap();
 
         joint = null;
         onBroke?.Invoke();
@@ -431,38 +421,95 @@ public class XYTetherJoint : MonoBehaviour
             }
         }
 
-        if (debugLogs) Debug.Log($"[XYTetherJoint] Break \u2192 {reason}", this);
+        if (debugLogs) Debug.Log($"[XYTetherJoint] Break → {reason}", this);
 
         DestroyJoint();
 
+        // ADDED: authoritative permanent detach state (player intentional rip)
+        MarkPartDetachedAuthoritative(isPlayerAction: true, reasonText: reason);
+
         TriggerBreakAudio();
-        TriggerBreakFluid();
+        TriggerBreakFluidOrDeterministicSap();
 
         onBroke?.Invoke();
+    }
+
+    // ADDED: centralized state write
+    private void MarkPartDetachedAuthoritative(bool isPlayerAction, string reasonText)
+    {
+        // Respect session suppression here too (keeps your existing philosophy)
+        if (_session == null) _session = GetComponentInParent<FlowerSessionController>();
+        if (_session != null && _session.suppressDetachEvents)
+        {
+            if (debugLogs)
+                Debug.Log($"[XYTetherJoint] Detach state write skipped due to session.suppressDetachEvents: {reasonText}", this);
+            return;
+        }
+
+        if (_partRuntime == null) _partRuntime = GetComponent<FlowerPartRuntime>();
+        if (_partRuntime == null) return;
+
+        var reason = isPlayerAction
+            ? FlowerPartRuntime.DetachReason.PlayerRipped
+            : FlowerPartRuntime.DetachReason.PhysicsBreak;
+
+        // Permanent detach = true in both cases (prevents rebinding snapped leaves)
+        _partRuntime.MarkDetached($"XYTether broke: {reasonText}", reason, permanent: true);
+    }
+
+    // ADDED: keeps your responder system, but optionally bypasses bad direction logic.
+    private void TriggerBreakFluidOrDeterministicSap()
+    {
+        if (!enableFluid) return;
+
+        if (!preferDeterministicSapDirection)
+        {
+            TriggerBreakFluid(); // existing behavior
+            return;
+        }
+
+        // Deterministic sap emission (optional): connectedBody -> this object
+        var sap = FlowerSapController.Instance;
+        if (sap == null) { TriggerBreakFluid(); return; }
+
+        // If you have a SapOnXYTether component, prefer it to decide kind and offset.
+        var sapKind = GetComponent<SapOnXYTether>();
+        Vector3 pos = transform.position;
+        if (sapKind != null) pos = transform.TransformPoint(sapKind.localOffset);
+
+        Vector3 from = connectedBody ? connectedBody.worldCenterOfMass : (pos - transform.up);
+        Vector3 dir = (pos - from);
+        if (dir.sqrMagnitude < 0.0001f) dir = transform.up;
+        dir.Normalize();
+
+        if (sapKind != null)
+        {
+            if (sapKind.partKind == SapOnXYTether.PartKind.Leaf) sap.EmitLeafTear(pos, dir);
+            else sap.EmitPetalTear(pos, dir);
+        }
+        else
+        {
+            // fallback: generic leaf tear
+            sap.EmitLeafTear(pos, dir);
+        }
     }
 
     // ───────────────────────── FEEDBACK HELPERS ─────────────────────────
 
     private void TriggerBreakAudio()
     {
-        if (!enableAudio) return; // Toggle Check restored
+        if (!enableAudio) return;
 
         var audio = GetComponent<JointBreakAudioResponder>();
         if (audio != null)
-        {
             audio.OnJointBroken();
-        }
     }
 
     private void TriggerBreakFluid()
     {
-        if (!enableFluid) return; // Toggle Check restored
-
         var fluid = GetComponent<JointBreakFluidResponder>();
         if (fluid != null)
-        {
             fluid.OnJointBroken();
-        }
     }
 
     // ───────────────────────── Public API ─────────────────────────
@@ -570,8 +617,8 @@ public class XYTetherJoint : MonoBehaviour
 
         if (debugLogs)
         {
-            string bf = float.IsInfinity(joint.breakForce) ? "\u221E" : joint.breakForce.ToString("F0");
-            Debug.Log($"[XYTetherJoint] Created \u2192 Spring={spring}, Damper={damper}, StretchMax={maxDistance}, DriveMax={driveMaxForce}, BreakForce={bf}, Criteria={criteria}, VelMode={velocityMode}, Projection={(useJointProjection ? "On" : "Off")}", this);
+            string bf = float.IsInfinity(joint.breakForce) ? "∞" : joint.breakForce.ToString("F0");
+            Debug.Log($"[XYTetherJoint] Created → Spring={spring}, Damper={damper}, StretchMax={maxDistance}, DriveMax={driveMaxForce}, BreakForce={bf}, Criteria={criteria}, VelMode={velocityMode}, Projection={(useJointProjection ? "On" : "Off")}", this);
         }
     }
 
@@ -599,6 +646,8 @@ public class XYTetherJoint : MonoBehaviour
         wasAbovePluckThreshold = false;
         armedAt = Time.time + Mathf.Max(0f, armDelay);
     }
+
+    public bool HasActiveJoint() => joint != null;
 
     void DestroyJoint()
     {

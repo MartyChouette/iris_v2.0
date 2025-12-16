@@ -322,7 +322,7 @@ namespace DynamicMeshCutter
                 var sap = stem.GetComponentInParent<FlowerSapController>();
                 if (sap != null)
                 {
-                    sap.EmitStemCut(planePoint, planeNormal);
+                    sap.EmitStemCut(planePoint, planeNormal, stem);
                 }
 
                 // suppress detach events during cut + rebind

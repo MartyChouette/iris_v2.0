@@ -63,8 +63,11 @@ public class JointBreakFluidResponder : MonoBehaviour
                 break;
 
             case PartType.Stem:
-                // Triggers the dual-spray stem logic using the bleed point as the "cut plane"
-                sapController.EmitStemCut(pos, dir);
+                // FIX: Find the stem runtime so the fluid controller knows where to project the burst
+                var stem = GetComponentInParent<FlowerStemRuntime>();
+
+                // Pass the 'stem' as the new 3rd argument
+                sapController.EmitStemCut(pos, dir, stem);
                 break;
         }
     }

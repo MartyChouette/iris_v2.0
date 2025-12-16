@@ -9,6 +9,18 @@ using UnityEngine.Events;
 [DisallowMultipleComponent]
 public class FlowerPartRuntime : MonoBehaviour
 {
+    // ADDED: canonical detach reasons so other systems can make correct decisions.
+    public enum DetachReason
+    {
+        None,
+        PlayerRipped,
+        PlayerCut,
+        StemSwap,
+        PhysicsBreak,
+        UnityJointBreak,
+        Debug
+    }
+
     [Header("Identity / Matching")]
     [Tooltip("Unique ID for this part so the brain can match it to IdealFlowerDefinition.partRules.")]
     public string PartId;
@@ -20,6 +32,14 @@ public class FlowerPartRuntime : MonoBehaviour
 
     [Tooltip("True while the part is still attached to the flower.")]
     public bool isAttached = true;
+
+    // ADDED: if true, this part must never be rebound again.
+    [Header("Detach Authority")]
+    [Tooltip("If true, this part is permanently detached and MUST never be rebound.")]
+    public bool permanentlyDetached = false;
+
+    [Tooltip("Last known reason for detachment. Useful for debugging + rebinder rules.")]
+    public DetachReason lastDetachReason = DetachReason.None;
 
     [Header("Authoring / Rule Hints (some of this is duplicated in IdealFlowerDefinition)")]
     [Tooltip("If true, removing this part may immediately cause game over (in addition to any Ideal rules).")]
@@ -99,8 +119,6 @@ public class FlowerPartRuntime : MonoBehaviour
             xyJoint.onBroke.RemoveListener(OnXYJointBroke);
     }
 
-
-
     private void Update()
     {
         if (enableCrownYFailsafe &&
@@ -116,42 +134,67 @@ public class FlowerPartRuntime : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Central check: should we ignore detach events right now?
+    /// </summary>
+    public bool ShouldSuppressDetachEvents()
+    {
+        return session != null && session.suppressDetachEvents;
+    }
 
     // Unity built-in: any 3D Joint on THIS object breaking will call this.
     private void OnJointBreak(float breakForce)
     {
-        MarkDetached("Unity joint broke");
+        // CHANGED: use new overload with reason + permanence
+        MarkDetached("Unity joint broke", DetachReason.UnityJointBreak, permanent: true);
     }
 
     // Called by XYTetherJoint via its UnityEvent.
     private void OnXYJointBroke()
     {
-        MarkDetached("XY tether broke");
+        // CHANGED: default reason (XYTetherJoint will ideally call the richer overload below)
+        MarkDetached("XY tether broke", DetachReason.PhysicsBreak, permanent: true);
     }
 
     /// <summary>
-    /// Public so cutters or other scripts can force a detach.
+    /// Backwards-compatible API (existing calls keep working).
+    /// Defaults to permanent detachment (safe for rebinder rules).
     /// </summary>
     public void MarkDetached(string reason = "Detached")
     {
+        MarkDetached(reason, DetachReason.Debug, permanent: true);
+    }
+
+    /// <summary>
+    /// NEW authoritative detach API. Use this whenever possible.
+    /// permanent=true means: DO NOT EVER REBIND THIS PART.
+    /// </summary>
+    public void MarkDetached(string reason, DetachReason detachReason, bool permanent)
+    {
         // Ignore detach events while the session is in a cut/rebind grace window.
-        if (session != null && session.suppressDetachEvents)
+        if (ShouldSuppressDetachEvents())
         {
             Debug.Log($"[FlowerPartRuntime] Detach '{PartId}' skipped during cut grace: {reason}", this);
             return;
         }
 
+        // If we're already detached, don't double-fire.
         if (!isAttached)
             return;
 
         isAttached = false;
-        Debug.Log($"[FlowerPartRuntime] '{PartId}' detached: {reason}", this);
+
+        // ADDED: record canonical detach state
+        lastDetachReason = detachReason;
+        if (permanent)
+            permanentlyDetached = true;
+
+        Debug.Log($"[FlowerPartRuntime] '{PartId}' detached: {reason} (Reason={detachReason}, Permanent={permanent})", this);
 
         bool triggerInstantFail = false;
         string failReason = "";
 
         // The only true instant game over we want is when the crown is lost.
-        // We support both an explicit Crown kind and an optional layer-based check.
         int crownLayer = LayerMask.NameToLayer("CrownCore");
         bool isCrownByLayer = (crownLayer >= 0 && gameObject.layer == crownLayer);
         bool isCrownByKind = (kind == FlowerPartKind.Crown);
@@ -166,10 +209,6 @@ public class FlowerPartRuntime : MonoBehaviour
         {
             session.ForceGameOver(failReason);
         }
-        else
-        {
-            // No other parts cause immediate failure here.
-            // Their effects are handled later in the grading logic (EvaluateFlower).
-        }
+        // else: no other parts cause immediate failure here.
     }
 }

@@ -168,3 +168,14 @@ MonoBehaviour:
     scoreWeight: 1
     idealLocalPosition: {x: 5.416915, y: 9.956657, z: -0.7327814}
     idealLocalEuler: {x: 294.60742, y: 102.667145, z: 166.67543}
+  - partId: Daisy_Leaf_L_Shitty
+    kind: 0
+    idealCondition: 1
+    canCauseGameOver: 0
+    isSpecial: 0
+    contributesToScore: 1
+    allowedWithered: 0
+    allowedMissing: 1
+    scoreWeight: 1
+    idealLocalPosition: {x: 5.416915, y: 9.956657, z: -0.7327814}
+    idealLocalEuler: {x: 294.60742, y: 102.667145, z: 166.67543}
