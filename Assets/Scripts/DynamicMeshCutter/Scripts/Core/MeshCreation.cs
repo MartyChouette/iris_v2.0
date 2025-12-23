@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file MeshCreation.cs
  * @brief MeshCreation script.
  * @details
@@ -341,6 +341,7 @@ namespace DynamicMeshCutter
                 if (i == bestIndex && mainPieceSurvives)
                 {
                     // This is the piece closest to the crown -> the one we keep.
+                    rb.isKinematic = true;
                     rb.useGravity = false;
                     rb.linearVelocity = Vector3.zero;
                     rb.angularVelocity = Vector3.zero;
