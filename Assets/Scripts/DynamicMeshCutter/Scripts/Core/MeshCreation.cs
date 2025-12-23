@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
@@ -291,7 +291,10 @@ namespace DynamicMeshCutter
             }
 
             if (bestIndex < 0)
+            {
+                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] Could not find best piece (bestIndex < 0)", stemRuntime);
                 return;
+            }
 
             // Keep the crown-side piece "in hand", let others fall.
             for (int i = 0; i < createdObjects.Length; i++)
@@ -302,17 +305,25 @@ namespace DynamicMeshCutter
 
                 var rb = go.GetComponent<Rigidbody>();
                 if (rb == null)
+                {
+                    Debug.LogWarning($"[MeshCreation.AnchorTopStemPiece] Piece '{go.name}' has no Rigidbody, skipping", go);
                     continue;
+                }
 
                 if (i == bestIndex)
                 {
                     // This is the piece closest to the crown → the one we keep.
+                    // Set to kinematic so it stays fixed in place (won't fall)
+                    rb.isKinematic = true;
                     rb.useGravity = false;
                     rb.linearVelocity = Vector3.zero;
                     rb.angularVelocity = Vector3.zero;
+                    rb.constraints = RigidbodyConstraints.None;
 
                     // Parent to the flower so it moves with the system.
                     go.transform.SetParent(stemRuntime.transform, true);
+                    
+                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEPT piece '{go.name}': isKinematic=true, useGravity=false, parented to '{stemRuntime.name}'", go);
                 }
                 else
                 {
@@ -329,6 +340,8 @@ namespace DynamicMeshCutter
 
                     if (go.transform.IsChildOf(stemRuntime.transform))
                         go.transform.SetParent(null, true);
+                    
+                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] FALLING piece '{go.name}': isKinematic=false, useGravity=true", go);
                 }
 
             }
@@ -886,18 +899,57 @@ namespace DynamicMeshCutter
             }
 
             if (bestIndex < 0)
-                return;
-
-            // The largest piece becomes the main stem: keep physics, but don't let gravity drop it.
-            var mainGo = createdObjects[bestIndex];
-            if (mainGo == null)
-                return;
-
-            var rb = mainGo.GetComponent<Rigidbody>();
-            if (rb != null)
             {
-                rb.useGravity = false;   // stays hanging / held
-                // keep rb.isKinematic = false, so joints and forces still work
+                Debug.LogWarning("[MeshCreation.AnchorMainStemPiece] Could not find best piece (bestIndex < 0)", stemRuntime);
+                return;
+            }
+
+            // Keep the crown-side piece "in hand", let others fall.
+            for (int i = 0; i < createdObjects.Length; i++)
+            {
+                var go = createdObjects[i];
+                if (go == null)
+                    continue;
+
+                var rb = go.GetComponent<Rigidbody>();
+                if (rb == null)
+                {
+                    Debug.LogWarning($"[MeshCreation.AnchorMainStemPiece] Piece '{go.name}' has no Rigidbody, skipping", go);
+                    continue;
+                }
+
+                if (i == bestIndex)
+                {
+                    // This is the largest piece → the one we keep.
+                    // Set to kinematic so it stays fixed in place (won't fall)
+                    rb.isKinematic = true;
+                    rb.useGravity = false;
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                    rb.constraints = RigidbodyConstraints.None;
+
+                    // Parent to the flower so it moves with the system.
+                    go.transform.SetParent(stemRuntime.transform, true);
+                    
+                    Debug.Log($"[MeshCreation.AnchorMainStemPiece] KEPT piece '{go.name}': isKinematic=true, useGravity=false, parented to '{stemRuntime.name}'", go);
+                }
+                else
+                {
+                    // bottom / extra chunks: let them FALL
+                    rb.useGravity = true;
+                    rb.isKinematic = false;
+
+                    // 🔧 IMPORTANT: remove any position freezes copied from the original stem
+                    rb.constraints &= ~(RigidbodyConstraints.FreezePositionX |
+                                        RigidbodyConstraints.FreezePositionY |
+                                        RigidbodyConstraints.FreezePositionZ);
+                    // (keeps any rotation freezes you had, just unlocks translation)
+
+                    if (go.transform.IsChildOf(stemRuntime.transform))
+                        go.transform.SetParent(null, true);
+                    
+                    Debug.Log($"[MeshCreation.AnchorMainStemPiece] FALLING piece '{go.name}': isKinematic=false, useGravity=true", go);
+                }
             }
         }
 

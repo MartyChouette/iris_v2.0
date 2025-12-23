@@ -1,4 +1,4 @@
-﻿using System.Collections; // Required for IEnumerator
+using System.Collections; // Required for IEnumerator
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -248,6 +248,11 @@ namespace DynamicMeshCutter
                         rb.isKinematic = false;
                         rb.useGravity = true;
                         rb.constraints = RigidbodyConstraints.None;
+                        
+                        // Add despawn component for falling pieces
+                        var despawner = piece.GetComponent<OffScreenDespawner>();
+                        if (despawner == null)
+                            despawner = piece.AddComponent<OffScreenDespawner>();
                     }
                     else
                     {
