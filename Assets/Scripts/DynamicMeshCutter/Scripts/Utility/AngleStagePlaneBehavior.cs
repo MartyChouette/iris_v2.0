@@ -279,13 +279,16 @@ namespace DynamicMeshCutter
                     pieceBodies.Add(rb);
 
                     // Check if this piece has already been "claimed" by the MeshCreation smart logic
-                    // (MeshCreation.AnchorTopStemPiece parents the "Kept" piece to the StemRuntime transform)
-                    // Use IsChildOf to handle both direct children and nested children
-                    bool isKeptStemPiece = (stemRuntime != null && piece.transform.IsChildOf(stemRuntime.transform));
+                    // (MeshCreation.AnchorTopStemPiece parents the "Kept" piece's physics root to the StemRuntime transform)
+                    // Note: AnchorTopStemPiece parents cData.CreatedObjects[i] (the physics root), not cData.CreatedTargets[i].gameObject (the child mesh)
+                    // So we need to check CreatedObjects[i], not piece (which is CreatedTargets[i].gameObject)
+                    GameObject physicsRoot = (i < cData.CreatedObjects.Length) ? cData.CreatedObjects[i] : null;
+                    bool isKeptStemPiece = (stemRuntime != null && physicsRoot != null && physicsRoot.transform.IsChildOf(stemRuntime.transform));
 
                     if (debugLogs)
                     {
-                        Debug.Log($"[AngleStagePlaneBehaviour] Piece '{piece.name}': parent={piece.transform.parent?.name ?? "null"}, isChildOf={piece.transform.IsChildOf(stemRuntime.transform)}, isKeptStemPiece={isKeptStemPiece}, current isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", piece);
+                        string physicsRootInfo = physicsRoot != null ? $"physicsRoot='{physicsRoot.name}', physicsRootIsChildOf={physicsRoot.transform.IsChildOf(stemRuntime.transform)}" : "physicsRoot=null";
+                        Debug.Log($"[AngleStagePlaneBehaviour] Piece '{piece.name}': parent={piece.transform.parent?.name ?? "null"}, {physicsRootInfo}, isKeptStemPiece={isKeptStemPiece}, current isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", piece);
                     }
 
                     // Only override if AnchorTopStemPiece hasn't already set it correctly
