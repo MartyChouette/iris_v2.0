@@ -270,30 +270,57 @@ namespace DynamicMeshCutter
                     var marker = piece.AddComponent<StemPieceMarker>();
                     marker.stemRuntime = stemRuntime;
 
-                    var rb = piece.GetComponent<Rigidbody>() ?? piece.AddComponent<Rigidbody>();
+                    var rb = piece.GetComponent<Rigidbody>();
+                    if (rb == null)
+                        rb = piece.AddComponent<Rigidbody>();
+                    
                     rb.interpolation = RigidbodyInterpolation.Interpolate;
 
                     pieceBodies.Add(rb);
 
                     // Check if this piece has already been "claimed" by the MeshCreation smart logic
-                    // (MeshCreation.AnchorTopStemPiece parents the "Kept" piece to the StemRuntime transform)
-                    bool isKeptStemPiece = (stemRuntime != null && piece.transform.parent == stemRuntime.transform);
+                    // (MeshCreation.AnchorTopStemPiece parents the "Kept" piece's physics root to the StemRuntime transform)
+                    // Note: AnchorTopStemPiece parents cData.CreatedObjects[i] (the physics root), not cData.CreatedTargets[i].gameObject (the child mesh)
+                    // So we need to check CreatedObjects[i], not piece (which is CreatedTargets[i].gameObject)
+                    GameObject physicsRoot = (i < cData.CreatedObjects.Length) ? cData.CreatedObjects[i] : null;
+                    bool isKeptStemPiece = (stemRuntime != null && physicsRoot != null && physicsRoot.transform.IsChildOf(stemRuntime.transform));
 
+                    if (debugLogs)
+                    {
+                        string physicsRootInfo = physicsRoot != null ? $"physicsRoot='{physicsRoot.name}', physicsRootIsChildOf={physicsRoot.transform.IsChildOf(stemRuntime.transform)}" : "physicsRoot=null";
+                        Debug.Log($"[AngleStagePlaneBehaviour] Piece '{piece.name}': parent={piece.transform.parent?.name ?? "null"}, {physicsRootInfo}, isKeptStemPiece={isKeptStemPiece}, current isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", piece);
+                    }
+
+                    // Only override if AnchorTopStemPiece hasn't already set it correctly
+                    // (AnchorTopStemPiece should have set isKinematic=true for kept pieces)
                     if (isKeptStemPiece)
                     {
                         // This is the FLOWER HEAD (top piece with crown and leaves).
                         // It must stay in hand (Kinematic) and NOT fall.
+                        // Force these settings even if they were set by AnchorTopStemPiece
                         rb.isKinematic = true;
                         rb.useGravity = false;
                         rb.constraints = RigidbodyConstraints.None;
+                        
+                        if (debugLogs)
+                            Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{piece.name}' to KINEMATIC (kept piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", piece);
                     }
                     else
                     {
                         // This is STEM WASTE (bottom/falling piece).
                         // It must fall (Gravity) and be dynamic.
+                        // Force these settings to ensure it falls
                         rb.isKinematic = false;
                         rb.useGravity = true;
                         rb.constraints = RigidbodyConstraints.None;
+                        
+                        // Add despawn component for falling pieces
+                        var despawner = piece.GetComponent<OffScreenDespawner>();
+                        if (despawner == null)
+                            despawner = piece.AddComponent<OffScreenDespawner>();
+                        
+                        if (debugLogs)
+                            Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{piece.name}' to DYNAMIC with gravity (falling piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", piece);
                     }
                 }
             }
