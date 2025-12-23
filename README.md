@@ -2,6 +2,40 @@
 thesis project, from homebody prototype
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ┌────────────────────────────┐
 │        Player Input        │
 │ (Mouse, Scroll, Click)     │
