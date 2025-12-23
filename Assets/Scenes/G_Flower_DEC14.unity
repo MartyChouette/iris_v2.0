@@ -7642,6 +7642,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &779741610 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8062156348110857516, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+  m_PrefabInstance: {fileID: 8426878410151901395}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &804425941 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2641778875234352785, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
@@ -11923,20 +11928,6 @@ MonoBehaviour:
   previewBeforeCut: 1
   previewStemOverride: {fileID: 1579737614232624721}
   previewSessionOverride: {fileID: 6656573071170535816}
-  previewLogs: 0
-  previewLogInterval: 0.35
-  previewAngleDeltaToLog: 0.5
-  previewLengthDeltaToLog: 0.01
-  cutAllStemsInScene: 0
-  useCutLayerMask: 0
-  cutLayerMask:
-    serializedVersion: 2
-    m_Bits: 648
-  excludeTargetsUnderFlowerPartRuntime: 0
-  precheckPlaneIntersectsBounds: 1
-  boundsSlack: 0.01
-  debugForcePlanePointToTargetBoundsCenter: 0
-  debugLogPerTargetDiagnostics: 1
 --- !u!1 &1843476846
 GameObject:
   m_ObjectHideFlags: 0
@@ -12532,6 +12523,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1946160443}
   m_CullTransparentMesh: 1
+--- !u!1 &1974247016 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4309141015983922623, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+  m_PrefabInstance: {fileID: 8426878410151901395}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1974247018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1974247016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 1
 --- !u!1 &1992604176
 GameObject:
   m_ObjectHideFlags: 0
@@ -13210,6 +13219,10 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 2431428626403178645, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 9.6
+      objectReference: {fileID: 0}
     - target: {fileID: 2553351889821507379, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: m_Name
       value: Flower_Daisy_Long_Stem
@@ -13247,8 +13260,24 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 330585545}
     - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: StemTip
+      value: 
+      objectReference: {fileID: 779741610}
+    - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: stemEnd
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: stemStart
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: StemAnchor
+      value: 
+      objectReference: {fileID: 750509611}
+    - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: minAllowedCutY
-      value: 1
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 5525748084404550135, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
@@ -13310,6 +13339,10 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 8062156348110857516, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -6.78
+      objectReference: {fileID: 0}
     - target: {fileID: 8115630481133984943, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: cam
       value: 
@@ -13342,13 +13375,17 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1692395913357596294, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 6656621808879889486, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 524437502}
+    - targetCorrespondingSourceObject: {fileID: 4309141015983922623, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1974247018}
   m_SourcePrefab: {fileID: 100100000, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
 --- !u!114 &8426878410151901396 stripped
 MonoBehaviour:

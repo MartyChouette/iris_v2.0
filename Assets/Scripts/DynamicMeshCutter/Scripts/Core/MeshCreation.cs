@@ -18,6 +18,10 @@ using UnityEngine;
 
 namespace DynamicMeshCutter
 {
+    /**
+     * @class MeshCreationData
+     * @brief MeshCreationData component.
+     */
     public class MeshCreationData
     {
         public GameObject[] CreatedObjects;
@@ -30,6 +34,10 @@ namespace DynamicMeshCutter
         }
     }
 
+    /**
+     * @class MeshCreation
+     * @brief MeshCreation component.
+     */
     public static class MeshCreation
     {
         static float _ragdoll_vertex_threshold = 0.75f;
@@ -37,33 +45,23 @@ namespace DynamicMeshCutter
         // IRIS MOD: Defines how short a stem must be before the system declares it "dead"
         public static float CollapseThreshold = 0.15f;
 
-        // IMPORTANT: turn this OFF unless actively debugging (Console logs can blow memory).
-        public static bool DebugStemPieceLogs = false;
-
         /// <summary>
         /// Creates the actual GameObjects (stone, ragdoll, animated) for each VirtualMesh
         /// produced by the cut.
         /// </summary>
         public static MeshCreationData CreateObjects(Info info, Material defaultMaterial, int vertexCreationThreshold)
         {
-            if (info == null || info.MeshTarget == null)
+            if (info.MeshTarget == null)
                 return null;
 
             VirtualMesh[] createdMeshes = info.CreatedMeshes;
-            if (createdMeshes == null)
-                return null;
 
             MeshCreationData cData = new MeshCreationData(createdMeshes.Length);
 
             MeshTarget target = info.MeshTarget as MeshTarget;
-            if (target == null)
-                return cData;
-
-            // Materials can be null depending on renderer type / missing renderer.
             Material[] materials = GetMaterials(target.gameObject);
-            if (materials == null) materials = Array.Empty<Material>();
-
             Material[] materialsNew = new Material[materials.Length + 1];
+
             materials.CopyTo(materialsNew, 0);
             materialsNew[materialsNew.Length - 1] =
                 (target.FaceMaterial != null) ? target.FaceMaterial : defaultMaterial;
@@ -80,8 +78,6 @@ namespace DynamicMeshCutter
             for (int i = 0; i < createdMeshes.Length; i++)
             {
                 VirtualMesh vMesh = createdMeshes[i];
-                if (vMesh == null) continue;
-                if (vMesh.Vertices == null) continue;
                 if (vMesh.Vertices.Length < vertexCreationThreshold)
                     continue;
 
@@ -101,7 +97,9 @@ namespace DynamicMeshCutter
                 };
 
                 for (int j = 0; j < vMesh.SubMeshCount; j++)
+                {
                     mesh.SetIndices(vMesh.GetIndices(j), MeshTopology.Triangles, j);
+                }
 
                 // Decide behaviour for this piece
                 Behaviour behaviour = target.DefaultBehaviour[bt];
@@ -132,7 +130,7 @@ namespace DynamicMeshCutter
 
                     case Behaviour.Ragdoll:
                         DynamicRagdoll tRagdoll = target.DynamicRagdoll;
-                        if (tRagdoll != null && vMesh.DynamicGroups != null && vMesh.DynamicGroups.Count > 1)
+                        if (tRagdoll != null && vMesh.DynamicGroups.Count > 1)
                         {
                             if (WillBeValidRagdoll(tRagdoll, vMesh))
                                 CreateRagdoll(ref root, ref parent, info, target, mesh, vMesh, materials, bt, behaviour);
@@ -147,7 +145,9 @@ namespace DynamicMeshCutter
 
                     case Behaviour.Animation:
                         if (target.Animator != null)
+                        {
                             CreateAnimatedMesh(ref root, ref parent, info, target, mesh, vMesh, materials, bt, behaviour);
+                        }
                         else
                         {
                             Debug.LogWarning("Behaviour is set to Animation, but there was no Animator found in parent!");
@@ -156,14 +156,10 @@ namespace DynamicMeshCutter
                         break;
                 }
 
-                // Safety: if for any reason this piece failed to create, skip it.
-                if (parent == null || root == null)
-                    continue;
-
                 // NEW: mark stem pieces so we can find them later
-                if (isStemTarget)
+                if (isStemTarget && parent != null)
                 {
-                    var marker = parent.gameObject.AddComponent<global::StemPieceMarker>();
+                    var marker = parent.gameObject.AddComponent<StemPieceMarker>();
                     marker.stemRuntime = stemRuntime;
                 }
 
@@ -172,19 +168,23 @@ namespace DynamicMeshCutter
                 parent.name = prefix + parent.name;
                 parent.name = parent.name.Replace("(Clone)", "");
 
-                // 🔍 TRACE: log info about each stem piece we create (OFF BY DEFAULT!)
-                if (DebugStemPieceLogs && isStemTarget)
+                // 🔍 TRACE: log info about each stem piece we create
+                if (isStemTarget && parent != null)
                 {
-                    Bounds b;
-                    if (TryGetBounds(parent.gameObject, out b))
-                    {
-                        Vector3 size = b.size;
-                        Debug.Log(
-                            $"[MeshCreation] Stem piece created: '{parent.name}' " +
-                            $"size=({size.x:F3}, {size.y:F3}, {size.z:F3}) pos={parent.position}",
-                            parent);
-                    }
+                    var col = parent.GetComponentInChildren<Collider>();
+                    Bounds b = col ? col.bounds : new Bounds(parent.position, Vector3.zero);
+                    Vector3 size = b.size;
+
+                    Debug.Log(
+                        $"[MeshCreation] Stem piece created: '{parent.name}' " +
+                        $"size=({size.x:F3}, {size.y:F3}, {size.z:F3}) pos={parent.position}",
+                        parent);
                 }
+
+
+                // Safety: if for any reason this piece failed to create, skip it.
+                if (parent == null || root == null)
+                    continue;
 
                 // Ensure a MeshTarget lives on the root
                 var nTarget = root.GetComponent<MeshTarget>();
@@ -231,180 +231,94 @@ namespace DynamicMeshCutter
             // NEW: for stem cuts, treat the longest piece as the main stem
             if (isStemTarget)
             {
-                AnchorTopStemPiece(cData.CreatedObjects, stemRuntime);
+                // FIX: Pass arguments in the correct order: (runtime, pieces, targets)
+                AnchorTopStemPiece(stemRuntime, cData.CreatedObjects, cData.CreatedTargets);
             }
 
             return cData;
         }
 
         /// <summary>
-        /// For stem cuts:
-        /// - Choose the kept piece as the one nearest Crown (not stemStart), ignoring microscopic slivers.
-        /// - Collapse only if the *largest piece* is below CollapseThreshold.
+        /// For stem cuts: keep the stem piece closest to the crown (StemAnchor)
+        /// as the "held" stem, and let all other pieces fall away.
         /// </summary>
-        static void AnchorTopStemPiece(GameObject[] createdObjects, global::FlowerStemRuntime stemRuntime)
+        public static void AnchorTopStemPiece(global::FlowerStemRuntime stemRuntime, GameObject[] pieces, MeshTarget[] targets)
         {
-            if (createdObjects == null || stemRuntime == null)
+            if (stemRuntime == null || pieces == null || pieces.Length == 0)
                 return;
 
-            var crownT = FindCrownTransform(stemRuntime);
-            if (crownT == null)
-                return;
+            // 1. Identify the ANCHOR (The part of the stem attached to the flower head/crown)
+            //    We want to KEEP the piece closest to this point.
+            //    Renamed logic: stemStart -> StemAnchor
+            Vector3 anchorPos = stemRuntime.StemAnchor != null
+                                ? stemRuntime.StemAnchor.position
+                                : stemRuntime.transform.position;
 
-            Vector3 crownPos = crownT.position;
+            GameObject keeper = null;
+            float closestDistSq = float.MaxValue;
 
-            // Ignore tiny fragments when choosing kept piece (measured as "length" = max bounds axis).
-            const float SLIVER_IGNORE_LENGTH = 0.05f; // tune for scale
-
-            int bestIndex = -1;
-            float bestDist = float.MaxValue;
-
-            int largestIndex = -1;
-            float largestLen = 0f;
-
-            // Pass 1: find largest piece by LEN, and best kept piece near crown ignoring slivers.
-            for (int i = 0; i < createdObjects.Length; i++)
+            // 2. Find the winner (The piece closest to the Anchor)
+            foreach (var p in pieces)
             {
-                var go = createdObjects[i];
-                if (go == null) continue;
+                if (p == null) continue;
 
-                Bounds b;
-                if (!TryGetBounds(go, out b)) continue;
+                // Check distance from the piece's center to the Anchor
+                var rb = p.GetComponent<Rigidbody>();
+                Vector3 center = rb ? rb.worldCenterOfMass : p.transform.position;
 
-                float len = GetPieceLengthFromBounds(b);
+                // Refinement: If you have a collider, use ClosestPoint for better accuracy on curved stems
+                var col = p.GetComponent<Collider>();
+                if (col != null)
+                    center = col.ClosestPoint(anchorPos);
 
-                if (len > largestLen)
+                float d = (center - anchorPos).sqrMagnitude;
+                if (d < closestDistSq)
                 {
-                    largestLen = len;
-                    largestIndex = i;
-                }
-
-                if (len < SLIVER_IGNORE_LENGTH)
-                    continue;
-
-                float dist = Vector3.Distance(b.center, crownPos);
-                if (dist < bestDist)
-                {
-                    bestDist = dist;
-                    bestIndex = i;
+                    closestDistSq = d;
+                    keeper = p;
                 }
             }
 
-            // If everything was a sliver by our ignore rule, fall back to the largest piece.
-            if (bestIndex < 0)
-                bestIndex = largestIndex;
+            // 3. Apply Physics Rules
+            float collapseThreshold = 0.10f; // Minimum length to stay kinematic
 
-            if (bestIndex < 0)
+            foreach (var p in pieces)
             {
-                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] Could not find best piece (bestIndex < 0)", stemRuntime);
-                return;
-            }
+                if (p == null) continue;
+                var rb = p.GetComponent<Rigidbody>();
+                if (rb == null) rb = p.AddComponent<Rigidbody>();
 
-            // Collapse should only happen if the *largest surviving piece* is below the threshold.
-            bool mainPieceSurvives = (largestLen >= CollapseThreshold);
+                // DEFAULT: Everything falls
+                rb.isKinematic = false;
+                rb.useGravity = true;
+                rb.constraints = RigidbodyConstraints.None;
+                p.transform.SetParent(null); // Detach from parent so it falls freely
 
-            // Keep the chosen piece only if the main piece survives. Otherwise all fall.
-            for (int i = 0; i < createdObjects.Length; i++)
-            {
-                var go = createdObjects[i];
-                if (go == null) continue;
-
-                var rb = go.GetComponent<Rigidbody>();
-                if (rb == null) continue;
-
-                if (i == bestIndex && mainPieceSurvives)
+                // KEEPER LOGIC
+                if (p == keeper)
                 {
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
-                    rb.linearVelocity = Vector3.zero;
-                    rb.angularVelocity = Vector3.zero;
-                    rb.constraints = RigidbodyConstraints.None;
+                    // Check metric cruelty (is the piece too small to exist?)
+                    MeshFilter mf = p.GetComponent<MeshFilter>();
+                    float height = mf ? mf.sharedMesh.bounds.size.y : 0.1f;
 
-                    go.transform.SetParent(stemRuntime.transform, true);
+                    // If it's the winner AND big enough, we keep it.
+                    if (height > collapseThreshold)
+                    {
+                        rb.isKinematic = true;
+                        rb.useGravity = false;
+                        rb.constraints = RigidbodyConstraints.FreezeAll;
 
-                    if (DebugStemPieceLogs)
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEPT piece '{go.name}': largestLen≈{largestLen:F3}, isKinematic=true, useGravity=false, parented to '{stemRuntime.name}'", go);
-                }
-                else
-                {
-                    rb.useGravity = true;
-                    rb.isKinematic = false;
+                        // Re-parent to the runtime so the game knows this is the "current" stem
+                        p.transform.SetParent(stemRuntime.transform);
 
-                    // unlock translation (keep rotation locks if you had them)
-                    rb.constraints &= ~(RigidbodyConstraints.FreezePositionX |
-                                        RigidbodyConstraints.FreezePositionY |
-                                        RigidbodyConstraints.FreezePositionZ);
-
-                    if (go.transform.IsChildOf(stemRuntime.transform))
-                        go.transform.SetParent(null, true);
+                        // Note: FlowerStemRuntime.ApplyCutFromPlane handles updating StemTip.
+                    }
+                    else
+                    {
+                        Debug.Log($"[MeshCreation] Cut too close to anchor! Piece size {height:F3} < {collapseThreshold}. Collapsing.");
+                    }
                 }
             }
-
-            if (!mainPieceSurvives)
-            {
-                Debug.Log($"[Iris] Cut too close! Largest stem piece was {largestLen:F3} (Threshold: {CollapseThreshold}). Collapsing.", stemRuntime);
-            }
-        }
-
-        static Transform FindCrownTransform(global::FlowerStemRuntime stemRuntime)
-        {
-            if (stemRuntime == null) return null;
-
-            // 1) Direct name "Crown" anywhere under the stem runtime.
-            var byName = stemRuntime.GetComponentsInChildren<Transform>(true)
-                .FirstOrDefault(t => t != null && t.name == "Crown");
-            if (byName != null) return byName;
-
-            // 2) Anything on layer "CrownCore"
-            int crownLayer = LayerMask.NameToLayer("CrownCore");
-            if (crownLayer >= 0)
-            {
-                var byLayer = stemRuntime.GetComponentsInChildren<Transform>(true)
-                    .FirstOrDefault(t => t != null && t.gameObject.layer == crownLayer);
-                if (byLayer != null) return byLayer;
-            }
-
-            // 3) Tag "Crown" (if your project has it)
-            try
-            {
-                var tagged = GameObject.FindGameObjectsWithTag("Crown")
-                    .Select(go => go.transform)
-                    .FirstOrDefault(t => t != null && t.IsChildOf(stemRuntime.transform));
-                if (tagged != null) return tagged;
-            }
-            catch { /* tag may not exist */ }
-
-            // 4) Last resort (kept for compatibility, but NOT preferred):
-            return stemRuntime.stemStart;
-        }
-
-        static float GetPieceLengthFromBounds(Bounds b)
-        {
-            // Don’t assume Y is “length”. Use the longest axis.
-            return Mathf.Max(b.size.x, b.size.y, b.size.z);
-        }
-
-        static bool TryGetBounds(GameObject go, out Bounds b)
-        {
-            b = default;
-
-            if (go == null) return false;
-
-            var col = go.GetComponentInChildren<Collider>();
-            if (col != null)
-            {
-                b = col.bounds;
-                return true;
-            }
-
-            var rend = go.GetComponentInChildren<Renderer>();
-            if (rend != null)
-            {
-                b = rend.bounds;
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -462,12 +376,17 @@ namespace DynamicMeshCutter
 
                 if (validForCollider)
                 {
+                    // Remove any stray colliders that might somehow exist
                     RemoveAllColliders(root);
                     RemoveAllColliders(parent.gameObject);
 
                     MeshCollider collider = root.AddComponent<MeshCollider>();
+
+                    // IMPORTANT: set the sharedMesh and force convex so we never hit
+                    // "Concave Mesh Colliders are not supported with dynamic Rigidbody" errors.
                     collider.sharedMesh = mesh;
                     collider.convex = true;
+                    //collider.inflateMesh = true; // optional stability helper
                 }
             }
         }
@@ -558,6 +477,7 @@ namespace DynamicMeshCutter
                 Debug.LogError("This shouldn't happen. (Bugreport: Parts of ragdoll is 0)");
             }
 
+            // find outermost "root" parts
             List<DynamicRagdollPart> roots = new List<DynamicRagdollPart>();
             List<DynamicRagdollPart> remainingPartsToCheck = ragdoll.Parts.Values.ToList();
             while (remainingPartsToCheck.Count > 0)
@@ -582,6 +502,7 @@ namespace DynamicMeshCutter
                 }
             }
 
+            // move all roots to top, make them direct children of parent
             var allKids = rootBone.transform.GetComponentsInChildren<Transform>(true);
             List<Transform> childrenToMove = new List<Transform>();
             for (int i = 0; i < allKids.Length; i++)
@@ -595,6 +516,7 @@ namespace DynamicMeshCutter
                     childrenToMove.Remove(rootChildren[j]);
             }
 
+            // flat hierarchy, move to closest root
             for (int j = 0; j < childrenToMove.Count; j++)
             {
                 DynamicRagdollPart closestRoot = roots[0];
@@ -609,6 +531,7 @@ namespace DynamicMeshCutter
                 childrenToMove[j].SetParent(closestRoot.transform);
             }
 
+            // connect outer roots together
             if (roots.Count > 1)
             {
                 for (int j = 0; j < roots.Count - 1; j++)
@@ -617,6 +540,7 @@ namespace DynamicMeshCutter
 
             bool hasCollider = false;
 
+            // ensure inner roots have connected rigidbody
             for (int j = 0; j < parts.Count; j++)
             {
                 if (!hasCollider && parts[j].Colliders.Length > 0)
@@ -645,6 +569,7 @@ namespace DynamicMeshCutter
                 Debug.LogError("Dynamic Ragdoll has no more collider");
             }
 
+            // activate physics for the rigidbody
             switch (target.Physics[bt])
             {
                 case RagdollPhysics.LeaveAsIs:
@@ -688,6 +613,7 @@ namespace DynamicMeshCutter
             parent.transform.position = tAnimator.transform.position;
             parent.transform.rotation = tAnimator.transform.rotation;
 
+            // copy animator data and play
             AnimatorStateInfo tState = tAnimator.GetCurrentAnimatorStateInfo(0);
             Animator nAnimator = parent.gameObject.GetComponent<Animator>();
 
@@ -700,6 +626,9 @@ namespace DynamicMeshCutter
             nAnimator.Play(tState.fullPathHash, 0, tState.normalizedTime);
         }
 
+        /// <summary>
+        /// Duplicates the armature and returns the root bone.
+        /// </summary>
         public static Transform CreateSkinnedMeshRenderer(ref GameObject meshRoot,
                                                           ref Transform parent,
                                                           Info info,
@@ -724,8 +653,14 @@ namespace DynamicMeshCutter
             if (target.Animator != null)
             {
                 Animator nAnimator = parent.GetComponent<Animator>();
-                if (behaviour != Behaviour.Animation)
+                if (behaviour == Behaviour.Animation)
+                {
+                    // keep animator component
+                }
+                else
+                {
                     GameObject.DestroyImmediate(nAnimator);
+                }
             }
 
             mesh.bindposes = info.Bindposes;
@@ -736,6 +671,9 @@ namespace DynamicMeshCutter
             return rootbone;
         }
 
+        /// <summary>
+        /// Translate created objects away from the cutting plane by "separation".
+        /// </summary>
         public static void TranslateCreatedObjects(Info info, GameObject[] createdObjects, MeshTarget[] targets, float separation)
         {
             if (createdObjects == null)
