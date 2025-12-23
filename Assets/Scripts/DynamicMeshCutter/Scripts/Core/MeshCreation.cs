@@ -335,10 +335,7 @@ namespace DynamicMeshCutter
 
                 var rb = go.GetComponent<Rigidbody>();
                 if (rb == null)
-                {
-                    Debug.LogWarning($"[MeshCreation.AnchorTopStemPiece] Piece '{go.name}' has no Rigidbody, skipping", go);
                     continue;
-                }
 
                 // Is this the anchor piece? AND is it large enough?
                 if (i == bestIndex && mainPieceSurvives)
