@@ -1,3 +1,12 @@
+/**
+ * @file PrefabToPhysicsMesh.cs
+ * @brief PrefabToPhysicsMesh script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup tools
+ */
+
 using UnityEngine;
 
 /// <summary>
@@ -6,6 +15,24 @@ using UnityEngine;
 /// - Rigidbody has gravity turned off
 /// Optionally combines all child meshes into a single mesh.
 /// </summary>
+/**
+ * @class PrefabToPhysicsMesh
+ * @brief PrefabToPhysicsMesh component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup tools
+ */
 public class PrefabToPhysicsMesh : MonoBehaviour
 {
     [Header("Source")]

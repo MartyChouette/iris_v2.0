@@ -1,5 +1,61 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Events;
+/**
+ * @file FlowerSessionController.cs
+ * @brief FlowerSessionController script.
+ * @details
+ * Intent:
+ * - Orchestrates a single flower session:
+ *   delegates evaluation to @ref FlowerGameBrain,
+ *   maps results through @ref FlowerTypeDefinition,
+ *   and broadcasts outcomes to UI via UnityEvents.
+ *
+ * Events:
+ * - OnSuccessfulEvaluation: fired when final result is not game over.
+ * - OnGameOver: fired when final result is game over.
+ * - OnResult: always fired with (EvaluationResult, finalScore, daysAlive) snapshot.
+ *
+ * Cut grace window:
+ * - useCutGraceWindow + cutGraceDuration allow brief post-cut detach events without instant-failing.
+ *   This exists to prevent "physics noise" from becoming narrative judgment.
+ *
+ * Failure containment:
+ * - freezeOnGameOver optionally freezes all rigidbodies under brain so the flower does not keep collapsing.
+ * - disableCollidersOnGameOver optionally prevents further physics events after failure.
+ *
+ * Outcome mapping:
+ * - If FlowerType is present, score/days are derived from it.
+ * - If FlowerType is missing, a fallback mapping is used (0–100 score, 0–7 days).
+ *
+ * Investigation guardrails (debug safety):
+ * - Duplicate session detection: logs if more than one FlowerSessionController is alive.
+ * - End-latching:
+ *   - "End request" latch prevents multiple end triggers from racing (Evaluate/ForceGameOver/etc.).
+ *   - "Result applied" latch prevents ApplyResult from running twice (and captures stack traces).
+ * - Time scale safety: if forced slow-mo/pause occurs and this object is disabled mid-flow,
+ *   timeScale is restored to avoid poisoning subsequent scenes.
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup flowers_runtime
+ *
+ * @section viz_flowersessioncontroller Visual Relationships
+ * @dot
+ * digraph FlowerSessionController {
+ *   rankdir=LR;
+ *   node [shape=box];
+ *   FlowerSessionController -> FlowerGameBrain;
+ *   FlowerSessionController -> FlowerTypeDefinition;
+ *   FlowerSessionController -> FlowerStemRuntime;
+ *   FlowerSessionController -> FlowerHUD;
+ * }
+ * @enddot
+ */
+
+
 
 [DisallowMultipleComponent]
 public class FlowerSessionController : MonoBehaviour
@@ -50,14 +106,61 @@ public class FlowerSessionController : MonoBehaviour
 
     [Tooltip("Real-time duration (seconds) to stay in slow motion before fully pausing (Time.timeScale = 0).")]
     public float forcedGameOverSlowMoDuration = 0.5f;
-
+    
     [Header("Runtime Flags")]
     [Tooltip("If true, session has already processed a final result (prevents double end).")]
     public bool sessionEnded = false;
 
+    [Tooltip("If true, an end has been initiated (prevents double end during slow-mo delay).")]
+    public bool endRequested = false;
+
+    public bool allowKeyboardEvaluate = false;
+
+    // ─────────────────────────────────────────────
+    // Investigation guardrails
+    // ─────────────────────────────────────────────
+
+    private static int s_liveSessions = 0;
+
+    private bool _endRequested = false;
+    private string _endRequestedStack = null;
+
+    private bool _resultApplied = false;
+    private string _resultAppliedStack = null;
+
+    private float _timeScaleBeforeSlowMo = 1f;
+    private bool _didModifyTimeScale = false;
+
+    private void Awake()
+    {
+        // Duplicate session detection (scene-authored + runtime-spawned overlap, additive loads, etc.)
+        s_liveSessions++;
+        if (s_liveSessions > 1)
+            Debug.LogError($"[FlowerSessionController] DUPLICATE SESSION INSTANCE. live={s_liveSessions} this={name}", this);
+
+        // Autofill brain for stability (avoids silent null wiring when prefabs drift).
+        if (brain == null)
+            brain = GetComponentInChildren<FlowerGameBrain>(true);
+    }
+
+    private void OnDisable()
+    {
+        // Safety: if we got disabled mid slow-mo/pause, restore to prevent poisoning other scenes.
+        if (_didModifyTimeScale)
+        {
+            Time.timeScale = _timeScaleBeforeSlowMo;
+            _didModifyTimeScale = false;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        s_liveSessions = Mathf.Max(0, s_liveSessions - 1);
+    }
+
     private void Update()
     {
-        // 1. Manage cut grace window timer
+        // 1) Manage cut grace window timer
         if (useCutGraceWindow && suppressDetachEvents)
         {
             _cutGraceTimer -= Time.deltaTime;
@@ -67,11 +170,50 @@ public class FlowerSessionController : MonoBehaviour
             }
         }
 
-        // 2. NEW: Check for 'E' key to Evaluate
-        if (!sessionEnded && Input.GetKeyDown(KeyCode.E))
+        // 2) Debug evaluate key (editor-only + explicit toggle)
+#if UNITY_EDITOR
+        if (allowKeyboardEvaluate && !sessionEnded && Input.GetKeyDown(KeyCode.E))
         {
             EvaluateCurrentFlower();
         }
+#endif
+    }
+
+    // ─────────────────────────────────────────────
+    // End-latching helpers (investigation / anti-ghost)
+    // ─────────────────────────────────────────────
+
+    private bool TryRequestEndOnce(string reason)
+    {
+        if (sessionEnded)
+            return false;
+
+        if (_endRequested)
+        {
+            Debug.LogError(
+                $"[FlowerSessionController] END REQUESTED TWICE. reason={reason}\nfirst=\n{_endRequestedStack}\nsecond=\n{Environment.StackTrace}",
+                this);
+            return false;
+        }
+
+        _endRequested = true;
+        _endRequestedStack = Environment.StackTrace;
+        return true;
+    }
+
+    private bool TryApplyResultOnce(string reason)
+    {
+        if (_resultApplied)
+        {
+            Debug.LogError(
+                $"[FlowerSessionController] APPLY RESULT TWICE. reason={reason}\nfirst=\n{_resultAppliedStack}\nsecond=\n{Environment.StackTrace}",
+                this);
+            return false;
+        }
+
+        _resultApplied = true;
+        _resultAppliedStack = Environment.StackTrace;
+        return true;
     }
 
     /// <summary>
@@ -88,16 +230,20 @@ public class FlowerSessionController : MonoBehaviour
 
     /// <summary>
     /// Force a hard-fail of the session immediately (e.g., crown ripped off, stem cut way too high).
-    /// This also pushes a result through the scoring pipeline so HUD + grading UI can show it.
+    /// This pushes a result through the scoring pipeline so HUD + grading UI can show it.
     /// </summary>
     public void ForceGameOver(string reason)
     {
-        if (sessionEnded)
+        if (sessionEnded || endRequested)
+        {
+            Debug.LogWarning($"[FlowerSessionController] END REQUESTED TWICE. reason={reason}", this);
             return;
+        }
+
+        endRequested = true; // latch immediately so nothing else can request end during slow-mo
 
         if (brain == null)
         {
-            // Fallback if brain missing: still fire the event so GameOverUI / GradingUI can show.
             lastGameOver = true;
             lastGameOverReason = reason;
             lastScore = 0;
@@ -120,27 +266,24 @@ public class FlowerSessionController : MonoBehaviour
             return;
         }
 
-        // Run a real evaluation so we still see a meaningful score breakdown.
         var result = brain.EvaluateFlower();
         result.isGameOver = true;
         result.gameOverReason = reason;
 
         if (useSlowMoOnForcedGameOver && gameObject.activeInHierarchy)
-        {
             StartCoroutine(CoHandleForcedGameOver(result));
-        }
         else
-        {
             ApplyResult(result);
-        }
     }
+
 
     private System.Collections.IEnumerator CoHandleForcedGameOver(FlowerGameBrain.EvaluationResult result)
     {
-        float originalScale = Time.timeScale;
+        _timeScaleBeforeSlowMo = Time.timeScale;
+        _didModifyTimeScale = true;
 
         // Enter slow motion if requested.
-        if (forcedGameOverSlowMoScale > 0f && forcedGameOverSlowMoScale < originalScale)
+        if (forcedGameOverSlowMoScale > 0f && forcedGameOverSlowMoScale < _timeScaleBeforeSlowMo)
         {
             Time.timeScale = forcedGameOverSlowMoScale;
         }
@@ -162,15 +305,18 @@ public class FlowerSessionController : MonoBehaviour
     /// </summary>
     public void EvaluateCurrentFlower()
     {
-        if (sessionEnded)
+        if (sessionEnded || endRequested)
             return;
 
         if (brain == null)
             return;
 
+        endRequested = true;
+
         var result = brain.EvaluateFlower();
         ApplyResult(result);
     }
+
 
     /// <summary>
     /// Call this right after a stem cut to see if we've cut "too high / too short"
@@ -201,6 +347,13 @@ public class FlowerSessionController : MonoBehaviour
     private void ApplyResult(FlowerGameBrain.EvaluationResult result)
     {
         if (sessionEnded)
+            return;
+
+        endRequested = true; // keep it true no matter how we got here
+
+      
+
+        if (!TryApplyResultOnce("ApplyResult"))
             return;
 
         if (brain != null)
@@ -291,3 +444,4 @@ public class FlowerSessionController : MonoBehaviour
         }
     }
 }
+

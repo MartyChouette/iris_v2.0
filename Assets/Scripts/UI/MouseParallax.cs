@@ -1,20 +1,65 @@
+/**
+ * @file MouseParallax.cs
+ * @brief MouseParallax script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup ui
+ */
+
 using UnityEngine;
 using System.Collections.Generic;
+/**
+ * @class MouseParallax
+ * @brief MouseParallax component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup ui
+ */
 
 public class MouseParallax : MonoBehaviour
 {
     [System.Serializable]
+    /**
+     * @class ParallaxLayer
+     * @brief ParallaxLayer component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup ui
+     */
     public class ParallaxLayer
     {
         public Transform layerObject; // The UI Image or Sprite
         [Tooltip("Higher numbers = more movement. Use negative numbers to move in opposite direction.")]
-        public float moveSpeed = 10f; 
+        public float moveSpeed = 10f;
     }
 
     [Header("Settings")]
     public List<ParallaxLayer> layers = new List<ParallaxLayer>();
     public float smoothing = 5f; // How fast the layers drift to the target position
-    
+
     [Header("Constraints")]
     [Tooltip("Prevents the layers from moving too far off screen")]
     public float maxOffset = 50f;
@@ -57,8 +102,8 @@ public class MouseParallax : MonoBehaviour
 
             // 3. Smoothly move (Lerp) towards the target
             layers[i].layerObject.localPosition = Vector3.Lerp(
-                layers[i].layerObject.localPosition, 
-                targetPos, 
+                layers[i].layerObject.localPosition,
+                targetPos,
                 Time.deltaTime * smoothing
             );
         }

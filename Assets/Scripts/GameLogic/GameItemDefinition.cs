@@ -1,3 +1,12 @@
+/**
+ * @file GameItemDefinition.cs
+ * @brief GameItemDefinition script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup tools
+ */
+
 using UnityEngine;
 
 public enum GameItemKind
@@ -7,6 +16,24 @@ public enum GameItemKind
 }
 
 [CreateAssetMenu(menuName = "Game/Item Definition")]
+/**
+ * @class GameItemDefinition
+ * @brief GameItemDefinition component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup tools
+ */
 public class GameItemDefinition : ScriptableObject
 {
     [Header("Identity")]

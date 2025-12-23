@@ -1,12 +1,39 @@
+/**
+ * @file BacklightPulse.cs
+ * @brief BacklightPulse script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup tools
+ */
+
 using UnityEngine;
+/**
+ * @class BacklightPulse
+ * @brief BacklightPulse component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup tools
+ */
 
 public class BacklightPulse : MonoBehaviour
 {
     [Header("Glow Settings")]
     [ColorUsage(true, true)] // Allows HDR (High Intensity) color picking
-    public Color dimColor; 
+    public Color dimColor;
 
-    [ColorUsage(true, true)] 
+    [ColorUsage(true, true)]
     public Color brightColor;
 
     public float pulseSpeed = 2.0f;
@@ -23,10 +50,10 @@ public class BacklightPulse : MonoBehaviour
         if (rend != null)
         {
             targetMaterial = rend.material;
-            
+
             // 2. Enable Emission keyword (Required for code to control emission on URP/Lit)
             targetMaterial.EnableKeyword("_EMISSION");
-            
+
             // Cache the shader property ID for performance
             emissionColorID = Shader.PropertyToID("_EmissionColor");
         }

@@ -1,3 +1,12 @@
+/**
+ * @file JointSplitMode.cs
+ * @brief JointSplitMode script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup flowers_runtime
+ */
+
 using Unity;
 public enum JointSplitMode
 {

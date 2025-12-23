@@ -1,8 +1,35 @@
+/**
+ * @file JuiceTimelineAsset.cs
+ * @brief JuiceTimelineAsset script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup tools
+ */
+
 using UnityEngine;
 
 [CreateAssetMenu(
     fileName = "JuiceTimelineAsset",
     menuName = "Juice/Juice Timeline Asset")]
+/**
+ * @class JuiceTimelineAsset
+ * @brief JuiceTimelineAsset component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup tools
+ */
 public class JuiceTimelineAsset : ScriptableObject
 {
     [Header("ID / Label (for your own use)")]

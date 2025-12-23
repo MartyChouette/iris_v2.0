@@ -1,3 +1,12 @@
+/**
+ * @file JuiceMomentController.cs
+ * @brief JuiceMomentController script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup thirdparty
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,6 +35,40 @@ using UnityEngine.InputSystem;
 /// 
 /// Call TriggerJuiceMoment() with a JuiceTimelineAsset to play.
 /// </summary>
+/**
+ * @details
+ * Intent:
+ * - Centralized controller for "juice moments": brief, authored bursts of feedback (visual/audio/haptics).
+ * - Provides serializable settings pods (chromatic flash, motion blur spike, freeze frame, ripple, etc.)
+ *   that can be triggered by game events (cuts, snaps, evaluation, failures).
+ *
+ * Design rule:
+ * - Keep this layer strictly reactive (it reacts to gameplay truth) and never authoritative
+ *   (it should not decide scoring / failure).
+ *
+ * Authoring knobs:
+ * - Each effect has its own enable flag and curve for shaping intensity over time.
+ * - FreezeFrameSettings uses a frozenTimeScale multiplier (often 0) for impact punctuation.
+ *
+ * Gotchas:
+ * - Be careful with timeScale changes during UI transitions (grading/gameover). Prefer unscaled timers
+ *   when you need UI to animate during pause/slowmo.
+ 
+
+*Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup thirdparty
+ */
 public class JuiceMomentController : MonoBehaviour
 {
     public static JuiceMomentController Instance { get; private set; }
@@ -57,6 +100,24 @@ public class JuiceMomentController : MonoBehaviour
     #region Settings Classes
 
     [System.Serializable]
+    /**
+     * @class SlowMoSettings
+     * @brief SlowMoSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class SlowMoSettings
     {
         public bool enabled = true;
@@ -76,6 +137,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class CameraPushSettings
+     * @brief CameraPushSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class CameraPushSettings
     {
         public bool enabled = true;
@@ -88,6 +167,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class FreezeFrameSettings
+     * @brief FreezeFrameSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class FreezeFrameSettings
     {
         public bool enabled = true;
@@ -97,6 +194,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class ShakeSettings
+     * @brief ShakeSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class ShakeSettings
     {
         public bool enabled = true;
@@ -107,6 +222,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class FOVBurstSettings
+     * @brief FOVBurstSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class FOVBurstSettings
     {
         public bool enabled = true;
@@ -116,6 +249,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class BloomPulseSettings
+     * @brief BloomPulseSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class BloomPulseSettings
     {
         public bool enabled = true;
@@ -125,6 +276,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class ChromaticFlashSettings
+     * @brief ChromaticFlashSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class ChromaticFlashSettings
     {
         public bool enabled = true;
@@ -138,6 +307,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class MotionBlurSpikeSettings
+     * @brief MotionBlurSpikeSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class MotionBlurSpikeSettings
     {
         public bool enabled = true;
@@ -149,6 +336,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class RumbleSettings
+     * @brief RumbleSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class RumbleSettings
     {
         public bool enabled = true;
@@ -157,6 +362,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class ScreenRippleSettings
+     * @brief ScreenRippleSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class ScreenRippleSettings
     {
         public bool enabled = true;
@@ -174,6 +397,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class StingerSettings
+     * @brief StingerSettings component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class StingerSettings
     {
         [Header("Audio Clips (optional)")]
@@ -188,6 +429,24 @@ public class JuiceMomentController : MonoBehaviour
     }
 
     [System.Serializable]
+    /**
+     * @class JuiceEvents
+     * @brief JuiceEvents component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class JuiceEvents
     {
         public UnityEvent onJuiceStart;

@@ -1,7 +1,34 @@
+/**
+ * @file TMP_MotionBlur.cs
+ * @brief TMP_MotionBlur script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup ui
+ */
+
 using UnityEngine;
 using TMPro;
 
 [RequireComponent(typeof(TextMeshProUGUI))]
+/**
+ * @class TMP_MotionBlur
+ * @brief TMP_MotionBlur component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup ui
+ */
 public class TMP_MotionBlur : MonoBehaviour
 {
     [Header("Settings")]
@@ -25,7 +52,7 @@ public class TMP_MotionBlur : MonoBehaviour
     {
         // 1. Calculate how fast the mouse is moving
         float mouseSpeed = Vector3.Distance(Input.mousePosition, lastMousePos);
-        
+
         // 2. Normalize speed slightly (adjust divisor to tune sensitivity)
         float targetBlur = Mathf.Clamp01(mouseSpeed * blurSensitivity * 0.1f);
 

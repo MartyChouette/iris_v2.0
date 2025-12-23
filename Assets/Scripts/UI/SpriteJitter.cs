@@ -1,14 +1,41 @@
+/**
+ * @file SpriteJitter.cs
+ * @brief SpriteJitter script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup ui
+ */
+
 using UnityEngine;
+/**
+ * @class SpriteJitter
+ * @brief SpriteJitter component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup ui
+ */
 
 public class SpriteJitter : MonoBehaviour
 {
     [Header("Jitter Intensity")]
     [Tooltip("How much to shake the position.")]
     public float posStrength = 0.02f;
-    
+
     [Tooltip("How much to shake the rotation (in degrees).")]
     public float rotStrength = 2.0f;
-    
+
     [Tooltip("How much to distort the scale (e.g. 0.05 = +/- 5%).")]
     public float scaleStrength = 0.05f;
 
@@ -21,7 +48,7 @@ public class SpriteJitter : MonoBehaviour
     public float minJitterDuration = 0.5f;
     [Tooltip("Maximum time to spend jittering.")]
     public float maxJitterDuration = 1.5f;
-    
+
     [Space(5)]
     [Tooltip("Minimum time to stay still (Pause).")]
     public float minPauseDuration = 1.0f;
@@ -32,7 +59,7 @@ public class SpriteJitter : MonoBehaviour
     private Vector3 initialPos;
     private Quaternion initialRot;
     private Vector3 initialScale;
-    
+
     private float fpsTimer;     // Controls the strobe effect (12fps)
     private float stateTimer;   // Controls the Switch between Jittering and Pausing
     private bool isJittering = true;
@@ -99,10 +126,10 @@ public class SpriteJitter : MonoBehaviour
         // Scale Noise
         float scaleX = 1f + Random.Range(-scaleStrength, scaleStrength);
         float scaleY = 1f + Random.Range(-scaleStrength, scaleStrength);
-        
+
         transform.localScale = new Vector3(
-            initialScale.x * scaleX, 
-            initialScale.y * scaleY, 
+            initialScale.x * scaleX,
+            initialScale.y * scaleY,
             initialScale.z
         );
     }

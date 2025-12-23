@@ -1,3 +1,12 @@
+/**
+ * @file FluidSquirter.cs
+ * @brief FluidSquirter script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup thirdparty
+ */
+
 using UnityEngine;
 // using Obi; // Uncomment when you have Obi imported
 
@@ -5,6 +14,24 @@ using UnityEngine;
 /// Placeholder / wrapper for Obi integration.
 /// Now handles positioning itself at the source of the spray.
 /// </summary>
+/**
+ * @class FluidSquirter
+ * @brief FluidSquirter component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup thirdparty
+ */
 public class FluidSquirter : MonoBehaviour
 {
     [Tooltip("Optional ParticleSystem used as a stand-in splatter until Obi is wired.")]

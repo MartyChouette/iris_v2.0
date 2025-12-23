@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-
-/// <summary>
+﻿/// <summary>
 /// Rebinds joints under a flower after a stem cut.
 /// Key rules:
 /// 1) Pick HELD stem piece using Crown joints when possible (most reliable).
@@ -10,6 +6,41 @@ using UnityEngine;
 /// 3) LeafAttachmentMarker joints should ALWAYS bind to HELD (unless their owning leaf is permanently detached).
 /// 4) Optionally, sever stem-internal joints that still connect held<->falling chunks (rare, but fixes "won't drop").
 /// </summary>
+/**
+ * @class FlowerJointRebinder
+ * @brief FlowerJointRebinder component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup flowers_runtime
+ *
+ * @section viz_flowerjointrebinder Visual Relationships
+ * @dot
+ * digraph FlowerJointRebinder {
+ *   rankdir=LR;
+ *   node [shape=box];
+ *   FlowerJointRebinder -> FlowerStemRuntime;
+ *   FlowerJointRebinder -> StemPieceMarker;
+ *   FlowerJointRebinder -> LeafAttachmentMarker;
+ *   FlowerJointRebinder -> XYTetherJoint;
+ * }
+ * @enddot
+ */
+
+using System.Linq;
+using UnityEngine;
+using System.Collections.Generic;
+
 public class FlowerJointRebinder : MonoBehaviour
 {
     [Tooltip("Runtime stem this flower belongs to. If left null, will be auto-found in children.")]
@@ -38,8 +69,98 @@ public class FlowerJointRebinder : MonoBehaviour
     [Tooltip("If true, makes falling stem chunks dynamic & awake.")]
     public bool forceFallingChunksDynamic = true;
 
+    [Header("Anchor Hold (Optional)")]
+    [Tooltip("If true, creates/uses a kinematic anchor Rigidbody at anchorPoint and tethers the HELD chunk to it.")]
+    public bool enableAnchorHold = true;
+
+    [Tooltip("Anchor point (usually Crown). If null, we resolve CrownRoot; else fallback to flowerRoot.")]
+    public Transform anchorPoint;
+
+    [Tooltip("Kinematic Rigidbody at the anchor point. If null, we create one under this object.")]
+    public Rigidbody anchorBody;
+
+    [Tooltip("Seconds to disable gravity on HELD right after a cut to avoid 'instant drop' on the cut frame.")]
+    public float cutHoldSeconds = 0.12f;
+
+    [Header("Anchor Joint Settings")]
+    [Tooltip("Locks linear motion of HELD to anchor (recommended).")]
+    public bool anchorLockLinear = true;
+
+    [Tooltip("Use Limited angular motion (recommended) vs Locked angular motion (stiffer).")]
+    public bool anchorAngularLimited = true;
+
+    [Tooltip("Angular limit (degrees) when anchorAngularLimited is true.")]
+    public float anchorAngularLimitDegrees = 15f;
+
+    [Tooltip("Enable joint projection to reduce separation/explosions.")]
+    public bool anchorUseProjection = true;
+
+    [Tooltip("Projection distance for the anchor joint.")]
+    public float anchorProjectionDistance = 0.02f;
+
+    [Tooltip("Projection angle for the anchor joint.")]
+    public float anchorProjectionAngle = 5f;
+
+    [Header("Anchor Stability (Extra)")]
+    [Tooltip("If true, anchorBody is kept snapped to anchorPoint every FixedUpdate (recommended if anything else might move it).")]
+    public bool keepAnchorBodySnapped = true;
+
+    [Tooltip("Increase solver iterations on HELD to reduce post-cut sag. (0 = no change)")]
+    public int minHeldSolverIterations = 20;
+
+    [Tooltip("Increase solver velocity iterations on HELD to reduce post-cut sag. (0 = no change)")]
+    public int minHeldSolverVelocityIterations = 20;
+
+    [Tooltip("Joint mass scaling: makes the kinematic anchor feel 'infinitely heavy'.")]
+    public float anchorConnectedMassScale = 100f;
+
     [Header("Debug")]
     public bool debugLogs = true;
+
+    // We keep track of the joint we own so we never hijack unrelated joints.
+    private ConfigurableJoint _anchorHoldJoint;
+    private Rigidbody _anchorHeldBody;
+
+    // ─────────────────────────────────────────────────────────────
+    // YELLOW LOG HELPERS
+    // ─────────────────────────────────────────────────────────────
+    private const string LOG_COLOR = "yellow";
+
+    private void LogYellow(string msg, Object ctx = null)
+    {
+        if (!debugLogs) return;
+        if (ctx != null) Debug.Log($"<color={LOG_COLOR}>{msg}</color>", ctx);
+        else Debug.Log($"<color={LOG_COLOR}>{msg}</color>", this);
+    }
+
+    private void LogYellowWarning(string msg, Object ctx = null)
+    {
+        if (!debugLogs) return;
+        if (ctx != null) Debug.LogWarning($"<color={LOG_COLOR}>{msg}</color>", ctx);
+        else Debug.LogWarning($"<color={LOG_COLOR}>{msg}</color>", this);
+    }
+
+    private void Awake()
+    {
+        if (flowerRoot == null) flowerRoot = transform;
+        if (stemRuntime == null) stemRuntime = flowerRoot.GetComponentInChildren<FlowerStemRuntime>();
+
+        if (enableAnchorHold)
+            EnsureAnchorBody();
+    }
+
+    private void FixedUpdate()
+    {
+        if (!enableAnchorHold) return;
+        if (!keepAnchorBodySnapped) return;
+        if (anchorBody == null || anchorPoint == null) return;
+
+        // Keep the anchor truly stable in world-space.
+        anchorBody.isKinematic = true;
+        anchorBody.useGravity = false;
+        anchorBody.transform.position = anchorPoint.position;
+        anchorBody.transform.rotation = anchorPoint.rotation;
+    }
 
     /// <summary>
     /// Call this AFTER the stem has been split / cut and the new stem pieces exist
@@ -70,8 +191,22 @@ public class FlowerJointRebinder : MonoBehaviour
 
         var stemSet = new HashSet<Rigidbody>(stemPieces);
 
-        // 2) Decide HELD piece robustly (use crown joints if possible)
-        Rigidbody held = ChooseHeldStemPieceByCrownJoints(stemPieces, stemSet);
+        // 2) Decide HELD piece robustly
+        // IMPORTANT FIX:
+        // If we're using AnchorHold and we have an AnchorPoint (stand/vase),
+        // HELD MUST be the piece closest to that point.
+        Rigidbody held = null;
+
+        if (enableAnchorHold)
+        {
+            EnsureAnchorBody(); // ensures anchorPoint fallback is resolved too
+            if (anchorPoint != null)
+                held = ChooseHeldStemPieceByAnchorPoint(stemPieces, anchorPoint.position);
+        }
+
+        if (held == null)
+            held = ChooseHeldStemPieceByCrownJoints(stemPieces, stemSet);
+
         if (held == null)
             held = ChooseHeldStemPieceByHighestYThenProximity(stemPieces);
 
@@ -79,23 +214,24 @@ public class FlowerJointRebinder : MonoBehaviour
 
         var falling = stemPieces.Where(rb => rb != null && rb != held).ToArray();
 
-        if (debugLogs)
+        LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]");
+
+        // 2.5) Optional: prevent HELD dropping immediately by anchoring it.
+        if (enableAnchorHold)
         {
-            Debug.Log($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]", this);
+            EnsureAnchorBody();
+            ApplyAnchorHoldToHeld(held);
+            StartCoroutine(HoldRoutine(held, cutHoldSeconds));
         }
 
-        // 3) Fix the exact problem you’re seeing:
-        //    - Leaf attachment points accidentally binding to FALLING chunk
-        //    - Crown joints accidentally binding to FALLING chunk
-        //    We REBIND those joints to HELD, we do NOT destroy them.
+        // 3) Targeted fixes:
         if (forceLeafAttachmentsToHeld)
             ForceLeafAttachmentJointsToHeld(held, stemSet);
 
         if (forceCrownJointsToHeld)
             ForceCrownHeadJointsToHeld(held, stemSet);
 
-        // 4) Optional: if the stem pieces are still connected by some leftover joint inside stemRuntime,
-        //    sever only those (safe; doesn’t touch crown).
+        // 4) Optional: sever leftover internal cross-chunk joints inside stemRuntime only.
         if (severStemInternalCrossChunkJoints)
             SeverStemInternalCrossChunkJoints(held, stemSet);
 
@@ -103,7 +239,7 @@ public class FlowerJointRebinder : MonoBehaviour
         if (forceFallingChunksDynamic && falling.Length > 0)
             ForceChunksDynamicAndAwake(falling);
 
-        // 6) Now do your normal rebinding passes (safe now that anchors are corrected).
+        // 6) Normal rebinding passes.
         var fixedJoints = CollectJoints<FixedJoint>(flowerRoot, stemRuntime);
         var hingeJoints = CollectJoints<HingeJoint>(flowerRoot, stemRuntime);
         var configurableJoints = CollectJoints<ConfigurableJoint>(flowerRoot, stemRuntime);
@@ -116,16 +252,247 @@ public class FlowerJointRebinder : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────────────────────
+    // ANCHOR HOLD (WORLD ANCHOR + CLOSEST POINT ON HELD)
+    // ─────────────────────────────────────────────────────────────
+
+    private void EnsureAnchorBody()
+    {
+        if (anchorPoint == null)
+        {
+            // Prefer crown if possible.
+            var crown = ResolveCrownRoot();
+            anchorPoint = crown != null ? crown : (flowerRoot != null ? flowerRoot : transform);
+        }
+
+        if (anchorBody == null)
+        {
+            // IMPORTANT: WORLD-SPACE. Do NOT parent under the flower.
+            var go = new GameObject("StemAnchorBody");
+            go.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
+            go.transform.position = anchorPoint != null ? anchorPoint.position : transform.position;
+            go.transform.rotation = anchorPoint != null ? anchorPoint.rotation : transform.rotation;
+
+            anchorBody = go.AddComponent<Rigidbody>();
+        }
+
+        // If someone assigned an anchorBody that lives under the flower hierarchy, detach it.
+        if (flowerRoot != null && anchorBody != null && anchorBody.transform.IsChildOf(flowerRoot))
+        {
+            LogYellowWarning($"[Rebinder] AnchorBody '{anchorBody.name}' was under FlowerRoot. Detaching to world-space.", anchorBody);
+            anchorBody.transform.SetParent(null, true);
+        }
+
+        anchorBody.isKinematic = true;
+        anchorBody.useGravity = false;
+
+        if (anchorPoint != null)
+        {
+            anchorBody.transform.position = anchorPoint.position;
+            anchorBody.transform.rotation = anchorPoint.rotation;
+        }
+    }
+
+    private void ApplyAnchorHoldToHeld(Rigidbody held)
+    {
+        if (held == null || anchorBody == null) return;
+
+        // Improve solver stability immediately.
+        if (minHeldSolverIterations > 0)
+            held.solverIterations = Mathf.Max(held.solverIterations, minHeldSolverIterations);
+        if (minHeldSolverVelocityIterations > 0)
+            held.solverVelocityIterations = Mathf.Max(held.solverVelocityIterations, minHeldSolverVelocityIterations);
+
+        // If HELD changed, destroy the old anchor joint we owned to avoid leaving junk.
+        if (_anchorHeldBody != null && _anchorHeldBody != held && _anchorHoldJoint != null)
+        {
+            Destroy(_anchorHoldJoint);
+            _anchorHoldJoint = null;
+        }
+
+        _anchorHeldBody = held;
+
+        // Create or reuse OUR joint on held.
+        _anchorHoldJoint = FindOrCreateOwnedAnchorJoint(held);
+
+        // Resolve current world target.
+        Vector3 worldTarget = (anchorPoint != null) ? anchorPoint.position : held.worldCenterOfMass;
+
+        // Snap anchorBody to world target.
+        anchorBody.transform.position = worldTarget;
+        if (anchorPoint != null) anchorBody.transform.rotation = anchorPoint.rotation;
+
+        _anchorHoldJoint.connectedBody = anchorBody;
+        _anchorHoldJoint.autoConfigureConnectedAnchor = false;
+
+        // CRITICAL: pin closest point on held to the anchor target.
+        Vector3 heldAttachWorld = ClosestPointOnBody(held, worldTarget);
+
+        _anchorHoldJoint.anchor = held.transform.InverseTransformPoint(heldAttachWorld);
+        _anchorHoldJoint.connectedAnchor = Vector3.zero;
+
+        if (anchorLockLinear)
+        {
+            _anchorHoldJoint.xMotion = ConfigurableJointMotion.Locked;
+            _anchorHoldJoint.yMotion = ConfigurableJointMotion.Locked;
+            _anchorHoldJoint.zMotion = ConfigurableJointMotion.Locked;
+        }
+        else
+        {
+            _anchorHoldJoint.xMotion = ConfigurableJointMotion.Free;
+            _anchorHoldJoint.yMotion = ConfigurableJointMotion.Free;
+            _anchorHoldJoint.zMotion = ConfigurableJointMotion.Free;
+        }
+
+        if (anchorAngularLimited)
+        {
+            _anchorHoldJoint.angularXMotion = ConfigurableJointMotion.Limited;
+            _anchorHoldJoint.angularYMotion = ConfigurableJointMotion.Limited;
+            _anchorHoldJoint.angularZMotion = ConfigurableJointMotion.Limited;
+
+            var limit = new SoftJointLimit { limit = Mathf.Max(0f, anchorAngularLimitDegrees) };
+            _anchorHoldJoint.lowAngularXLimit = new SoftJointLimit { limit = -limit.limit };
+            _anchorHoldJoint.highAngularXLimit = new SoftJointLimit { limit = limit.limit };
+            _anchorHoldJoint.angularYLimit = limit;
+            _anchorHoldJoint.angularZLimit = limit;
+        }
+        else
+        {
+            _anchorHoldJoint.angularXMotion = ConfigurableJointMotion.Locked;
+            _anchorHoldJoint.angularYMotion = ConfigurableJointMotion.Locked;
+            _anchorHoldJoint.angularZMotion = ConfigurableJointMotion.Locked;
+        }
+
+        if (anchorUseProjection)
+        {
+            _anchorHoldJoint.projectionMode = JointProjectionMode.PositionAndRotation;
+            _anchorHoldJoint.projectionDistance = anchorProjectionDistance;
+            _anchorHoldJoint.projectionAngle = anchorProjectionAngle;
+        }
+        else
+        {
+            _anchorHoldJoint.projectionMode = JointProjectionMode.None;
+        }
+
+        // Make the anchor feel "infinitely heavy".
+        _anchorHoldJoint.massScale = 1f;
+        _anchorHoldJoint.connectedMassScale = Mathf.Max(1f, anchorConnectedMassScale);
+
+        _anchorHoldJoint.enableCollision = false;
+        _anchorHoldJoint.enablePreprocessing = true;
+
+        LogYellow($"[Rebinder] AnchorHold applied: HELD '{held.name}' attach@{heldAttachWorld} -> target@{worldTarget} via AnchorBody '{anchorBody.name}'");
+    }
+
+    private Vector3 ClosestPointOnBody(Rigidbody rb, Vector3 worldPos)
+    {
+        if (rb == null) return worldPos;
+
+        var cols = rb.GetComponentsInChildren<Collider>(true);
+        if (cols != null && cols.Length > 0)
+        {
+            Vector3 best = rb.worldCenterOfMass;
+            float bestDistSq = float.MaxValue;
+
+            for (int i = 0; i < cols.Length; i++)
+            {
+                var c = cols[i];
+                if (c == null) continue;
+
+                Vector3 p = c.ClosestPoint(worldPos);
+                float d = (p - worldPos).sqrMagnitude;
+                if (d < bestDistSq)
+                {
+                    bestDistSq = d;
+                    best = p;
+                }
+            }
+            return best;
+        }
+
+        return rb.worldCenterOfMass;
+    }
+
+    private ConfigurableJoint FindOrCreateOwnedAnchorJoint(Rigidbody held)
+    {
+        // Use a marker component to reliably find the joint WE own.
+        var marker = held.GetComponent<FlowerAnchorHoldMarker>();
+        if (marker == null)
+            marker = held.gameObject.AddComponent<FlowerAnchorHoldMarker>();
+
+        if (marker.joint == null)
+            marker.joint = held.gameObject.AddComponent<ConfigurableJoint>();
+
+        return marker.joint;
+    }
+
+    private System.Collections.IEnumerator HoldRoutine(Rigidbody rb, float seconds)
+    {
+        if (rb == null || seconds <= 0f) yield break;
+
+        bool oldGrav = rb.useGravity;
+        rb.useGravity = false;
+        rb.WakeUp();
+
+        yield return new WaitForSeconds(seconds);
+
+        if (rb != null) rb.useGravity = oldGrav;
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // HELD SELECTION
     // ─────────────────────────────────────────────────────────────
+
+    private Rigidbody ChooseHeldStemPieceByAnchorPoint(Rigidbody[] stemPieces, Vector3 anchorWorldPos)
+    {
+        // Choose the piece that physically contains / is closest to the anchor point.
+        // This matches a "flower stand anchor" use case and prevents anchoring the wrong chunk.
+        Rigidbody best = null;
+        float bestDistSq = float.MaxValue;
+
+        for (int i = 0; i < stemPieces.Length; i++)
+        {
+            var rb = stemPieces[i];
+            if (rb == null) continue;
+
+            var cols = rb.GetComponentsInChildren<Collider>(true);
+            if (cols != null && cols.Length > 0)
+            {
+                for (int c = 0; c < cols.Length; c++)
+                {
+                    var col = cols[c];
+                    if (col == null) continue;
+
+                    Vector3 p = col.ClosestPoint(anchorWorldPos);
+                    float d = (p - anchorWorldPos).sqrMagnitude;
+                    if (d < bestDistSq)
+                    {
+                        bestDistSq = d;
+                        best = rb;
+                    }
+                }
+            }
+            else
+            {
+                float d = (rb.worldCenterOfMass - anchorWorldPos).sqrMagnitude;
+                if (d < bestDistSq)
+                {
+                    bestDistSq = d;
+                    best = rb;
+                }
+            }
+        }
+
+        if (best != null)
+            LogYellow($"[Rebinder] HELD picked by AnchorPoint proximity: '{best.name}'");
+
+        return best;
+    }
 
     private Rigidbody ChooseHeldStemPieceByCrownJoints(Rigidbody[] stemPieces, HashSet<Rigidbody> stemSet)
     {
         Transform crown = ResolveCrownRoot();
         if (crown == null) return null;
 
-        // Look for any Joint under Crown that connects to a stem piece.
-        // If Front/Back both connect, we choose the most common connectedBody.
         var joints = crown.GetComponentsInChildren<Joint>(true);
 
         var votes = new Dictionary<Rigidbody, int>();
@@ -144,8 +511,7 @@ public class FlowerJointRebinder : MonoBehaviour
 
         var held = votes.OrderByDescending(kv => kv.Value).First().Key;
 
-        if (debugLogs)
-            Debug.Log($"[Rebinder] HELD picked by Crown joint votes: '{held.name}'", this);
+        LogYellow($"[Rebinder] HELD picked by Crown joint votes: '{held.name}'");
 
         return held;
     }
@@ -164,7 +530,6 @@ public class FlowerJointRebinder : MonoBehaviour
             float y = rb.worldCenterOfMass.y;
             float d = (rb.worldCenterOfMass - refPos).sqrMagnitude;
 
-            // primary: higher Y, secondary: closer to flowerRoot
             bool better = (y > bestY + 1e-5f) || (Mathf.Abs(y - bestY) <= 1e-5f && d < bestDistSq);
             if (better)
             {
@@ -174,8 +539,8 @@ public class FlowerJointRebinder : MonoBehaviour
             }
         }
 
-        if (debugLogs && best != null)
-            Debug.Log($"[Rebinder] HELD fallback by HighestY/Proximity: '{best.name}'", this);
+        if (best != null)
+            LogYellow($"[Rebinder] HELD fallback by HighestY/Proximity: '{best.name}'");
 
         return best;
     }
@@ -184,16 +549,24 @@ public class FlowerJointRebinder : MonoBehaviour
     {
         if (crownRoot != null) return crownRoot;
 
-        // Prefer Tag "Crown" if you have it (your screenshot shows Tag Crown on Crown object).
-        var tagged = GameObject.FindGameObjectsWithTag("Crown")
-            .Select(go => go.transform)
-            .FirstOrDefault(t => t != null && t.IsChildOf(flowerRoot));
+        // Prefer Tag "Crown" if you have it.
+        Transform tagged = null;
+        try
+        {
+            tagged = GameObject.FindGameObjectsWithTag("Crown")
+                .Select(go => go.transform)
+                .FirstOrDefault(t => t != null && flowerRoot != null && t.IsChildOf(flowerRoot));
+        }
+        catch
+        {
+            // Tag might not exist; ignore.
+        }
 
         if (tagged != null) return tagged;
 
         // Fallback: search for something on layer "CrownCore"
         int crownLayer = LayerMask.NameToLayer("CrownCore");
-        if (crownLayer >= 0)
+        if (crownLayer >= 0 && flowerRoot != null)
         {
             var all = flowerRoot.GetComponentsInChildren<Transform>(true);
             foreach (var t in all)
@@ -204,9 +577,14 @@ public class FlowerJointRebinder : MonoBehaviour
         }
 
         // Final fallback: name contains Crown
-        var byName = flowerRoot.GetComponentsInChildren<Transform>(true)
-            .FirstOrDefault(t => t != null && t.name.ToLower().Contains("crown"));
-        return byName;
+        if (flowerRoot != null)
+        {
+            var byName = flowerRoot.GetComponentsInChildren<Transform>(true)
+                .FirstOrDefault(t => t != null && t.name.ToLower().Contains("crown"));
+            return byName;
+        }
+
+        return null;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -215,7 +593,6 @@ public class FlowerJointRebinder : MonoBehaviour
 
     private void ForceLeafAttachmentJointsToHeld(Rigidbody held, HashSet<Rigidbody> stemSet)
     {
-        // Leaf attachment points might live outside stem hierarchy, but under flowerRoot.
         var fixedJoints = flowerRoot.GetComponentsInChildren<FixedJoint>(true);
 
         foreach (var fj in fixedJoints)
@@ -225,14 +602,13 @@ public class FlowerJointRebinder : MonoBehaviour
             var marker = fj.GetComponent<LeafAttachmentMarker>();
             if (marker == null) continue;
 
-            // Respect permanent detach
             if (marker.owningLeaf != null && marker.owningLeaf.permanentlyDetached)
                 continue;
 
             if (fj.connectedBody != held)
             {
-                if (fj.connectedBody != null && stemSet.Contains(fj.connectedBody) && debugLogs)
-                    Debug.Log($"[Rebinder] LeafAttachment '{fj.name}' redirected {fj.connectedBody.name} -> {held.name}", fj);
+                if (fj.connectedBody != null && stemSet.Contains(fj.connectedBody))
+                    LogYellow($"[Rebinder] LeafAttachment '{fj.name}' redirected {fj.connectedBody.name} -> {held.name}", fj);
 
                 fj.connectedBody = held;
             }
@@ -250,12 +626,9 @@ public class FlowerJointRebinder : MonoBehaviour
             if (j == null) continue;
             if (j.connectedBody == null) continue;
 
-            // Only redirect if the joint is currently connected to a stem piece (wrong one)
             if (stemSet.Contains(j.connectedBody) && j.connectedBody != held)
             {
-                if (debugLogs)
-                    Debug.Log($"[Rebinder] Crown joint '{j.name}' redirected {j.connectedBody.name} -> {held.name}", j);
-
+                LogYellow($"[Rebinder] Crown joint '{j.name}' redirected {j.connectedBody.name} -> {held.name}", j);
                 j.connectedBody = held;
             }
         }
@@ -263,7 +636,6 @@ public class FlowerJointRebinder : MonoBehaviour
 
     private void SeverStemInternalCrossChunkJoints(Rigidbody held, HashSet<Rigidbody> stemSet)
     {
-        // Only joints UNDER the stemRuntime. This avoids touching Crown/Front/Back.
         var joints = stemRuntime.GetComponentsInChildren<Joint>(true);
 
         int killed = 0;
@@ -273,20 +645,16 @@ public class FlowerJointRebinder : MonoBehaviour
             if (j.connectedBody == null) continue;
             if (!stemSet.Contains(j.connectedBody)) continue;
 
-            // If a joint under stemRuntime is connected to HELD, it might be keeping the falling chunk attached.
-            // Kill it so physics separation is guaranteed.
             if (j.connectedBody == held)
             {
-                if (debugLogs)
-                    Debug.Log($"[Rebinder] Severing stem-internal joint '{j.GetType().Name}' on '{j.name}' (was connected to HELD '{held.name}').", j);
-
+                LogYellow($"[Rebinder] Severing stem-internal joint '{j.GetType().Name}' on '{j.name}' (was connected to HELD '{held.name}').", j);
                 Destroy(j);
                 killed++;
             }
         }
 
-        if (debugLogs && killed > 0)
-            Debug.Log($"[Rebinder] Severed {killed} stem-internal cross-chunk joints.", this);
+        if (killed > 0)
+            LogYellow($"[Rebinder] Severed {killed} stem-internal cross-chunk joints.");
     }
 
     private void ForceChunksDynamicAndAwake(Rigidbody[] chunks)
@@ -388,6 +756,11 @@ public class FlowerJointRebinder : MonoBehaviour
             if (cj == null) continue;
             if (cj.connectedBody == null) continue;
 
+            // IMPORTANT: Skip the anchor-hold joint we own.
+            var marker = cj.GetComponent<FlowerAnchorHoldMarker>();
+            if (marker != null && marker.joint == cj)
+                continue;
+
             var ownerRb = cj.GetComponent<Rigidbody>();
             if (ownerRb == null) continue;
 
@@ -470,3 +843,13 @@ public class FlowerJointRebinder : MonoBehaviour
         return best;
     }
 }
+
+
+/// <summary>
+/// Marker component used by FlowerJointRebinder to track the anchor-hold joint it owns.
+/// </summary>
+public sealed class FlowerAnchorHoldMarker : MonoBehaviour
+{
+    [HideInInspector] public ConfigurableJoint joint;
+}
+

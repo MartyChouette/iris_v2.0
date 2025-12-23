@@ -1,7 +1,34 @@
-﻿using System.Collections.Generic;
+﻿/**
+ * @file SquishMove.cs
+ * @brief SquishMove script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup tools
+ */
+
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+/**
+ * @class SquishMove
+ * @brief SquishMove component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup tools
+ */
 public class SquishMove : MonoBehaviour
 {
     [Header("Jelly Settings")]
@@ -342,6 +369,24 @@ public class SquishMove : MonoBehaviour
     // ────────────────────────── Helpers / nested type ──────────────────────────
 
     static Vector2 ToXY(Vector3 v) => new Vector2(v.x, v.y);
+    /**
+     * @class JellyVertex
+     * @brief JellyVertex component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup tools
+     */
 
     public class JellyVertex
     {

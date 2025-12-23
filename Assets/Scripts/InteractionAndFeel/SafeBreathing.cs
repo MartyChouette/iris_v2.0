@@ -1,4 +1,31 @@
+/**
+ * @file SafeBreathing.cs
+ * @brief SafeBreathing script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup tools
+ */
+
 using UnityEngine;
+/**
+ * @class SafeBreathing
+ * @brief SafeBreathing component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup tools
+ */
 
 public class SafeBreathing : MonoBehaviour
 {
@@ -20,7 +47,7 @@ public class SafeBreathing : MonoBehaviour
     [Header("Joint Safety")]
     [Tooltip("Set this to where the petal connects to the stem. -0.5 is the bottom, 0 is center, 0.5 is top.")]
     [Range(-0.5f, 0.5f)] public float pivotY = -0.5f;
-    
+
     [Tooltip("Automatically increases the Tether limit so breathing doesn't snap the joint.")]
     public bool preventJointBreak = true;
 
@@ -34,7 +61,7 @@ public class SafeBreathing : MonoBehaviour
     {
         initialScale = transform.localScale;
         initialLocalPos = transform.localPosition;
-        
+
         // Randomize rhythm if not set manually
         if (timeOffset == 0f) timeOffset = Random.Range(0f, 1f);
 
@@ -85,13 +112,13 @@ public class SafeBreathing : MonoBehaviour
         // 3. PIVOT COMPENSATION (The Fix for Breaking Joints)
         // If we stretch Y, the center moves. We must move the position 
         // opposite to the stretch to keep the "Pivot" stationary.
-        
+
         float heightChange = targetScale.y - initialScale.y;
-        
+
         // Calculate how much the "Center" needs to move to keep "PivotY" still.
         // If pivot is -0.5 (bottom), and we grow, we must move UP (+Y) by half the growth.
-        float pivotCorrectionY = heightChange * -pivotY; 
-        
+        float pivotCorrectionY = heightChange * -pivotY;
+
         // This assumes the object's local Y axis is the length. 
         Vector3 pivotOffset = transform.up * pivotCorrectionY;
 
@@ -112,7 +139,7 @@ public class SafeBreathing : MonoBehaviour
         {
             // We calculate how much extra room we need based on our animation offset
             float extraRoom = directionalOffset.magnitude + Mathf.Abs(pivotCorrectionY);
-            
+
             // Update the tether's limit for this frame
             tether.maxDistance = tetherBaseMaxDist + (extraRoom * 1.5f); // 1.5x buffer
         }

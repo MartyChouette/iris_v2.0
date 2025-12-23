@@ -1,8 +1,67 @@
-﻿// File: FlowerGameBrain.cs
+﻿/**
+ * @file FlowerGameBrain.cs
+ * @brief FlowerGameBrain script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup flowers_runtime
+ */
+
+// File: FlowerGameBrain.cs
 using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
+    /**
+     * @details
+     * Intent:
+     * - Evaluates the current flower state against @ref IdealFlowerDefinition rules and produces a result.
+     * - Maintains lookups:
+     *   ruleLookup: partId -> ideal rule
+     *   partLookup: partId -> runtime part instance
+     *
+     * Runtime wiring:
+     * - Awake() calls BuildLookups() and injects this brain into all @ref FlowerPartRuntime children.
+     *   This makes parts "judge-aware" without manual wiring.
+     *
+     * Calibration:
+     * - angleOffsetDeg exists so scoring space and HUD angle space can be aligned consistently.
+     *
+     * Invariants:
+     * - Each @ref FlowerPartRuntime intended for scoring must have a stable PartId.
+     * - PartId values must match IdealFlowerDefinition.PartRule.partId authoring exactly.
+     *
+     * Gotchas:
+     * - Duplicate PartIds will be ignored in partLookup (first add wins). Treat PartId uniqueness as a hard rule.
+     * - If 'parts' is empty, children are auto-collected; be careful with inactive children and debug variants.
+     
+
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup flowers_runtime
+ *
+ * @section viz_flowergamebrain Visual Relationships
+ * @dot
+ * digraph FlowerGameBrain {
+ *   rankdir=LR;
+ *   node [shape=box];
+ *   FlowerGameBrain -> FlowerTypeDefinition;
+ *   FlowerGameBrain -> IdealFlowerDefinition;
+ *   FlowerGameBrain -> FlowerStemRuntime;
+ *   FlowerGameBrain -> FlowerPartRuntime;
+ * }
+ * @enddot
+ */
 public class FlowerGameBrain : MonoBehaviour
 {
     [Header("Design Data")]

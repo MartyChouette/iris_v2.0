@@ -1,6 +1,48 @@
-﻿using UnityEngine;
+﻿/**
+ * @file FlowerTypeDefinition.cs
+ * @brief FlowerTypeDefinition script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup flowers_runtime
+ */
+
+using UnityEngine;
 
 [CreateAssetMenu(menuName = "Flower/Flower Type")]
+    /**
+     * @details
+     * Intent:
+     * - A ScriptableObject describing a flower "category":
+     *   visuals (sprites/prefab) + difficulty + how a normalized score translates into outcomes.
+     *
+     * Core linkage:
+     * - ideal: references @ref IdealFlowerDefinition (the ruleset).
+     * - allowGameOver/globalPerfectDamageCausesGameOver: global strictness switches for fatal violations.
+     *
+     * Outcome mapping:
+     * - GetFinalScoreFromNormalized(): normalized → points using basePerfectScore and scoreMultiplier.
+     * - GetDaysFromNormalized(): normalized → days via linear min/max OR scoreToDaysCurve.
+     *
+     * Design hooks:
+     * - Days is your *ritual consequence*. It’s the number that can slowly turn from “life preserved”
+     *   into “life quantified.” Curves let you make that cruelty non-linear.
+     
+
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup flowers_runtime
+ */
 public class FlowerTypeDefinition : ScriptableObject
 {
     // ──────────────────────────────────────────────────────────────

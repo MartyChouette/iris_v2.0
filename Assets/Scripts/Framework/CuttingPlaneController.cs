@@ -1,6 +1,66 @@
-﻿using UnityEngine;
-using UnityEngine.InputSystem;
+﻿/**
+ * @file CuttingPlaneController.cs
+ * @brief Moves the plane cutter and triggers cuts (input → scissors → feedback → PlaneBehaviour.Cut()).
+ *
+ * @details
+ * ## Role in Iris
+ * This component is the “operator hand” for the plane tool. It does **not** cut meshes itself.
+ * Instead it:
+ * - Moves the cutting plane up/down (Y height control).
+ * - Reads a “cut” input action.
+ * - Asks @ref ScissorsVisualController for permission to snip (visual + cooldown gate).
+ * - Spawns feedback (audio + fluids) based on what the plane overlaps at the moment of the cut.
+ * - Calls @ref DynamicMeshCutter.PlaneBehaviour.Cut() to perform the actual mesh cut.
+ *
+ * ## Ownership gating (scissors pickup)
+ * Iris intent: the player should **not** have cutting control until scissors are equipped from the table.
+ * This script therefore supports a hard gate:
+ * - @ref SetToolEnabled(bool) enables/disables *movement + cutting input*.
+ * - Your pickup system (ScissorStation) should call SetToolEnabled(true/false).
+ *
+ * ## Anti-accidental cut (pickup click safety)
+ * If pickup uses the same input as cutting (e.g., LMB), the pickup click can immediately trigger a cut.
+ * This controller provides two layers of defense:
+ * 1) A short “arm delay” window after enable (Time.unscaledTime < _cutArmedAtTime).
+ * 2) A “release latch” that ignores cut input until it has been released once.
+ *
+ * ## Mouse-height takeover safety (prevents plane jumping on equip)
+ * If mouse vertical position drives height, enabling the tool can cause the plane to “snap” to the mouse.
+ * Optional behavior:
+ * - Hold the plane at its authored/current Y until the mouse cursor moves near the plane’s current height,
+ *   then enable mouse-follow (see preserveAuthoredHeightUntilMouseMatches + mouseHeightTakeoverDeadzonePx).
+ *
+ * ## Angle integration
+ * This controller has **no staging lock**. Height movement is always allowed while the tilt controller
+ * (PlaneAngleTiltController) rotates the plane concurrently.
+ *
+ * ## UI safety
+ * Cutting should not fire through UI clicks. This controller can block cuts when the pointer is over UI
+ * (EventSystem.IsPointerOverGameObject()).
+ *
+ * ## Performance notes
+ * - Update() is hot: avoid allocations.
+ * - Physics.OverlapBox allocates the returned array (Unity API). Keep cutSense volume tight and
+ *   call only on cut presses (not per-frame).
+ *
+ * @ingroup tools
+ *
+ * @section viz_cuttingplanecontroller Visual Relationships
+ * @dot
+ * digraph CuttingPlaneController {
+ *   rankdir=LR;
+ *   node [shape=box];
+ *   CuttingPlaneController -> "PlaneBehaviour" [label="calls Cut()"];
+ *   CuttingPlaneController -> "ScissorsVisualController" [label="AttemptSnip() gate"];
+ *   CuttingPlaneController -> "AudioManager" [label="PlaySFX / PlayDualSFX"];
+ *   CuttingPlaneController -> "FluidSquirter" [label="Squirt() feedback"];
+ * }
+ * @enddot
+ */
+
+using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using DynamicMeshCutter;
 
 [DisallowMultipleComponent]
@@ -13,38 +73,73 @@ public class CuttingPlaneController : MonoBehaviour
     public ControlMode controlMode = ControlMode.MouseAndKeyboard;
 
     [Header("References")]
+    [Tooltip("The PlaneBehaviour responsible for actually performing the mesh cut.")]
     public PlaneBehaviour plane;
+
+    [Tooltip("Visual/cooldown gate. Must be asked before a cut fires.")]
     public ScissorsVisualController scissorsVisuals;
 
-    [Header("Movement Settings")]
+    // ─────────────────────────────────────────────────────────────
+    // Movement / authored pose
+    // ─────────────────────────────────────────────────────────────
+
+    [Header("Movement Settings (Y Height)")]
+    [Tooltip("Units per second when using axis-based height movement.")]
     public float axisMoveSpeed = 2f;
-    public float mouseFollowSpeed = 20f;
-    public float minY = -1f;
-    public float maxY = 1f;
+
+    [Tooltip("Clamp is relative to the authored start Y. (min offset from start)")]
+    public float minYOffset = -1f;
+
+    [Tooltip("Clamp is relative to the authored start Y. (max offset from start)")]
+    public float maxYOffset = 1f;
+
+    [Tooltip("If true, mouse vertical delta drives plane height (Y only).")]
     public bool useMouseHeight = true;
 
+    [Header("Mouse Delta Feel (Y Only)")]
+    [Tooltip("World units per mouse pixel (delta). Increase this to move up/down faster.")]
+    [SerializeField] float mouseYWorldPerPixel = 0.01f;
+
+    [Tooltip("Holding Shift multiplies mouse delta movement.")]
+    [SerializeField] float fastMultiplier = 4f;
+
+    [Tooltip("Optional acceleration: bigger drags move more.")]
+    [SerializeField] float accelPerPixel = 0.05f;
+
+    [Tooltip("Smooth time for Y glide (smaller = snappier).")]
+    [SerializeField] float ySmoothTime = 0.06f;
+
+    // ─────────────────────────────────────────────────────────────
+    // Input
+    // ─────────────────────────────────────────────────────────────
+
     [Header("Input Actions")]
+    [Tooltip("Axis (float or Vector2.y) controlling plane height.")]
     public InputActionReference moveYAction;
+
+    [Tooltip("Pointer screen position (Vector2). Reserved for future; NOT used for movement in the 'Y-only glide' mode.")]
     public InputActionReference pointerPositionAction;
+
+    [Tooltip("Button action used to trigger cuts.")]
     public InputActionReference cutAction;
 
-    [Header("Angle Tilt Integration")]
-    public PlaneAngleTiltController angleTiltController;
-    public bool disableYMovementWhenAngleTiltActive = true;
-
     // ─────────────────────────────────────────────────────────────
-    // Cut Detection / Effects
+    // Cut feedback classification volume
     // ─────────────────────────────────────────────────────────────
 
-    [Header("Cut Detection Volume")]
-    [Tooltip("Radius/thickness of the overlap volume. Keep small.")]
+    [Header("Cut Detection Volume (Feedback Classification Only)")]
+    [Tooltip("Half-thickness of the overlap box in Y/Z (radius-like).")]
     public float cutSenseRadius = 0.04f;
 
-    [Tooltip("Length of the overlap volume along the plane's local X axis.")]
+    [Tooltip("Length of the overlap box along plane forward.")]
     public float cutSenseLength = 1.0f;
 
-    [Tooltip("IMPORTANT: set this to ONLY the layers containing Stem/Leaf/Petal colliders. Exclude CrownCore/References/UI/etc.")]
+    [Tooltip("Layers considered for cut feedback classification (stem/leaf/petal).")]
     public LayerMask cutDetectionMask = ~0;
+
+    // ─────────────────────────────────────────────────────────────
+    // Audio / fluid feedback
+    // ─────────────────────────────────────────────────────────────
 
     [Header("Cut SFX")]
     public AudioClip stemCutPrimary;
@@ -66,106 +161,306 @@ public class CuttingPlaneController : MonoBehaviour
     public FluidSquirter petalFluidPlane;
 
     [Header("Gore Control")]
-    [Range(0f, 1f)] public float goreIntensity = 1f;
+    [Range(0f, 1f)]
+    [Tooltip("0 disables fluid feedback; 1 is full intensity.")]
+    public float goreIntensity = 1f;
+
+    // ─────────────────────────────────────────────────────────────
+    // Ownership gating
+    // ─────────────────────────────────────────────────────────────
+
+    [Header("Tool Ownership Gate (Pickup/Putdown)")]
+    [Tooltip("When false, plane control + cutting are disabled entirely (no scissors equipped).")]
+    [SerializeField] private bool _toolEnabled = false;
+
+    [Tooltip("If true, PlaneBehaviour.enabled is toggled alongside tool ownership.")]
+    public bool togglePlaneBehaviourWithTool = true;
+
+    // ─────────────────────────────────────────────────────────────
+    // Anti-accidental cut
+    // ─────────────────────────────────────────────────────────────
+
+    [Header("Anti-Accidental Cut (On Enable)")]
+    [Tooltip("Prevents an immediate cut when the tool is enabled (e.g., same click used to pick up scissors).")]
+    public bool preventInstantCutOnEnable = true;
+
+    [Tooltip("How long after enabling before cuts are allowed (seconds). Uses unscaled time.")]
+    public float cutArmDelay = 0.12f;
+
+    [Tooltip("If true, require the cut input to be released once after enable before cutting is allowed.")]
+    public bool requireReleaseAfterEnable = true;
+
+    // ─────────────────────────────────────────────────────────────
+    // Debug
+    // ─────────────────────────────────────────────────────────────
 
     [Header("Debug")]
     public bool debugLogs = false;
     public bool drawDetectionGizmo = true;
     public Color detectionGizmoColor = new Color(1f, 0f, 0f, 0.25f);
 
+    // ─────────────────────────────────────────────────────────────
+    // Internal state
+    // ─────────────────────────────────────────────────────────────
+
     private Transform _planeTransform;
 
-    // NonAlloc buffer (avoids per-cut allocations)
-    private const int HIT_BUFFER_SIZE = 64;
-    private readonly Collider[] _hitBuffer = new Collider[HIT_BUFFER_SIZE];
+    private float _authoredStartY;
+    private float _lockedX;
+    private float _lockedZ;
 
-    void Reset() => plane = GetComponent<PlaneBehaviour>();
+    private float _targetY;
+    private float _yVel;
 
-    void Awake()
+    private float _cutArmedAtTime = -999f;
+
+    /// <summary>
+    /// When true, we ignore cut input until the cut control is released once.
+    /// Used to prevent "pickup click" from immediately cutting.
+    /// </summary>
+    [SerializeField] private bool _suppressCutUntilRelease = false;
+
+    public bool IsToolEnabled => _toolEnabled;
+
+    private void Reset()
     {
-        if (plane == null) plane = GetComponentInChildren<PlaneBehaviour>();
+        plane = GetComponentInChildren<PlaneBehaviour>(true);
+    }
+
+    private void Awake()
+    {
+        if (plane == null) plane = GetComponentInChildren<PlaneBehaviour>(true);
         _planeTransform = plane != null ? plane.transform : transform;
-        if (minY > maxY) { float tmp = minY; minY = maxY; maxY = tmp; }
-        if (angleTiltController == null) angleTiltController = GetComponent<PlaneAngleTiltController>();
+
+        // Capture authored start pose at scene load.
+        CaptureAuthoredPoseForClampAndLock();
+
+        if (minYOffset > maxYOffset)
+        {
+            float tmp = minYOffset;
+            minYOffset = maxYOffset;
+            maxYOffset = tmp;
+        }
     }
 
-    void OnEnable()
+    private void Start()
     {
-        EnableAction(moveYAction);
-        EnableAction(pointerPositionAction);
-        EnableAction(cutAction);
+        // Enforce starting state consistently.
+        SetToolEnabled(_toolEnabled);
     }
 
-    void OnDisable()
+    private void OnEnable()
+    {
+        if (_toolEnabled)
+        {
+            EnableAction(moveYAction);
+            EnableAction(pointerPositionAction);
+            EnableAction(cutAction);
+        }
+    }
+
+    private void OnDisable()
     {
         DisableAction(moveYAction);
         DisableAction(pointerPositionAction);
         DisableAction(cutAction);
     }
 
-    void Update()
+    /// <summary>
+    /// Called by ScissorStation (or any pickup/putdown system).
+    /// When disabled, this controller stops moving the plane and stops cutting.
+    /// </summary>
+    public void SetToolEnabled(bool enabled)
     {
+        _toolEnabled = enabled;
+
+        if (togglePlaneBehaviourWithTool && plane != null)
+            plane.enabled = enabled;
+
+        if (enabled)
+        {
+            // Re-capture start pose at equip time so whatever you authored *now* becomes the clamp anchor.
+            CaptureAuthoredPoseForClampAndLock();
+
+            EnableAction(moveYAction);
+            EnableAction(pointerPositionAction);
+            EnableAction(cutAction);
+
+            if (preventInstantCutOnEnable)
+                _cutArmedAtTime = Time.unscaledTime + Mathf.Max(0f, cutArmDelay);
+
+            if (requireReleaseAfterEnable)
+                _suppressCutUntilRelease = true;
+
+            // Optional: reset scissors visuals/cooldown so we don't snap shut on pickup.
+            if (scissorsVisuals != null)
+                scissorsVisuals.ResetCooldown();
+
+            if (debugLogs)
+                Debug.Log($"[CuttingPlaneController] ToolEnabled → true (startY={_authoredStartY:0.###}, lockXZ=({_lockedX:0.###},{_lockedZ:0.###}), armedAt={_cutArmedAtTime:0.###})", this);
+        }
+        else
+        {
+            DisableAction(moveYAction);
+            DisableAction(pointerPositionAction);
+            DisableAction(cutAction);
+
+            _suppressCutUntilRelease = false;
+
+            if (debugLogs)
+                Debug.Log("[CuttingPlaneController] ToolEnabled → false", this);
+        }
+    }
+
+    /// <summary>
+    /// Call immediately after enabling tool ownership to prevent the pickup click from cutting.
+    /// Cutting is blocked until the cut input is released once.
+    /// </summary>
+    public void SuppressCutUntilReleased()
+    {
+        _suppressCutUntilRelease = true;
+
+        if (debugLogs)
+            Debug.Log("[CuttingPlaneController] SuppressCutUntilReleased()", this);
+    }
+
+    private void Update()
+    {
+        if (!_toolEnabled) return;
         if (_planeTransform == null) return;
 
-        // --- MOVEMENT LOGIC ---
+        // ─────────────────────────────────────────────────────────────
+        // MOVEMENT: Y ONLY. X/Z LOCKED. THIS SCRIPT NEVER TOUCHES ROTATION.
+        // ─────────────────────────────────────────────────────────────
+
         bool useAxis = false;
-        bool usePointer = false;
+        bool useMouseDelta = false;
 
         switch (controlMode)
         {
             case ControlMode.KeyboardWASD: useAxis = true; break;
-            case ControlMode.MouseOnly: usePointer = true; break;
-            case ControlMode.MouseAndKeyboard: useAxis = true; usePointer = true; break;
+            case ControlMode.MouseOnly: useMouseDelta = true; break;
+            case ControlMode.MouseAndKeyboard: useAxis = true; useMouseDelta = true; break;
             case ControlMode.Gamepad: useAxis = true; break;
-            case ControlMode.Touchscreen: usePointer = true; break;
+            case ControlMode.Touchscreen: useMouseDelta = true; break;
         }
 
-        bool tiltLockActive = disableYMovementWhenAngleTiltActive && angleTiltController != null && angleTiltController.TiltModeActive;
-        Vector3 pos = _planeTransform.position;
-
-        if (useAxis && !tiltLockActive)
+        // Axis-based Y movement (optional)
+        if (useAxis)
         {
             float axis = ReadAxis(moveYAction);
             if (Mathf.Abs(axis) > 0.0001f)
-                pos.y += axis * axisMoveSpeed * Time.deltaTime;
+                _targetY += axis * axisMoveSpeed * Time.deltaTime;
         }
 
-        if (usePointer && useMouseHeight && !tiltLockActive &&
-            pointerPositionAction != null && pointerPositionAction.action != null && pointerPositionAction.action.enabled)
+        // Mouse vertical delta -> Y movement (optional)
+        if (useMouseDelta && useMouseHeight)
         {
-            Vector2 screenPos = pointerPositionAction.action.ReadValue<Vector2>();
-            float screenHeight = Mathf.Max(1f, Screen.height);
-            float t = Mathf.Clamp01(screenPos.y / screenHeight);
-            float targetY = Mathf.Lerp(minY, maxY, t);
-            pos.y = Mathf.Lerp(pos.y, targetY, mouseFollowSpeed * Time.deltaTime);
+            float dy = 0f;
+
+            // Prefer New Input System mouse delta
+            if (Mouse.current != null)
+                dy = Mouse.current.delta.ReadValue().y;
+            else
+                dy = Input.GetAxisRaw("Mouse Y"); // fallback
+
+            float mult = (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed) ? fastMultiplier : 1f;
+            float accel = 1f + Mathf.Abs(dy) * accelPerPixel;
+
+            _targetY += dy * mouseYWorldPerPixel * mult * accel;
         }
 
-        pos.y = Mathf.Clamp(pos.y, minY, maxY);
+        // Clamp relative to authored pose (prevents drift and snaps)
+        float minY = _authoredStartY + minYOffset;
+        float maxY = _authoredStartY + maxYOffset;
+        _targetY = Mathf.Clamp(_targetY, minY, maxY);
+
+        // Smooth glide
+        Vector3 pos = _planeTransform.position;
+        pos.x = _lockedX;
+        pos.z = _lockedZ;
+        pos.y = Mathf.SmoothDamp(pos.y, _targetY, ref _yVel, ySmoothTime);
         _planeTransform.position = pos;
 
-        // --- CUT LOGIC ---
-        if (cutAction != null && cutAction.action != null && cutAction.action.WasPerformedThisFrame())
+        // ─────────────────────────────────────────────────────────────
+        // CUT LOGIC
+        // ─────────────────────────────────────────────────────────────
+
+        if (cutAction?.action == null || !cutAction.action.enabled)
+            return;
+
+        // UI block
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        // (1) Arm delay
+        if (preventInstantCutOnEnable && Time.unscaledTime < _cutArmedAtTime)
+            return;
+
+        // (2) Release latch
+        if (_suppressCutUntilRelease)
         {
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
-            if (plane == null || !plane.enabled) return;
-
-            if (scissorsVisuals != null && scissorsVisuals.AttemptSnip() == false)
-                return;
-
-            // 1) Perform the actual cut first (so effects match reality)
-            plane.Cut();
-
-            // 2) Now resolve what we actually cut and fire feedback
-            HandleCutEffects_AfterCut();
+            bool pressed = cutAction.action.IsPressed();
+            if (!pressed)
+            {
+                _suppressCutUntilRelease = false;
+                if (debugLogs) Debug.Log("[CuttingPlaneController] Cut released → cuts re-enabled", this);
+            }
+            return;
         }
+
+        // Only cut on a fresh press this frame.
+        if (!cutAction.action.WasPerformedThisFrame())
+            return;
+
+        if (plane == null || !plane.enabled)
+        {
+            if (debugLogs) Debug.LogWarning("[CuttingPlaneController] Cut ignored: PlaneBehaviour missing/disabled.", this);
+            return;
+        }
+
+        // Scissors cooldown/animation gate
+        if (scissorsVisuals != null && scissorsVisuals.AttemptSnip() == false)
+            return;
+
+        HandleCutEffects();
+        plane.Cut();
     }
 
-    void EnableAction(InputActionReference actionRef) { if (actionRef?.action != null && !actionRef.action.enabled) actionRef.action.Enable(); }
-    void DisableAction(InputActionReference actionRef) { if (actionRef?.action != null && actionRef.action.enabled) actionRef.action.Disable(); }
+    private void CaptureAuthoredPoseForClampAndLock()
+    {
+        if (_planeTransform == null) return;
 
-    float ReadAxis(InputActionReference actionRef)
+        Vector3 p = _planeTransform.position;
+
+        _authoredStartY = p.y;
+        _lockedX = p.x;
+        _lockedZ = p.z;
+
+        _targetY = p.y;
+        _yVel = 0f;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Input helpers
+    // ─────────────────────────────────────────────────────────────
+
+    private void EnableAction(InputActionReference actionRef)
+    {
+        if (actionRef?.action != null && !actionRef.action.enabled)
+            actionRef.action.Enable();
+    }
+
+    private void DisableAction(InputActionReference actionRef)
+    {
+        if (actionRef?.action != null && actionRef.action.enabled)
+            actionRef.action.Disable();
+    }
+
+    private float ReadAxis(InputActionReference actionRef)
     {
         if (actionRef?.action == null || !actionRef.action.enabled) return 0f;
+
         var action = actionRef.action;
         if (action.activeValueType == typeof(float)) return action.ReadValue<float>();
         if (action.activeValueType == typeof(Vector2)) return action.ReadValue<Vector2>().y;
@@ -173,161 +468,91 @@ public class CuttingPlaneController : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────────────────────
-    // EFFECTS (AFTER the cut)
+    // Cut feedback
     // ─────────────────────────────────────────────────────────────
 
-    void HandleCutEffects_AfterCut()
+    private void HandleCutEffects()
     {
         if (_planeTransform == null) return;
 
-        bool hasAnySfx = stemCutPrimary || stemCutSecondary || leafCutPrimary || leafCutSecondary || petalCutPrimary || petalCutSecondary;
+        bool hasAnySfx =
+            stemCutPrimary || stemCutSecondary ||
+            leafCutPrimary || leafCutSecondary ||
+            petalCutPrimary || petalCutSecondary;
+
         if (!hasAnySfx && goreIntensity <= 0f) return;
 
-        Vector3 planePos = _planeTransform.position;
-        Vector3 planeNormal = _planeTransform.forward; // your "cut direction"
-
-        // Overlap volume centered on plane
+        Vector3 center = _planeTransform.position;
         Vector3 halfExtents = new Vector3(cutSenseLength * 0.5f, cutSenseRadius, cutSenseRadius);
         Quaternion rotation = _planeTransform.rotation;
 
-        int hitCount = Physics.OverlapBoxNonAlloc(
-            planePos,
-            halfExtents,
-            _hitBuffer,
-            rotation,
-            cutDetectionMask,
-            QueryTriggerInteraction.Ignore);
+        Collider[] hits = Physics.OverlapBox(center, halfExtents, rotation, cutDetectionMask, QueryTriggerInteraction.Ignore);
 
-        if (hitCount <= 0)
+        if (hits == null || hits.Length == 0)
         {
-            // Nothing detected -> generic feedback only
-            PlayCutDual(stemCutPrimary, stemCutSecondary, stemSecondaryDelay);
-            TriggerPlaneFluid(genericFluidPlane, planePos, planeNormal);
+            TriggerFluid(genericFluidPlane, null);
             return;
         }
 
-        // Choose the closest valid target to the plane position, with priority rules.
-        CutHitKind bestKind = CutHitKind.None;
-        Collider bestCol = null;
-        float bestDistSq = float.MaxValue;
+        Collider leafCol = null, petalCol = null, stemCol = null;
 
-        // We track best candidate per kind, then choose by priority with distance sanity
-        Collider bestStem = null, bestLeaf = null, bestPetal = null;
-        float bestStemD = float.MaxValue, bestLeafD = float.MaxValue, bestPetalD = float.MaxValue;
-
-        for (int i = 0; i < hitCount; i++)
+        foreach (var col in hits)
         {
-            var col = _hitBuffer[i];
             if (col == null) continue;
 
-            // Compute distance to plane center using closest point
-            Vector3 cp = col.ClosestPoint(planePos);
-            float d = (cp - planePos).sqrMagnitude;
-
-            // Classify
             var part = col.GetComponentInParent<FlowerPartRuntime>();
+            var stem = col.GetComponentInParent<FlowerStemRuntime>();
+
             if (part != null)
             {
-                if (part.kind == FlowerPartKind.Leaf)
-                {
-                    if (d < bestLeafD) { bestLeafD = d; bestLeaf = col; }
-                }
-                else if (part.kind == FlowerPartKind.Petal)
-                {
-                    if (d < bestPetalD) { bestPetalD = d; bestPetal = col; }
-                }
-                continue;
+                if (part.kind == FlowerPartKind.Leaf) leafCol = col;
+                else if (part.kind == FlowerPartKind.Petal) petalCol = col;
             }
-
-            // Stem: prefer real stem runtime markers (or stem runtime in parents)
-            var stem = col.GetComponentInParent<FlowerStemRuntime>();
-            if (stem != null)
+            else if (stem != null)
             {
-                if (d < bestStemD) { bestStemD = d; bestStem = col; }
-                continue;
+                if (stemCol == null) stemCol = col;
             }
-
-            // fallback tags (only if your project still uses them)
-            if (col.CompareTag("Stem"))
+            else
             {
-                if (d < bestStemD) { bestStemD = d; bestStem = col; }
-            }
-            else if (col.CompareTag("Leaf"))
-            {
-                if (d < bestLeafD) { bestLeafD = d; bestLeaf = col; }
-            }
-            else if (col.CompareTag("Petal"))
-            {
-                if (d < bestPetalD) { bestPetalD = d; bestPetal = col; }
+                // Legacy tag fallback if needed
+                if (stemCol == null && col.CompareTag("Stem")) stemCol = col;
+                else if (leafCol == null && col.CompareTag("Leaf")) leafCol = col;
+                else if (petalCol == null && col.CompareTag("Petal")) petalCol = col;
             }
         }
 
-        // Final selection:
-        // - If we have a stem candidate, take it UNLESS it's much farther than leaf/petal (prevents grazing stem from overriding a clear leaf cut).
-        const float STEM_DISTANCE_OVERRIDE_FACTOR = 4f; // tweak: higher = stem wins more often
+        CutHitKind kind = CutHitKind.None;
+        Collider chosen = null;
 
-        if (bestStem != null)
+        if (stemCol != null) { kind = CutHitKind.Stem; chosen = stemCol; }
+        else if (leafCol != null) { kind = CutHitKind.Leaf; chosen = leafCol; }
+        else if (petalCol != null) { kind = CutHitKind.Petal; chosen = petalCol; }
+
+        switch (kind)
         {
-            float minNonStem = Mathf.Min(bestLeafD, bestPetalD);
-            bool stemClearlyTooFar = (minNonStem < float.MaxValue) && (bestStemD > minNonStem * STEM_DISTANCE_OVERRIDE_FACTOR);
-
-            if (!stemClearlyTooFar)
-            {
-                bestKind = CutHitKind.Stem;
-                bestCol = bestStem;
-                bestDistSq = bestStemD;
-            }
-        }
-
-        if (bestKind == CutHitKind.None && bestLeaf != null)
-        {
-            bestKind = CutHitKind.Leaf;
-            bestCol = bestLeaf;
-            bestDistSq = bestLeafD;
-        }
-
-        if (bestKind == CutHitKind.None && bestPetal != null)
-        {
-            bestKind = CutHitKind.Petal;
-            bestCol = bestPetal;
-            bestDistSq = bestPetalD;
-        }
-
-        // Compute final hit point from chosen collider
-        Vector3 hitPoint = (bestCol != null) ? bestCol.ClosestPoint(planePos) : planePos;
-
-        if (debugLogs)
-            Debug.Log($"[CutEffects] kind={bestKind} col={(bestCol ? bestCol.name : "null")} distSq={bestDistSq:F6} hitPoint={hitPoint}", bestCol);
-
-        // Fire SFX + Plane fluid at hit point
-        switch (bestKind)
-        {
-            case CutHitKind.Stem:
-                PlayCutDual(stemCutPrimary, stemCutSecondary, stemSecondaryDelay);
-                TriggerPlaneFluid(stemFluidPlane, hitPoint, planeNormal);
-                break;
-
             case CutHitKind.Leaf:
                 PlayCutDual(leafCutPrimary, leafCutSecondary, leafSecondaryDelay);
-                TriggerPlaneFluid(leafFluidPlane, hitPoint, planeNormal);
+                TriggerFluid(leafFluidPlane, chosen);
                 break;
 
             case CutHitKind.Petal:
                 PlayCutDual(petalCutPrimary, petalCutSecondary, petalSecondaryDelay);
-                TriggerPlaneFluid(petalFluidPlane, hitPoint, planeNormal);
+                TriggerFluid(petalFluidPlane, chosen);
+                break;
+
+            case CutHitKind.Stem:
+                PlayCutDual(stemCutPrimary, stemCutSecondary, stemSecondaryDelay);
+                TriggerFluid(stemFluidPlane, chosen);
                 break;
 
             default:
                 PlayCutDual(stemCutPrimary, stemCutSecondary, stemSecondaryDelay);
-                TriggerPlaneFluid(genericFluidPlane, hitPoint, planeNormal);
+                TriggerFluid(genericFluidPlane, chosen);
                 break;
         }
-
-        // Clear buffer refs (not required, but helps debugging / avoids holding dead refs)
-        for (int i = 0; i < hitCount; i++) _hitBuffer[i] = null;
     }
 
-    void PlayCutDual(AudioClip first, AudioClip second, float delay)
+    private void PlayCutDual(AudioClip first, AudioClip second, float delay)
     {
         if (AudioManager.Instance == null || (first == null && second == null)) return;
 
@@ -337,27 +562,37 @@ public class CuttingPlaneController : MonoBehaviour
             AudioManager.Instance.PlaySFX(first);
     }
 
-    void TriggerPlaneFluid(FluidSquirter planeSquirter, Vector3 pos, Vector3 normal)
+    private void TriggerFluid(FluidSquirter planeSquirter, Collider exampleCol)
     {
         float intensity = Mathf.Clamp01(goreIntensity);
         if (intensity <= 0f) return;
 
         if (planeSquirter != null)
-            planeSquirter.Squirt(intensity, pos, normal.normalized);
+            planeSquirter.Squirt(intensity, _planeTransform.position, _planeTransform.forward);
+
+        if (exampleCol != null)
+        {
+            var squirters = exampleCol.GetComponentsInParent<FluidSquirter>();
+            if (squirters != null && squirters.Length > 0)
+            {
+                Vector3 hitPoint = exampleCol.ClosestPoint(_planeTransform.position);
+                Vector3 hitNormal = exampleCol.transform.up;
+
+                foreach (var fs in squirters)
+                    if (fs != null && fs != planeSquirter)
+                        fs.Squirt(intensity, hitPoint, hitNormal);
+            }
+        }
     }
 
 #if UNITY_EDITOR
-    void OnDrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.cyan;
-        Vector3 pMin = transform.position; Vector3 pMax = transform.position;
-        pMin.y = minY; pMax.y = maxY;
-        Gizmos.DrawLine(pMin, pMax);
-
         if (!drawDetectionGizmo) return;
 
         Transform t = Application.isPlaying && plane != null ? plane.transform : transform;
         Gizmos.color = detectionGizmoColor;
+
         Matrix4x4 prev = Gizmos.matrix;
         Gizmos.matrix = Matrix4x4.TRS(t.position, t.rotation, Vector3.one);
         Gizmos.DrawCube(Vector3.zero, new Vector3(cutSenseLength, cutSenseRadius * 2f, cutSenseRadius * 2f));

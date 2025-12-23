@@ -1,4 +1,31 @@
+/**
+ * @file MotionJitter.cs
+ * @brief MotionJitter script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup ui
+ */
+
 using UnityEngine;
+/**
+ * @class MotionJitter
+ * @brief MotionJitter component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup ui
+ */
 
 public class MotionJitter : MonoBehaviour
 {
@@ -10,7 +37,7 @@ public class MotionJitter : MonoBehaviour
 
     [Header("Control")]
     public InputMode inputMode = InputMode.ObjectPosition;
-    
+
     [Header("Noise Settings")]
     [Tooltip("How 'zoomed in' the noise map is. \nLow (0.1) = Smooth wobbles. \nHigh (50) = Chaotic static.")]
     public float noiseFrequency = 10f;
@@ -57,10 +84,10 @@ public class MotionJitter : MonoBehaviour
         {
             // Use Mouse Position (Normalized 0-1 to be resolution independent)
             coord = new Vector2(
-                Input.mousePosition.x / Screen.width, 
+                Input.mousePosition.x / Screen.width,
                 Input.mousePosition.y / Screen.height
             );
-            
+
             // Multiply by aspect ratio to keep noise square
             coord.x *= (float)Screen.width / Screen.height;
         }
@@ -70,19 +97,19 @@ public class MotionJitter : MonoBehaviour
 
         // 2. Calculate Deterministic Noise
         // We subtract 0.5 to make the range -0.5 to 0.5 (centering the distortion)
-        
+
         // Position Noise
         float noiseX = (Mathf.PerlinNoise(coord.x + seedX, coord.y + seedX) - 0.5f) * 2f;
         float noiseY = (Mathf.PerlinNoise(coord.x + seedY, coord.y + seedY) - 0.5f) * 2f;
-        
+
         // Rotation Noise
         float noiseRot = (Mathf.PerlinNoise(coord.x + seedRot, coord.y + seedRot) - 0.5f) * 2f;
-        
+
         // Scale Noise
         float noiseScaleVal = (Mathf.PerlinNoise(coord.x + seedScale, coord.y + seedScale) - 0.5f) * 2f;
 
         // 3. Apply to Transform
-        
+
         // Apply Position
         Vector3 posOffset = new Vector3(noiseX * positionStrength, noiseY * positionStrength, 0f);
         transform.localPosition = initialLocalPos + posOffset;
@@ -94,8 +121,8 @@ public class MotionJitter : MonoBehaviour
         // Apply Scale
         float scaleMod = 1f + (noiseScaleVal * scaleStrength);
         transform.localScale = new Vector3(
-            initialScale.x * scaleMod, 
-            initialScale.y * scaleMod, 
+            initialScale.x * scaleMod,
+            initialScale.y * scaleMod,
             initialScale.z
         );
     }

@@ -1,6 +1,33 @@
+/**
+ * @file TextDissolveButton.cs
+ * @brief TextDissolveButton script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup ui
+ */
+
 using UnityEngine;
 using TMPro;
 using UnityEngine.EventSystems;
+/**
+ * @class TextDissolveButton
+ * @brief TextDissolveButton component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup ui
+ */
 
 public class TextDissolveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -9,7 +36,7 @@ public class TextDissolveButton : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     [Header("Blur / Softness")]
     [Range(0f, 1f)] public float normalSoftness = 0f;
-    [Range(0f, 1f)] public float blurredSoftness = 1f; 
+    [Range(0f, 1f)] public float blurredSoftness = 1f;
 
     [Header("Dissolve / Dilate")]
     [Range(-1f, 1f)] public float normalDilate = 0f;

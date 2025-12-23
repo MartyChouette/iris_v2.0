@@ -1,3 +1,12 @@
+/**
+ * @file SoftStemAnchor.cs
+ * @brief SoftStemAnchor script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup flowers_runtime
+ */
+
 using UnityEngine;
 
 /// <summary>
@@ -15,6 +24,24 @@ using UnityEngine;
 /// - The held stem Rigidbody still uses gravity; the joint prevents free-fall.
 /// </summary>
 [DisallowMultipleComponent]
+/**
+ * @class SoftStemAnchor
+ * @brief SoftStemAnchor component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup flowers_runtime
+ */
 public class SoftStemAnchor : MonoBehaviour
 {
     [Header("World Anchor")]
@@ -78,6 +105,8 @@ public class SoftStemAnchor : MonoBehaviour
         {
             var go = new GameObject($"{name}_WorldAnchor");
             go.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor; // keeps scene cleaner
+
+            // IMPORTANT: world-space. Do NOT parent it.
             go.transform.position = (defaultAnchorPoint != null) ? defaultAnchorPoint.position : transform.position;
             go.transform.rotation = Quaternion.identity;
 
@@ -106,12 +135,15 @@ public class SoftStemAnchor : MonoBehaviour
     /// Soft-anchors the held stem rigidbody so it can sway but not fall.
     /// Call this AFTER a cut once you have identified which stem piece is the held/top piece.
     /// </summary>
-    /// <param name="heldStem">The stem piece rigidbody you want to remain attached.</param>
-    /// <param name="anchorWorldPoint">World-space point to anchor around (often base of flower/vase point).</param>
     public void AnchorHeldStem(Rigidbody heldStem, Vector3 anchorWorldPoint)
     {
         EnsureAnchor();
         if (_anchorRb == null || heldStem == null) return;
+
+        // IMPORTANT: Move the anchor RB to the target world point.
+        // This makes connectedAnchor stable (0,0,0) and avoids sag/jitter.
+        worldAnchorTransform.position = anchorWorldPoint;
+        worldAnchorTransform.rotation = Quaternion.identity;
 
         // Remove any previous anchor joints on this held stem
         RemoveAnchorJoints(heldStem);
@@ -121,9 +153,12 @@ public class SoftStemAnchor : MonoBehaviour
         cj.connectedBody = _anchorRb;
         cj.autoConfigureConnectedAnchor = false;
 
-        // Anchor at a specific world point (stable, predictable)
-        cj.anchor = heldStem.transform.InverseTransformPoint(anchorWorldPoint);
-        cj.connectedAnchor = _anchorRb.transform.InverseTransformPoint(anchorWorldPoint);
+        // CRITICAL FIX:
+        // Pin the closest point on the held chunk to the anchor, not a point the chunk may not contain post-cut.
+        Vector3 heldAttachWorld = ClosestPointOnBody(heldStem, anchorWorldPoint);
+
+        cj.anchor = heldStem.transform.InverseTransformPoint(heldAttachWorld);
+        cj.connectedAnchor = Vector3.zero;
 
         // Limited linear sway
         cj.xMotion = ConfigurableJointMotion.Limited;
@@ -161,7 +196,7 @@ public class SoftStemAnchor : MonoBehaviour
         }
 
         if (debugLogs)
-            Debug.Log($"[SoftStemAnchor] Anchored held stem '{heldStem.name}' at {anchorWorldPoint}", heldStem);
+            Debug.Log($"[SoftStemAnchor] Anchored held stem '{heldStem.name}' attach@{heldAttachWorld} -> target@{anchorWorldPoint}", heldStem);
     }
 
     /// <summary>
@@ -175,6 +210,35 @@ public class SoftStemAnchor : MonoBehaviour
 
         if (debugLogs)
             Debug.Log($"[SoftStemAnchor] Released stem '{rb.name}'", rb);
+    }
+
+    private Vector3 ClosestPointOnBody(Rigidbody rb, Vector3 worldPos)
+    {
+        if (rb == null) return worldPos;
+
+        var cols = rb.GetComponentsInChildren<Collider>(true);
+        if (cols != null && cols.Length > 0)
+        {
+            Vector3 best = rb.worldCenterOfMass;
+            float bestDistSq = float.MaxValue;
+
+            for (int i = 0; i < cols.Length; i++)
+            {
+                var c = cols[i];
+                if (c == null) continue;
+
+                Vector3 p = c.ClosestPoint(worldPos);
+                float d = (p - worldPos).sqrMagnitude;
+                if (d < bestDistSq)
+                {
+                    bestDistSq = d;
+                    best = p;
+                }
+            }
+            return best;
+        }
+
+        return rb.worldCenterOfMass;
     }
 
     private void RemoveAnchorJoints(Rigidbody rb)

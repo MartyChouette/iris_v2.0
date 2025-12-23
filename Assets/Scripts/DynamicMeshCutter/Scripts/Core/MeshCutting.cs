@@ -1,10 +1,37 @@
-﻿using UnityEngine;
+﻿/**
+ * @file MeshCutting.cs
+ * @brief MeshCutting script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup thirdparty
+ */
+
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System;
 
 namespace DynamicMeshCutter
 {
+    /**
+     * @class MeshCutting
+     * @brief MeshCutting component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class MeshCutting
     {
         class InternalData
@@ -40,7 +67,7 @@ namespace DynamicMeshCutter
             VirtualMesh targetVirtualMesh = info.TargetVirtualMesh;
 
             //fill in uvs if missing
-            if(targetVirtualMesh.UVs.Length == 0)
+            if (targetVirtualMesh.UVs.Length == 0)
             {
                 targetVirtualMesh.FillUVs();
             }
@@ -96,7 +123,7 @@ namespace DynamicMeshCutter
                 data.Sides[i].SubIndices.Add(new List<int>());
             }
 
-            CreateFaces(data,ref info);
+            CreateFaces(data, ref info);
 
             int[] size = new int[2];
             VirtualMesh[][] separatedMeshes = new VirtualMesh[2][];
@@ -111,7 +138,7 @@ namespace DynamicMeshCutter
             //capture which side the meshes belong to
             //assign top or bottom to targets
             info.Sides = new int[meshes.Length];
-            info.BT  = new int[meshes.Length];
+            info.BT = new int[meshes.Length];
             int topSide = info.Plane.WorldNormal.y < 0 ? 1 : 0;
             for (int i = 0; i < meshes.Length; i++)
             {
@@ -160,7 +187,7 @@ namespace DynamicMeshCutter
                 {
                     vertices[side, 1] = data.MeshTarget.Vertices[index];
                     normals[side, 1] = data.MeshTarget.Normals[index];
-                        uvs[side, 1] = data.MeshTarget.UVs[index];
+                    uvs[side, 1] = data.MeshTarget.UVs[index];
                     if (hasBoneWeights)
                         boneweights[side, 1] = data.MeshTarget.BoneWeights[index];
                     if (doDynamicRagdoll)
@@ -179,7 +206,7 @@ namespace DynamicMeshCutter
                 {
                     if (rd[0, i] == rd[1, i])
                     {
-                        part = rd[0,i];
+                        part = rd[0, i];
                         break;
                     }
                 }
@@ -241,7 +268,7 @@ namespace DynamicMeshCutter
                         new Vector3[] { normals[i, 0], normals[2, 0], normals[2, 1] },
                         new Vector2[] { uvs[i, 0], uvs[2, 0], uvs[2, 1] },
                         new BoneWeight[] { boneweights[i, 0], boneweights[2, 0], boneweights[2, 1] },
-                        new int[] {rd[i,0],rd[2,0],rd[2,1]},
+                        new int[] { rd[i, 0], rd[2, 0], rd[2, 1] },
                         normals[2, 0],
                         submesh
                         );
@@ -294,8 +321,8 @@ namespace DynamicMeshCutter
 
                         fVertices.Add(data.AddedVertices[index]);
                         if (hasBoneWeights)
-                            fBoneWeights.Add(data.AddedBoneweights[index]); 
-                        
+                            fBoneWeights.Add(data.AddedBoneweights[index]);
+
                     }
 
                     bool loopIsCompleted = false;
@@ -330,7 +357,7 @@ namespace DynamicMeshCutter
                         }
                     }
 
-                    FillFace(data, fVertices, fBoneWeights,ref info);
+                    FillFace(data, fVertices, fBoneWeights, ref info);
                 }
             }
             catch (ArgumentOutOfRangeException e)
@@ -398,7 +425,7 @@ namespace DynamicMeshCutter
                             new Vector3[] { sign * data.Plane.LocalNormal, sign * data.Plane.LocalNormal, sign * data.Plane.LocalNormal },
                             new Vector2[] { uv[0], uv[1], new Vector2(0.5f, 0.5f) },
                             boneweights,
-                            new int[] {-1,-1,-1}, //for now we ignore collider part of the newly added face vertices
+                            new int[] { -1, -1, -1 }, //for now we ignore collider part of the newly added face vertices
                             sign * data.Plane.LocalNormal,
                             data.Sides[j].SubIndices.Count - 1);
                 }
@@ -409,7 +436,7 @@ namespace DynamicMeshCutter
         {
             Vector3 center = new Vector3();
             int length = fVertices.Count;
-            for(int i =0;i<length;i++)
+            for (int i = 0; i < length; i++)
             {
                 center += fVertices[i];
             }
@@ -438,25 +465,25 @@ namespace DynamicMeshCutter
             for (int i = 0; i < length; i++)
                 total += sorted[i].Value;
 
-            if(length > 0)
+            if (length > 0)
             {
                 center.boneIndex0 = sorted[0].Key;
-                center.weight0 = sorted[0].Value/ total;
+                center.weight0 = sorted[0].Value / total;
             }
             if (length > 1)
             {
                 center.boneIndex1 = sorted[1].Key;
-                center.weight1 = sorted[1].Value/ total;
+                center.weight1 = sorted[1].Value / total;
             }
             if (length > 2)
             {
                 center.boneIndex2 = sorted[2].Key;
-                center.weight2 = sorted[2].Value/ total;
+                center.weight2 = sorted[2].Value / total;
             }
             if (length > 3)
             {
                 center.boneIndex3 = sorted[3].Key;
-                center.weight3 = sorted[3].Value/ total;
+                center.weight3 = sorted[3].Value / total;
             }
 
             return center;

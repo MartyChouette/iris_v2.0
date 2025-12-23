@@ -1,13 +1,58 @@
-﻿using System.Collections;
+﻿/**
+ * @file FlowerSapController.cs
+ * @brief FlowerSapController script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup thirdparty
+ */
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Obi;
+/**
+ * @class FlowerSapController
+ * @brief FlowerSapController component.
+ * @details
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup thirdparty
+ */
 
 public class FlowerSapController : MonoBehaviour
 {
     public static FlowerSapController Instance;
 
     [System.Serializable]
+    /**
+     * @class SapBurstProfile
+     * @brief SapBurstProfile component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup thirdparty
+     */
     public class SapBurstProfile
     {
         public float speed = 10f;

@@ -698,7 +698,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 916530389}
-  - component: {fileID: 916530388}
+  - component: {fileID: 916530390}
   m_Layer: 0
   m_Name: MusicPlayer
   m_TagString: Untagged
@@ -706,18 +706,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &916530388
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 916530387}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b1a04a14270606498738797f05de57b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
 --- !u!4 &916530389
 Transform:
   m_ObjectHideFlags: 0
@@ -734,6 +722,25 @@ Transform:
   - {fileID: 1994377511}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &916530390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 916530387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d29f9c3f49e251e4ea5b5aa311d0f188, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  sfxSource: {fileID: 0}
+  ambienceSource: {fileID: 0}
+  weatherSource: {fileID: 0}
+  musicSource: {fileID: 1994377512}
+  environmentSource: {fileID: 0}
+  uiSource: {fileID: 0}
+  debugLogs: 0
 --- !u!1 &924708456
 GameObject:
   m_ObjectHideFlags: 0

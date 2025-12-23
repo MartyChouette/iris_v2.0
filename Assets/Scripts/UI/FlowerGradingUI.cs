@@ -1,4 +1,36 @@
-﻿using System.Collections;
+﻿/**
+ * @file FlowerGradingUI.cs
+ * @brief End-of-session grading screen (happy/sad layouts, score/days/reason).
+ *
+ * @details
+ * Intent:
+ * - Presentation layer for end-of-session grading.
+ * - Subscribes to @ref FlowerSessionController.OnResult and displays:
+ *   score, days alive, and optional game-over reason.
+ *
+ * Subscription model:
+ * - If @ref session is null, attempts auto-find via FindFirstObjectByType on enable.
+ * - OnEnable subscribes; OnDisable unsubscribes (prevents duplicate listeners).
+ *
+ * Visibility model:
+ * - Uses a CanvasGroup root for fade-in.
+ * - Can either deactivate the root GameObject or simply hide it via alpha + raycast flags.
+ *
+ * Mood rule:
+ * - isGood := eval.scoreNormalized >= goodThresholdNormalized
+ * - happyRoot is enabled when isGood, sadRoot when not.
+ *
+ * Authoring gotchas:
+ * - If root CanvasGroup is missing, grading cannot show (logs warn).
+ * - Auto-find is convenient but brittle in multi-session scenes—prefer wiring in production.
+ *
+ * Performance:
+ * - Event-driven; no Update() work.
+ *
+ * @ingroup flowers_ui
+ */
+
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,13 +39,18 @@ using UnityEngine.UI;
 public class FlowerGradingUI : MonoBehaviour
 {
     [Header("Core References")]
-    [Tooltip("Session controller that drives this grading screen. If null, will try FindObjectOfType on enable.")]
+    [Tooltip("Session controller that drives this grading screen. If null, will try FindFirstObjectByType on enable.")]
     public FlowerSessionController session;
 
     [Header("Root Canvas Group")]
-    [Tooltip("CanvasGroup for the whole grading panel. If null, we'll try GetComponentInChildren on awake.")]
+    [Tooltip("CanvasGroup for the whole grading panel. If null, we'll try GetComponentInChildren on Awake.")]
     public CanvasGroup root;
+
+    [Min(0f)]
     public float fadeTime = 0.5f;
+
+    [Tooltip("If true, hide by disabling the root GameObject. If false, hide via CanvasGroup flags.")]
+    public bool disableRootGameObjectWhenHidden = true;
 
     [Header("Happy / Sad Layout")]
     [Tooltip("Shown when the score is above the good threshold.")]
@@ -46,27 +83,24 @@ public class FlowerGradingUI : MonoBehaviour
     [Header("Debug")]
     public bool debugLogs = true;
 
-    bool _visible;
+    private bool _visible;
+    private Coroutine _fadeRoutine;
 
     void Awake()
     {
         if (root == null)
         {
             root = GetComponentInChildren<CanvasGroup>(true);
+
             if (debugLogs)
             {
-                if (root != null)
-                    Debug.Log("[FlowerGradingUI] Auto-found CanvasGroup on " + root.gameObject.name, this);
-                else
-                    Debug.LogWarning("[FlowerGradingUI] No CanvasGroup assigned or found. Grading UI cannot show.", this);
+                if (root != null) Debug.Log("[FlowerGradingUI] Auto-found CanvasGroup on " + root.gameObject.name, this);
+                else Debug.LogWarning("[FlowerGradingUI] No CanvasGroup assigned or found. Grading UI cannot show.", this);
             }
         }
 
-        if (root != null)
-        {
-            root.gameObject.SetActive(false);
-            root.alpha = 0f;
-        }
+        // Start hidden
+        SetVisible(false, instant: true);
 
         if (happyRoot != null) happyRoot.SetActive(false);
         if (sadRoot != null) sadRoot.SetActive(false);
@@ -74,22 +108,21 @@ public class FlowerGradingUI : MonoBehaviour
 
     void OnEnable()
     {
-        // Auto-find session if not wired.
         if (session == null)
         {
             session = FindFirstObjectByType<FlowerSessionController>();
+
             if (debugLogs)
             {
-                if (session != null)
-                    Debug.Log("[FlowerGradingUI] Auto-found FlowerSessionController on " + session.gameObject.name, this);
-                else
-                    Debug.LogWarning("[FlowerGradingUI] No FlowerSessionController found in scene. OnResult will never fire.", this);
+                if (session != null) Debug.Log("[FlowerGradingUI] Auto-found FlowerSessionController on " + session.gameObject.name, this);
+                else Debug.LogWarning("[FlowerGradingUI] No FlowerSessionController found in scene. OnResult will never fire.", this);
             }
         }
 
         if (session != null)
         {
             session.OnResult.AddListener(OnResult);
+
             if (debugLogs)
                 Debug.Log("[FlowerGradingUI] Subscribed to session.OnResult.", this);
         }
@@ -100,6 +133,7 @@ public class FlowerGradingUI : MonoBehaviour
         if (session != null)
         {
             session.OnResult.RemoveListener(OnResult);
+
             if (debugLogs)
                 Debug.Log("[FlowerGradingUI] Unsubscribed from session.OnResult.", this);
         }
@@ -108,9 +142,7 @@ public class FlowerGradingUI : MonoBehaviour
     public void OnResult(FlowerGameBrain.EvaluationResult eval, int finalScore, int daysAlive)
     {
         if (debugLogs)
-        {
-            Debug.Log($"[FlowerGradingUI] OnResult received → gameOver={eval.isGameOver}, norm={eval.scoreNormalized:0.###}, score={finalScore}, days={daysAlive}", this);
-        }
+            Debug.Log($"[FlowerGradingUI] OnResult → gameOver={eval.isGameOver}, norm={eval.scoreNormalized:0.###}, score={finalScore}, days={daysAlive}", this);
 
         if (root == null)
         {
@@ -119,7 +151,6 @@ public class FlowerGradingUI : MonoBehaviour
             return;
         }
 
-        // Choose happy vs sad by normalized score.
         bool isGood = eval.scoreNormalized >= goodThresholdNormalized;
 
         if (happyRoot != null) happyRoot.SetActive(isGood);
@@ -165,7 +196,6 @@ public class FlowerGradingUI : MonoBehaviour
             }
         }
 
-        // Play jingle
         if (audioSource != null)
         {
             AudioClip clip = isGood ? happyClip : sadClip;
@@ -181,27 +211,64 @@ public class FlowerGradingUI : MonoBehaviour
 
     public void Show()
     {
-        if (root == null)
+        SetVisible(true, instant: false);
+    }
+
+    public void HideAndResume()
+    {
+        SetVisible(false, instant: true);
+        // If you pause time during grading, resume here.
+        // Time.timeScale = 1f;
+    }
+
+    private void SetVisible(bool visible, bool instant)
+    {
+        if (root == null) return;
+
+        if (_fadeRoutine != null)
         {
-            if (debugLogs)
-                Debug.LogWarning("[FlowerGradingUI] Show() called but root is null.", this);
+            StopCoroutine(_fadeRoutine);
+            _fadeRoutine = null;
+        }
+
+        _visible = visible;
+
+        if (disableRootGameObjectWhenHidden)
+        {
+            root.gameObject.SetActive(visible || !instant); // keep active if we want to fade in
+        }
+        else
+        {
+            // keep active always; just change group flags
+            root.gameObject.SetActive(true);
+            root.interactable = visible;
+            root.blocksRaycasts = visible;
+        }
+
+        if (instant || fadeTime <= 0f)
+        {
+            root.alpha = visible ? 1f : 0f;
+            if (disableRootGameObjectWhenHidden && !visible)
+                root.gameObject.SetActive(false);
             return;
         }
 
-        if (_visible)
+        // Coroutine safety: if not active, snap instead of crashing.
+        if (!isActiveAndEnabled)
+        {
+            root.alpha = visible ? 1f : 0f;
+            if (disableRootGameObjectWhenHidden && !visible)
+                root.gameObject.SetActive(false);
             return;
+        }
 
-        _visible = true;
-        root.gameObject.SetActive(true);
-
-        // If you want grading to pause gameplay, uncomment:
-        // Time.timeScale = 0f;
-
-        StartCoroutine(FadeIn());
+        _fadeRoutine = StartCoroutine(FadeIn());
     }
 
-    IEnumerator FadeIn()
+    private IEnumerator FadeIn()
     {
+        if (root == null) yield break;
+
         float t = 0f;
         root.alpha = 0f;
 
@@ -216,17 +283,7 @@ public class FlowerGradingUI : MonoBehaviour
 
         if (debugLogs)
             Debug.Log("[FlowerGradingUI] Fade-in complete.", this);
-    }
 
-    // Optional button hook to close grading and resume gameplay / return to menu.
-    public void HideAndResume()
-    {
-        if (root == null) return;
-
-        _visible = false;
-        root.gameObject.SetActive(false);
-
-        // If you paused time when showing, resume here:
-        // Time.timeScale = 1f;
+        _fadeRoutine = null;
     }
 }

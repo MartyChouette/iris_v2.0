@@ -140,7 +140,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -249,7 +249,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -288,8 +288,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &3194001333531021269
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -333,7 +333,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 1628754587527761475}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 5800299587405388797}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &7492235658829212847
@@ -491,7 +492,7 @@ GameObject:
   - component: {fileID: 1718005181657768284}
   - component: {fileID: 5032572837932663757}
   m_Layer: 0
-  m_Name: L_Shitty_Leaf_AttachmentPoint (1)
+  m_Name: L_Shitty_Leaf_AttachmentPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -720,6 +721,7 @@ GameObject:
   - component: {fileID: 6256741281800850820}
   - component: {fileID: 9209932559024027602}
   - component: {fileID: 5478573786529912572}
+  - component: {fileID: 8502340731955505136}
   m_Layer: 6
   m_Name: Daisy_Leaf_R
   m_TagString: Leaf
@@ -840,7 +842,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -889,13 +891,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 6355381525374448692}
-  maxDistance: 0.75
+  maxDistance: 0.86
   spring: 400
   damper: 30
   criteria: 3
   testSpace: 0
   armDelay: 0.05
-  breakForce: 40
+  breakForce: 42
   relativeSpeedThreshold: 6
   ownSpeedThreshold: 8
   absoluteTravelThreshold: 5
@@ -937,10 +939,10 @@ MonoBehaviour:
   minDamperMultiplier: 0.25
   maxDamperMultiplier: 1.5
   usePluckDwell: 1
-  pluckThresholdFraction: 0.8
+  pluckThresholdFraction: 0.869
   pluckDwellSeconds: 0.08
   breakOnReleaseFromHighStretch: 1
-  releasePopThresholdFraction: 0.4
+  releasePopThresholdFraction: 0.826
   onTensionChanged:
     m_PersistentCalls:
       m_Calls:
@@ -961,7 +963,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.511
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -999,9 +1001,9 @@ MonoBehaviour:
   dragAcceleration: 40
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
-  stemAttachPoint: {fileID: 4828255766170251400}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemAttachPoint: {fileID: 1352501571937741693}
+  stemTugRadius: 0.25
+  stemTugStrength: 0.65
 --- !u!114 &7045686175308527291
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1093,6 +1095,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
   isEngaged: 0
   passiveIntensity: 0.212
+--- !u!114 &8502340731955505136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1936289605034688899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cb6fed54ab3347458b2abfb2bebd624, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerBreathing
+  beatsPerMinute: 12
+  timeOffset: 0
+  stretchAxis: {x: 0, y: 0.1, z: 0}
+  stretchMagnitude: 0.1
+  moveDirection: {x: 0, y: 0, z: 0}
+  moveMagnitude: 0.05
+  preserveVolume: 1
+  pivotY: 0
+  stopWhenGrabbed: 1
+  preventJointBreak: 1
 --- !u!1 &2251916233482983160
 GameObject:
   m_ObjectHideFlags: 0
@@ -1233,7 +1257,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -1342,7 +1366,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -1381,8 +1405,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &5907422988725508060
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1426,7 +1450,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 6823781500025704228}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 5800299587405388797}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &8007149951546453373
@@ -1600,7 +1625,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -1709,7 +1734,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -1748,8 +1773,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &355153708228506309
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1793,7 +1818,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 8659145364963972383}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 5800299587405388797}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &4299003838253266396
@@ -1858,7 +1884,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2553351889821507379}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.47, z: 4.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1893,6 +1919,7 @@ MonoBehaviour:
   - {fileID: 3504304895239284939}
   - {fileID: 6355337009512234164}
   - {fileID: 2820261340297756472}
+  - {fileID: 3814808881036308770}
   lastWasGameOver: 1
   lastGameOverReason: 
   lastScoreNormalized: 0
@@ -1970,6 +1997,8 @@ MonoBehaviour:
   forcedGameOverSlowMoScale: 0.1
   forcedGameOverSlowMoDuration: 0.5
   sessionEnded: 0
+  endRequested: 0
+  allowKeyboardEvaluate: 0
 --- !u!114 &1886814295826702443
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2044,7 +2073,7 @@ MonoBehaviour:
   stemEnd: {fileID: 8062156348110857516}
   cutNormalRef: {fileID: 272389923787343692}
   referenceAxisLocal: {x: 0, y: 1, z: 0}
-  minAllowedCutY: 5
+  minAllowedCutY: 50
   lastCutHeight: -99999
 --- !u!114 &8416529037761675240
 MonoBehaviour:
@@ -2062,7 +2091,7 @@ MonoBehaviour:
   bottomConstraints: 126
   bottomUseGravity: 0
   bottomIsKinematic: 1
-  makeTopDynamic: 0
+  makeTopDynamic: 1
   topUseGravity: 1
   topConstraints: 126
 --- !u!114 &774424612799908584
@@ -2078,13 +2107,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoftStemAnchor
   worldAnchorTransform: {fileID: 0}
-  autoCreateAnchor: 1
+  autoCreateAnchor: 0
   defaultAnchorPoint: {fileID: 0}
   linearLimit: 0.03
-  spring: 3000
+  spring: 5
   damper: 150
-  maxForce: 10000
-  useProjection: 1
+  maxForce: 50
+  useProjection: 0
   projectionDistance: 0.02
   debugLogs: 0
 --- !u!1 &2943803626324101759
@@ -2330,7 +2359,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -2439,7 +2468,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -2478,8 +2507,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &7845373943500910774
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2523,7 +2552,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 6676004860495926607}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 5800299587405388797}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &3038287915688677552
@@ -2610,6 +2640,7 @@ GameObject:
   - component: {fileID: 2871311953870840889}
   - component: {fileID: 2890653080292129755}
   - component: {fileID: 2527592843234051131}
+  - component: {fileID: 1126909367328294833}
   m_Layer: 9
   m_Name: Front
   m_TagString: Untagged
@@ -2989,6 +3020,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
   mode: 1
+--- !u!114 &1126909367328294833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4077022668517999345}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cb6fed54ab3347458b2abfb2bebd624, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerBreathing
+  beatsPerMinute: 20
+  timeOffset: 0
+  stretchAxis: {x: 0, y: 1, z: 0}
+  stretchMagnitude: 0.1
+  moveDirection: {x: 0, y: 0, z: 0}
+  moveMagnitude: 0.05
+  preserveVolume: 1
+  pivotY: -0.5
+  stopWhenGrabbed: 1
+  preventJointBreak: 1
 --- !u!1 &4152715805218652263
 GameObject:
   m_ObjectHideFlags: 0
@@ -3428,7 +3481,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2641778875234352785}
-  - component: {fileID: 8385112881637450229}
   m_Layer: 9
   m_Name: Crown
   m_TagString: Crown
@@ -3453,33 +3505,6 @@ Transform:
   - {fileID: 3838565896577642775}
   m_Father: {fileID: 980246482983634666}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!54 &8385112881637450229
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4563357805002271528}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!1 &4784911634298555115
 GameObject:
   m_ObjectHideFlags: 0
@@ -3651,7 +3676,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -3760,7 +3785,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -3799,8 +3824,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &6198414558840626920
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3844,7 +3869,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 2007915581196771053}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 5800299587405388797}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &3444787427541628325
@@ -4018,7 +4044,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -4127,7 +4153,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -4166,8 +4192,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &1335618890179576679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4211,7 +4237,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 6378889382462006503}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 5800299587405388797}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &6169874832733504023
@@ -4447,7 +4474,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -4556,7 +4583,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -4595,8 +4622,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &1709208251656161120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4640,7 +4667,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 6809679190509031177}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 0}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &1222634309597033684
@@ -5552,6 +5580,7 @@ GameObject:
   - component: {fileID: 5955986978853814302}
   - component: {fileID: 8124414147144744270}
   - component: {fileID: 6748268980446703288}
+  - component: {fileID: 3717902603446221685}
   m_Layer: 6
   m_Name: Daisy_Leaf_L
   m_TagString: Leaf
@@ -5672,7 +5701,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -5721,13 +5750,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XYTetherJoint
   connectedBody: {fileID: 3035987800818884217}
-  maxDistance: 0.75
+  maxDistance: 0.86
   spring: 400
   damper: 30
   criteria: 3
   testSpace: 0
   armDelay: 0.05
-  breakForce: 40
+  breakForce: 42
   relativeSpeedThreshold: 6
   ownSpeedThreshold: 8
   absoluteTravelThreshold: 5
@@ -5768,11 +5797,11 @@ MonoBehaviour:
   maxSpringMultiplier: 1.5
   minDamperMultiplier: 0.25
   maxDamperMultiplier: 1.5
-  usePluckDwell: 0
-  pluckThresholdFraction: 0.8
+  usePluckDwell: 1
+  pluckThresholdFraction: 0.869
   pluckDwellSeconds: 0.08
-  breakOnReleaseFromHighStretch: 0
-  releasePopThresholdFraction: 0.4
+  breakOnReleaseFromHighStretch: 1
+  releasePopThresholdFraction: 0.811
   onTensionChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -5781,7 +5810,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.49
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -5820,7 +5849,7 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 4828255766170251400}
-  stemTugRadius: 0.2
+  stemTugRadius: 0.25
   stemTugStrength: 0.65
 --- !u!114 &2939410119628540888
 MonoBehaviour:
@@ -5913,6 +5942,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractionEngagement
   isEngaged: 0
   passiveIntensity: 0.181
+--- !u!114 &3717902603446221685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7399660993037628528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cb6fed54ab3347458b2abfb2bebd624, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerBreathing
+  beatsPerMinute: 12
+  timeOffset: 0
+  stretchAxis: {x: 0, y: 0.1, z: 0}
+  stretchMagnitude: 0.1
+  moveDirection: {x: 0, y: 0, z: 0}
+  moveMagnitude: 0.05
+  preserveVolume: 1
+  pivotY: 0
+  stopWhenGrabbed: 1
+  preventJointBreak: 1
 --- !u!1 &7582058476619742046
 GameObject:
   m_ObjectHideFlags: 0
@@ -6053,7 +6104,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -6162,7 +6213,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -6201,8 +6252,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &1973523578333089235
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6246,7 +6297,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 8115398959476041485}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 5800299587405388797}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &7661972324058958839
@@ -6482,7 +6534,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -6591,7 +6643,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -6630,8 +6682,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &3705799630750108221
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6675,7 +6727,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 1660365386017561267}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 5800299587405388797}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &408763927372654986
@@ -6729,6 +6782,7 @@ GameObject:
   - component: {fileID: 2820261340297756472}
   - component: {fileID: 6273958756821079862}
   - component: {fileID: 2375770427074189957}
+  - component: {fileID: 4258470288545793775}
   m_Layer: 3
   m_Name: Petals.009
   m_TagString: Petal
@@ -6849,7 +6903,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 520
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -6958,7 +7012,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 0
+  enableFluid: 1
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -6997,8 +7051,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 3313480212655941833}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.2
+  stemTugStrength: 0.45
 --- !u!114 &2251058729192771946
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7042,7 +7096,8 @@ MonoBehaviour:
   session: {fileID: 8642624063639431700}
   brain: {fileID: 7479550042126984047}
   xyJoint: {fileID: 7647817696482133021}
-  unityJoints: []
+  unityJoints:
+  - {fileID: 5800299587405388797}
   enableCrownYFailsafe: 1
   crownFailY: -1
 --- !u!114 &6273958756821079862
@@ -7076,6 +7131,28 @@ MonoBehaviour:
   partType: 1
   bleedPoint: {fileID: 4246075935674778875}
   sapController: {fileID: 0}
+--- !u!114 &4258470288545793775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8790841977314063535}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cb6fed54ab3347458b2abfb2bebd624, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerBreathing
+  beatsPerMinute: 20
+  timeOffset: 0
+  stretchAxis: {x: 0, y: 1, z: 0}
+  stretchMagnitude: 0.1
+  moveDirection: {x: 0, y: 0, z: 0}
+  moveMagnitude: 0.02
+  preserveVolume: 1
+  pivotY: -0.5
+  stopWhenGrabbed: 1
+  preventJointBreak: 1
 --- !u!1001 &4339827081173717002
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7096,9 +7173,41 @@ PrefabInstance:
       propertyPath: 'unityJoints.Array.data[0]'
       value: 
       objectReference: {fileID: 4501529432651808039}
+    - target: {fileID: 3274260996452533356, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: breakForce
+      value: 42
+      objectReference: {fileID: 0}
+    - target: {fileID: 3274260996452533356, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: maxDistance
+      value: 0.86
+      objectReference: {fileID: 0}
+    - target: {fileID: 3274260996452533356, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: connectedBody
+      value: 
+      objectReference: {fileID: 3932566777982157902}
+    - target: {fileID: 3274260996452533356, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: usePluckDwell
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3274260996452533356, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: pluckThresholdFraction
+      value: 0.869
+      objectReference: {fileID: 0}
+    - target: {fileID: 3274260996452533356, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: releasePopThresholdFraction
+      value: 0.789
+      objectReference: {fileID: 0}
+    - target: {fileID: 3274260996452533356, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: breakOnReleaseFromHighStretch
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5361662614469364547, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
       propertyPath: m_Name
       value: Shitty_Leaf
+      objectReference: {fileID: 0}
+    - target: {fileID: 5361662614469364547, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: m_TagString
+      value: Leaf
       objectReference: {fileID: 0}
     - target: {fileID: 5552232867321885460, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
       propertyPath: m_LocalPosition.x
@@ -7140,17 +7249,40 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -101.9
       objectReference: {fileID: 0}
+    - target: {fileID: 6659394840641134296, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: coupledStem
+      value: 
+      objectReference: {fileID: 3449460478309753257}
+    - target: {fileID: 6659394840641134296, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: stemTugRadius
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 6659394840641134296, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: stemAttachPoint
+      value: 
+      objectReference: {fileID: 7030595446862687291}
+    - target: {fileID: 6659394840641134296, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: stemTugStrength
+      value: 0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 7291650636675671145, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: m_ExcludeLayers.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5361662614469364547, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3863847106566611036}
   m_SourcePrefab: {fileID: 100100000, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
 --- !u!114 &3814808881036308770 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 633536175815418152, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
   m_PrefabInstance: {fileID: 4339827081173717002}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 8525976005763570505}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a34fd1ab24603d5428c8a37f78668d46, type: 3}
@@ -7161,3 +7293,30 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5552232867321885460, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
   m_PrefabInstance: {fileID: 4339827081173717002}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &8525976005763570505 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5361662614469364547, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+  m_PrefabInstance: {fileID: 4339827081173717002}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3863847106566611036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8525976005763570505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cb6fed54ab3347458b2abfb2bebd624, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerBreathing
+  beatsPerMinute: 12
+  timeOffset: 0
+  stretchAxis: {x: 0, y: 0.1, z: 0}
+  stretchMagnitude: 0.1
+  moveDirection: {x: 0, y: 0, z: 0}
+  moveMagnitude: 0.05
+  preserveVolume: 1
+  pivotY: 0
+  stopWhenGrabbed: 1
+  preventJointBreak: 1

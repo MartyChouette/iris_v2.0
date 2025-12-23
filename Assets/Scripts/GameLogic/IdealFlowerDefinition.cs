@@ -1,9 +1,55 @@
+/**
+ * @file IdealFlowerDefinition.cs
+ * @brief IdealFlowerDefinition script.
+ * @details
+ * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
+*
+ * @ingroup tools
+ */
+
 // File: IdealFlowerDefinition.cs
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Flower/Ideal Flower Definition")]
+    /**
+     * @details
+     * Intent:
+     * - Scriptable authoring definition of "ideal" trimming outcomes:
+     *   stem length, cut angle, and per-part rules.
+     *
+     * Rule types:
+     * - Stem: idealStemLength + deltas define perfect vs. hard fail ranges.
+     * - Cut Angle: idealCutAngleDeg + deltas define perfect vs. hard fail ranges.
+     * - Weights: stemScoreWeight / cutAngleScoreWeight determine contribution to final normalized score.
+     *
+     * Game-over toggles:
+     * - stemCanCauseGameOver / cutAngleCanCauseGameOver allow authoring "strict ideals."
+     * - (Per-part rules extend this strictness to leaves/petals/etc.)
+     *
+     * Authoring notes:
+     * - Treat deltas as "tolerance" knobs. Tightening them over time is a direct mechanical path to
+     *   your metric-cruelty escalation without changing core code.
+     *
+     * Invariants:
+     * - Perfect delta should be <= hard-fail delta for each measured dimension.
+     
+
+ * Responsibilities:
+ * - (Documented) See fields and methods below.
+ *
+ * Unity lifecycle:
+ * - Awake(): cache references / validate setup.
+ * - OnEnable()/OnDisable(): hook/unhook events.
+ * - Update(): per-frame behavior (if any).
+ *
+ * Gotchas:
+ * - Keep hot paths allocation-free (Update/cuts/spawns).
+ * - Prefer event-driven UI updates over per-frame string building.
+ *
+ * @ingroup tools
+ */
 public class IdealFlowerDefinition : ScriptableObject
 {
     [Header("Stem Length Rules")]
@@ -37,9 +83,27 @@ public class IdealFlowerDefinition : ScriptableObject
     public bool cutAngleContributesToScore = true;
 
     //[Header("Per-Part Ideal Rules")]
-    
+
 
     [Serializable]
+    /**
+     * @class PartRule
+     * @brief PartRule component.
+     * @details
+     * Responsibilities:
+     * - (Documented) See fields and methods below.
+     *
+     * Unity lifecycle:
+     * - Awake(): cache references / validate setup.
+     * - OnEnable()/OnDisable(): hook/unhook events.
+     * - Update(): per-frame behavior (if any).
+     *
+     * Gotchas:
+     * - Keep hot paths allocation-free (Update/cuts/spawns).
+     * - Prefer event-driven UI updates over per-frame string building.
+     *
+     * @ingroup tools
+     */
     public class PartRule
     {
         [Tooltip("Must match the FlowerPartRuntime.partId.")]

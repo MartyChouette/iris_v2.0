@@ -1,6 +1,86 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/**
+ * @file RaycastManager.cs
+ * @class RaycastManager
+ * @brief Unified prototype manager that raycasts from the mouse cursor to drive hover + click interactions on tagged 2D/3D objects.
+ *
+ * @details
+ * RaycastManager performs selection/hover detection and routes hover enter/exit events to interactive targets through a shared
+ * abstraction (e.g., an IInteractive-style interface). It enforces a single "current" focus target to ensure consistent enter/exit
+ * behavior and prevent duplicated input logic.
+ *
+ * This script currently exists to support a siloed prototype: a 2D/3D "living room" scene where the player hovers over
+ * interactables and receives visual feedback (2D sprite swap / 3D color+scale). On click, it can trigger a scene load, but
+ * intentionally restricts scene loading to 3D objects only.
+ *
+ * @note This is not part of Iris's core runtime systems. It is kept separate while the team explores whether this interaction
+ *       model belongs in the final game and what form it should take.
+ *
+ * ------------------------------------------------------------
+ * Responsibilities
+ * ------------------------------------------------------------
+ * - Cast a 3D Physics ray from the active camera through the current mouse position.
+ * - Detect objects tagged with @ref interactiveTag and route hover enter/exit transitions.
+ * - Determine whether the hovered object is a 2D Sprite interactable or a 3D Object interactable.
+ * - On left click, optionally load a target scene (3D objects only).
+ * - Surface target metadata needed for scene transitions or contextual actions (as implemented).
+ *
+ * ------------------------------------------------------------
+ * Non-Responsibilities
+ * ------------------------------------------------------------
+ * - Does not handle 2D physics raycasts (Physics2D).
+ * - Does not manage UI focus / EventSystem blocking.
+ * - Does not validate that target scenes are in Build Settings.
+ * - Does not integrate with Iris knowledge, progression, or item systems (prototype-only).
+ * - Does not decide what "inspect" means for a target (target scripts own meaning).
+ *
+ * ------------------------------------------------------------
+ * Key Data & Invariants
+ * ------------------------------------------------------------
+ * - Hover state is represented by @ref currentInteractiveTarget and @ref currentHoverType.
+ * - Only GameObjects with @ref interactiveTag are considered candidates.
+ * - Scene loading is only allowed when the hovered target type is @c Object3D.
+ * - Hover transitions must be robust under rapid camera motion and object enable/disable.
+ *
+ * ------------------------------------------------------------
+ * Unity Lifecycle Notes
+ * ------------------------------------------------------------
+ * - Update(): Performs raycast, resolves hovered target, handles enter/exit transitions, and checks click-to-load.
+ *
+ * ------------------------------------------------------------
+ * Performance & Allocation Notes
+ * ------------------------------------------------------------
+ * - This prototype allocates per-hover due to wrapper creation (@c new InteractiveObject3DWrapper / @c new InteractiveSpriteWrapper).
+ *   For production, prefer caching the actual component reference and comparing instance IDs.
+ * - Uses @c Camera.main each frame; for production, cache the camera reference.
+ * - Avoid allocations every frame (wrappers/boxing can be a hidden perf footgun).
+ *
+ * ------------------------------------------------------------
+ * Visual Maps
+ * ------------------------------------------------------------
+ * @section viz_relationships_raycast Visual Relationships
+ * @dot
+ * digraph RaycastManager_Relations {
+ *   rankdir=LR;
+ *   node [shape=box];
+ *
+ *   "RaycastManager" -> "InteractiveSprite"   [label="wraps + forwards hover"];
+ *   "RaycastManager" -> "InteractiveObject3D" [label="wraps + forwards hover"];
+ *   "RaycastManager" -> "SceneManager"        [label="LoadScene() on click (3D only)"];
+ * }
+ * @enddot
+ *
+ * ------------------------------------------------------------
+ * Integration Points
+ * ------------------------------------------------------------
+ * - Interactive targets (e.g., sprite/object scripts) receive hover enter/exit and (optionally) provide scene metadata.
+ * - Scene transition systems (if used) may read target scene name/type from the current target.
+ *
+ * @see InspectableObject
+ */
+
 public class RaycastManager : MonoBehaviour
 {
     [Header("Interaction Settings")]
@@ -46,7 +126,6 @@ public class RaycastManager : MonoBehaviour
         public string GetTargetSceneName() { return script.GetTargetSceneName(); }
         public InteractiveType GetTargetType() { return InteractiveType.Object3D; } // Identify as 3D
     }
-
 
     void Update()
     {
