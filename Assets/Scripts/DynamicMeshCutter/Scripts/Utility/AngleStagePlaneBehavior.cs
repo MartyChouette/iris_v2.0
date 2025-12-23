@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -270,23 +270,27 @@ namespace DynamicMeshCutter
                     var marker = piece.AddComponent<StemPieceMarker>();
                     marker.stemRuntime = stemRuntime;
 
-                    bool isBottom = info.BT != null &&
-                                    i < info.BT.Length &&
-                                    info.BT[i] == 0;
-
                     var rb = piece.GetComponent<Rigidbody>() ?? piece.AddComponent<Rigidbody>();
                     rb.interpolation = RigidbodyInterpolation.Interpolate;
 
                     pieceBodies.Add(rb);
 
-                    if (isBottom)
+                    // Check if this piece has already been "claimed" by the MeshCreation smart logic
+                    // (MeshCreation.AnchorTopStemPiece parents the "Kept" piece to the StemRuntime transform)
+                    bool isKeptStemPiece = (stemRuntime != null && piece.transform.parent == stemRuntime.transform);
+
+                    if (isKeptStemPiece)
                     {
+                        // This is the FLOWER HEAD (top piece with crown and leaves).
+                        // It must stay in hand (Kinematic) and NOT fall.
                         rb.isKinematic = true;
                         rb.useGravity = false;
-                        rb.constraints = RigidbodyConstraints.FreezeAll;
+                        rb.constraints = RigidbodyConstraints.None;
                     }
                     else
                     {
+                        // This is STEM WASTE (bottom/falling piece).
+                        // It must fall (Gravity) and be dynamic.
                         rb.isKinematic = false;
                         rb.useGravity = true;
                         rb.constraints = RigidbodyConstraints.None;
