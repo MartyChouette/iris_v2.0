@@ -270,9 +270,25 @@ namespace DynamicMeshCutter
                     var marker = piece.AddComponent<StemPieceMarker>();
                     marker.stemRuntime = stemRuntime;
 
-                    var rb = piece.GetComponent<Rigidbody>();
-                    if (rb == null)
-                        rb = piece.AddComponent<Rigidbody>();
+                    // CRITICAL FIX: Get the physics root GameObject (where the Rigidbody actually lives)
+                    // AnchorTopStemPiece operates on CreatedObjects[i] (physics root), not CreatedTargets[i].gameObject (child mesh)
+                    GameObject physicsRoot = (i < cData.CreatedObjects.Length) ? cData.CreatedObjects[i] : null;
+                    
+                    // Get Rigidbody from physics root, not from the child mesh
+                    Rigidbody rb = null;
+                    if (physicsRoot != null)
+                    {
+                        rb = physicsRoot.GetComponent<Rigidbody>();
+                        if (rb == null)
+                            rb = physicsRoot.AddComponent<Rigidbody>();
+                    }
+                    else
+                    {
+                        // Fallback: try child mesh if physics root doesn't exist
+                        rb = piece.GetComponent<Rigidbody>();
+                        if (rb == null)
+                            rb = piece.AddComponent<Rigidbody>();
+                    }
                     
                     rb.interpolation = RigidbodyInterpolation.Interpolate;
 
@@ -280,9 +296,6 @@ namespace DynamicMeshCutter
 
                     // Check if this piece has already been "claimed" by the MeshCreation smart logic
                     // (MeshCreation.AnchorTopStemPiece parents the "Kept" piece's physics root to the StemRuntime transform)
-                    // Note: AnchorTopStemPiece parents cData.CreatedObjects[i] (the physics root), not cData.CreatedTargets[i].gameObject (the child mesh)
-                    // So we need to check CreatedObjects[i], not piece (which is CreatedTargets[i].gameObject)
-                    GameObject physicsRoot = (i < cData.CreatedObjects.Length) ? cData.CreatedObjects[i] : null;
                     bool isKeptStemPiece = (stemRuntime != null && physicsRoot != null && physicsRoot.transform.IsChildOf(stemRuntime.transform));
 
                     if (debugLogs)
@@ -303,7 +316,7 @@ namespace DynamicMeshCutter
                         rb.constraints = RigidbodyConstraints.None;
                         
                         if (debugLogs)
-                            Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{piece.name}' to KINEMATIC (kept piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", piece);
+                            Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{physicsRoot?.name ?? piece.name}' to KINEMATIC (kept piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", physicsRoot ?? piece);
                     }
                     else
                     {
@@ -314,13 +327,14 @@ namespace DynamicMeshCutter
                         rb.useGravity = true;
                         rb.constraints = RigidbodyConstraints.None;
                         
-                        // Add despawn component for falling pieces
-                        var despawner = piece.GetComponent<OffScreenDespawner>();
+                        // Add despawn component for falling pieces (on physics root if it exists)
+                        GameObject despawnTarget = physicsRoot != null ? physicsRoot : piece;
+                        var despawner = despawnTarget.GetComponent<OffScreenDespawner>();
                         if (despawner == null)
-                            despawner = piece.AddComponent<OffScreenDespawner>();
+                            despawner = despawnTarget.AddComponent<OffScreenDespawner>();
                         
                         if (debugLogs)
-                            Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{piece.name}' to DYNAMIC with gravity (falling piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", piece);
+                            Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{physicsRoot?.name ?? piece.name}' to DYNAMIC with gravity (falling piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", physicsRoot ?? piece);
                     }
                 }
             }

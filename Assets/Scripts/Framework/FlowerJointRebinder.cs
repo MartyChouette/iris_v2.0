@@ -1,4 +1,4 @@
-﻿/// <summary>
+/// <summary>
 /// Rebinds joints under a flower after a stem cut.
 /// Key rules:
 /// 1) Pick HELD stem piece using Crown joints when possible (most reliable).
@@ -216,12 +216,31 @@ public class FlowerJointRebinder : MonoBehaviour
 
         LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]");
 
-        // 2.5) Optional: prevent HELD dropping immediately by anchoring it.
-        if (enableAnchorHold)
+        // 2.5) Ensure HELD piece doesn't fall
+        // If it's parented to stemRuntime (set by AnchorTopStemPiece), keep it kinematic
+        // Otherwise, use anchor hold joint if enabled
+        bool isParentedToStem = (stemRuntime != null && held.transform.IsChildOf(stemRuntime.transform));
+        
+        if (isParentedToStem)
         {
+            // Parented pieces should be kinematic - they move with the parent
+            held.isKinematic = true;
+            held.useGravity = false;
+            LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem, set to KINEMATIC", held);
+        }
+        else if (enableAnchorHold)
+        {
+            // Not parented - use joint-based anchor hold
             EnsureAnchorBody();
             ApplyAnchorHoldToHeld(held);
             StartCoroutine(HoldRoutine(held, cutHoldSeconds));
+        }
+        else
+        {
+            // No anchor hold and not parented - make kinematic as fallback
+            held.isKinematic = true;
+            held.useGravity = false;
+            LogYellow($"[Rebinder] HELD '{held.name}' not parented and anchor hold disabled, set to KINEMATIC as fallback", held);
         }
 
         // 3) Targeted fixes:
