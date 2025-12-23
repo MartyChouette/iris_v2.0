@@ -116,6 +116,7 @@ public class FlowerJointRebinder : MonoBehaviour
 
     [Header("Debug")]
     public bool debugLogs = true;
+    private Rigidbody _lastHeld;
 
     // We keep track of the joint we own so we never hijack unrelated joints.
     private ConfigurableJoint _anchorHoldJoint;
@@ -636,6 +637,8 @@ public class FlowerJointRebinder : MonoBehaviour
 
     private void SeverStemInternalCrossChunkJoints(Rigidbody held, HashSet<Rigidbody> stemSet)
     {
+        if (stemRuntime == null || held == null) return;
+
         var joints = stemRuntime.GetComponentsInChildren<Joint>(true);
 
         int killed = 0;
@@ -643,19 +646,67 @@ public class FlowerJointRebinder : MonoBehaviour
         {
             if (j == null) continue;
             if (j.connectedBody == null) continue;
+
+            // Owner must be a stem chunk RB too, otherwise we're severing random non-stem joints.
+            var ownerRb = j.GetComponent<Rigidbody>();
+            if (ownerRb == null) continue;
+
+            // Both sides must be stem chunks.
+            if (!stemSet.Contains(ownerRb)) continue;
             if (!stemSet.Contains(j.connectedBody)) continue;
 
-            if (j.connectedBody == held)
-            {
-                LogYellow($"[Rebinder] Severing stem-internal joint '{j.GetType().Name}' on '{j.name}' (was connected to HELD '{held.name}').", j);
-                Destroy(j);
-                killed++;
-            }
+            bool ownerIsHeld = ownerRb == held;
+            bool connectedIsHeld = j.connectedBody == held;
+
+            // Only sever if it actually bridges HELD <-> FALLING.
+            // (If both are held-side or both are falling-side, it's not a cross-chunk bridge.)
+            if (ownerIsHeld == connectedIsHeld)
+                continue;
+
+            // NEVER sever protected anchors/attachments (Back, Crown, LeafAttachment).
+            if (JointTouchesProtectedAnchor(j))
+                continue;
+
+            LogYellow($"[Rebinder] Severing TRUE cross-chunk joint '{j.GetType().Name}' on '{j.name}' " +
+                      $"(owner='{ownerRb.name}' -> connected='{j.connectedBody.name}', HELD='{held.name}').", j);
+
+            Destroy(j);
+            killed++;
         }
 
         if (killed > 0)
             LogYellow($"[Rebinder] Severed {killed} stem-internal cross-chunk joints.");
     }
+
+    private bool JointTouchesProtectedAnchor(Joint j)
+    {
+        if (j == null) return false;
+
+        // Protect leaf attachment points.
+        if (j.GetComponent<LeafAttachmentMarker>() != null) return true;
+        if (j.connectedBody != null && j.connectedBody.GetComponentInParent<LeafAttachmentMarker>() != null) return true;
+
+        // Protect crown/head area joints.
+        var crown = ResolveCrownRoot();
+        if (crown != null)
+        {
+            if (j.transform.IsChildOf(crown)) return true;
+            if (j.connectedBody != null && j.connectedBody.transform.IsChildOf(crown)) return true;
+        }
+
+        // Protect Back/root anchor explicitly (your log shows 'Back' being severed).
+        if (j.name == "Back") return true;
+        if (j.transform.name == "Back") return true;
+        if (j.connectedBody != null && j.connectedBody.transform.name == "Back") return true;
+
+        // (Optional extra safety) Protect anything that looks like leaf attachment points by name.
+        if (j.name.Contains("Leaf_AttachmentPoint")) return true;
+        if (j.transform.name.Contains("Leaf_AttachmentPoint")) return true;
+        if (j.connectedBody != null && j.connectedBody.transform.name.Contains("Leaf_AttachmentPoint")) return true;
+
+        return false;
+    }
+
 
     private void ForceChunksDynamicAndAwake(Rigidbody[] chunks)
     {
@@ -728,6 +779,17 @@ public class FlowerJointRebinder : MonoBehaviour
             fj.connectedBody = newBodyNormal;
         }
     }
+    private bool IsBackAnchor(Transform t)
+    {
+        if (t == null) return false;
+
+        // Exact match based on your logs ("Back")
+        if (t.name == "Back") return true;
+
+        // If Back is nested under something, you can broaden it:
+        // return t.name.Contains("Back");
+        return false;
+    }
 
     private void RebindHingeJoints(HingeJoint[] joints, Rigidbody[] stemPieces, HashSet<Rigidbody> stemSet)
     {
@@ -754,12 +816,25 @@ public class FlowerJointRebinder : MonoBehaviour
         foreach (var cj in joints)
         {
             if (cj == null) continue;
-            if (cj.connectedBody == null) continue;
 
             // IMPORTANT: Skip the anchor-hold joint we own.
             var marker = cj.GetComponent<FlowerAnchorHoldMarker>();
             if (marker != null && marker.joint == cj)
                 continue;
+
+            // NEW: Protect Back/root anchor joints.
+            // If this joint lives on the "Back" object, it should ALWAYS bind to HELD.
+            if (IsBackAnchor(cj.transform))
+            {
+                if (_lastHeld != null && cj.connectedBody != _lastHeld)
+                {
+                    LogYellow($"[Rebinder] Back/root joint '{cj.name}' forced -> HELD '{_lastHeld.name}'", cj);
+                    cj.connectedBody = _lastHeld;
+                }
+                continue; // do NOT run normal closest-piece logic on Back
+            }
+
+            if (cj.connectedBody == null) continue;
 
             var ownerRb = cj.GetComponent<Rigidbody>();
             if (ownerRb == null) continue;
@@ -772,7 +847,11 @@ public class FlowerJointRebinder : MonoBehaviour
 
             cj.connectedBody = newBody;
         }
+        LogYellow($"[Rebinder] After RebindConfigJoints, Back joints connectedBody = " +
+                  $"{string.Join(", ", flowerRoot.GetComponentsInChildren<ConfigurableJoint>(true).Where(j => IsBackAnchor(j.transform)).Select(j => j.connectedBody ? j.connectedBody.name : "NULL"))}");
+
     }
+
 
     private void RebindXYTetherJoints(XYTetherJoint[] joints, Rigidbody[] stemPieces, HashSet<Rigidbody> stemSet)
     {

@@ -6746,7 +6746,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 63de87486189aa34ca0d5a89ecaecfc0, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 63de87486189aa34ca0d5a89ecaecfc0, type: 3}
       propertyPath: m_LocalRotation.x
@@ -6754,7 +6754,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 63de87486189aa34ca0d5a89ecaecfc0, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.7071068
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 63de87486189aa34ca0d5a89ecaecfc0, type: 3}
       propertyPath: m_LocalRotation.z
@@ -6766,7 +6766,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 63de87486189aa34ca0d5a89ecaecfc0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -90
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 63de87486189aa34ca0d5a89ecaecfc0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -6825,6 +6825,27 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &524437486 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6656621808879889486, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+  m_PrefabInstance: {fileID: 8426878410151901395}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &524437502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524437486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 269347413b4426a489a20756bbccc008, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OffScreenDespawner
+  despawnYThreshold: -10
+  checkDelay: 0.5
+  checkInterval: 0.2
+  debugLogs: 0
 --- !u!1 &553966310
 GameObject:
   m_ObjectHideFlags: 0
@@ -7621,6 +7642,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &804425941 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2641778875234352785, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+  m_PrefabInstance: {fileID: 8426878410151901395}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &818133447
 GameObject:
   m_ObjectHideFlags: 0
@@ -9333,7 +9359,7 @@ Transform:
   m_GameObject: {fileID: 1183960620}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0, y: -0.36, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -9356,8 +9382,8 @@ MonoBehaviour:
   plane: {fileID: 1842010386}
   scissorsVisuals: {fileID: 2106927618}
   axisMoveSpeed: 15
-  minYOffset: -1
-  maxYOffset: 1
+  minYOffset: 10
+  maxYOffset: -5
   useMouseHeight: 1
   mouseYWorldPerPixel: 0.01
   fastMultiplier: 4
@@ -9393,7 +9419,7 @@ MonoBehaviour:
   debugLogs: 0
   drawDetectionGizmo: 1
   detectionGizmoColor: {r: 1, g: 0, b: 0, a: 0.25}
-  _suppressCutUntilRelease: 0
+  _suppressCutUntilRelease: 1
 --- !u!1 &1197206685
 GameObject:
   m_ObjectHideFlags: 0
@@ -10108,7 +10134,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 71d92beb89436bf4fa93cf51b0ce16e6, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 71d92beb89436bf4fa93cf51b0ce16e6, type: 3}
       propertyPath: m_LocalRotation.x
@@ -10116,7 +10142,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 71d92beb89436bf4fa93cf51b0ce16e6, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.7071068
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 71d92beb89436bf4fa93cf51b0ce16e6, type: 3}
       propertyPath: m_LocalRotation.z
@@ -10128,7 +10154,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 71d92beb89436bf4fa93cf51b0ce16e6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -90
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 71d92beb89436bf4fa93cf51b0ce16e6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -11897,6 +11923,20 @@ MonoBehaviour:
   previewBeforeCut: 1
   previewStemOverride: {fileID: 1579737614232624721}
   previewSessionOverride: {fileID: 6656573071170535816}
+  previewLogs: 0
+  previewLogInterval: 0.35
+  previewAngleDeltaToLog: 0.5
+  previewLengthDeltaToLog: 0.01
+  cutAllStemsInScene: 0
+  useCutLayerMask: 0
+  cutLayerMask:
+    serializedVersion: 2
+    m_Bits: 648
+  excludeTargetsUnderFlowerPartRuntime: 0
+  precheckPlaneIntersectsBounds: 1
+  boundsSlack: 0.01
+  debugForcePlanePointToTargetBoundsCenter: 0
+  debugLogPerTargetDiagnostics: 1
 --- !u!1 &1843476846
 GameObject:
   m_ObjectHideFlags: 0
@@ -13069,7 +13109,7 @@ PrefabInstance:
     - target: {fileID: 163946258417010198, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: crownRoot
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 804425941}
     - target: {fileID: 163946258417010198, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: anchorBody
       value: 
@@ -13113,6 +13153,10 @@ PrefabInstance:
     - target: {fileID: 1720263540474747824, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: SeparateMeshes
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1813003878931958912, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_IncludeLayers.m_Bits
+      value: 64
       objectReference: {fileID: 0}
     - target: {fileID: 1944832632533868736, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
@@ -13175,6 +13219,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 330585545}
     - target: {fileID: 3449460478309753257, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3449460478309753257, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: stemTugRadius
       value: 0.15
       objectReference: {fileID: 0}
@@ -13198,6 +13246,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
+    - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: minAllowedCutY
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5525748084404550135, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
@@ -13222,10 +13274,22 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 6416235441514034275, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_ExcludeLayers.m_Bits
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6416235441514034275, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_IncludeLayers.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
     - target: {fileID: 6463962271534695426, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 6656621808879889486, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_TagString
+      value: Stem
+      objectReference: {fileID: 0}
     - target: {fileID: 6679923496394433050, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
@@ -13258,6 +13322,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
+    - target: {fileID: 8416529037761675240, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: topConstraints
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8720728355318702220, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: cam
       value: 
@@ -13266,6 +13334,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
+    - target: {fileID: 8773017590686910007, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9209932559024027602, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
@@ -13273,7 +13345,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6656621808879889486, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 524437502}
   m_SourcePrefab: {fileID: 100100000, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
 --- !u!114 &8426878410151901396 stripped
 MonoBehaviour:
