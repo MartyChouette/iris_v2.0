@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems; // for IsPointerOverGameObject
@@ -231,6 +231,11 @@ namespace DynamicMeshCutter
                     ? (cam.transform.position - _to).normalized
                     : Vector3.up;
 
+                var session = stem.GetComponentInParent<FlowerSessionController>();
+                
+                // CRITICAL: Start grace window BEFORE cut to prevent game over during cut process
+                session?.StartCutGraceWindow();
+                
                 try
                 {
                     stem.ApplyCutFromPlane(_to, dir);
@@ -240,19 +245,24 @@ namespace DynamicMeshCutter
                     return;
                 }
 
-                var session = stem.GetComponentInParent<FlowerSessionController>();
-                try
-                {
-                    session?.CheckStemCutImmediate();
-                }
-                catch (MissingReferenceException) { }
-
                 var rebinder = stem.GetComponentInParent<FlowerJointRebinder>();
                 try
                 {
+                    // rebind leaves/petals to nearest stem chunk FIRST (before checking game over)
                     rebinder?.RebindAllPartsToClosestStemPiece();
                 }
                 catch (MissingReferenceException) { }
+
+                // Check for game over AFTER rebinding (gives system time to stabilize)
+                // Use a small delay to ensure physics has settled
+                if (session != null)
+                {
+                    try
+                    {
+                        session.StartCoroutine(DelayedGameOverCheck(session, 0.1f));
+                    }
+                    catch (MissingReferenceException) { }
+                }
             }
         }
 
@@ -384,6 +394,15 @@ namespace DynamicMeshCutter
                 LR.SetPosition(0, _from);
                 LR.SetPosition(1, _to);
             }
+        }
+        
+        /// <summary>
+        /// Delays game over check to allow physics to settle after a cut.
+        /// </summary>
+        private System.Collections.IEnumerator DelayedGameOverCheck(FlowerSessionController session, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            session?.CheckStemCutImmediate();
         }
     }
 }

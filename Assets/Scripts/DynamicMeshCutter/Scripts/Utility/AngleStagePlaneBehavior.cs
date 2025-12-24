@@ -415,8 +415,9 @@ namespace DynamicMeshCutter
                     sap.EmitStemCut(planePoint, planeNormal, stem);
                 }
 
-                // suppress detach events during cut + rebind
-                if (session != null) session.suppressDetachEvents = true;
+                // CRITICAL: Start grace window BEFORE cut to prevent game over during cut process
+                session?.StartCutGraceWindow();
+                
                 try
                 {
                     stem.ApplyCutFromPlane(planePoint, planeNormal);
@@ -426,16 +427,20 @@ namespace DynamicMeshCutter
                     if (debugLogs)
                         Debug.Log($"[AngleStagePlaneBehaviour] Stem cut angle:{angle:F1}°, length:{len:F3}", stem);
 
-                    session?.CheckStemCutImmediate();
-
-                    // rebind leaves/petals to nearest stem chunk
+                    // rebind leaves/petals to nearest stem chunk FIRST (before checking game over)
                     var rebinder = stem.GetComponentInParent<FlowerJointRebinder>();
                     rebinder?.RebindAllPartsToClosestStemPiece();
+                    
+                    // Check for game over AFTER rebinding (gives system time to stabilize)
+                    // Use a small delay to ensure physics has settled
+                    if (session != null)
+                    {
+                        session.StartCoroutine(DelayedGameOverCheck(session, 0.1f));
+                    }
                 }
                 finally
                 {
-                    if (session != null)
-                        session.suppressDetachEvents = false;
+                    // Grace window is managed by StartCutGraceWindow, don't manually disable here
                 }
             }
         }
@@ -476,5 +481,14 @@ namespace DynamicMeshCutter
             Gizmos.DrawLine(end, headB);
         }
 #endif
+        
+        /// <summary>
+        /// Delays game over check to allow physics to settle after a cut.
+        /// </summary>
+        private System.Collections.IEnumerator DelayedGameOverCheck(FlowerSessionController session, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            session?.CheckStemCutImmediate();
+        }
     }
 }

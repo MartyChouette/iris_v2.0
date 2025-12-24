@@ -328,8 +328,6 @@ namespace DynamicMeshCutter
                     float height = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.size.y : 0.1f;
                     bool mainPieceSurvives = (height >= collapseThreshold);
 
-                    // DEBUG: Always parent and make kinematic, regardless of size
-                    // This helps us see if parenting is the issue
                     Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEEPER piece '{go.name}': size={height:F3}, threshold={collapseThreshold}, mainPieceSurvives={mainPieceSurvives}", go);
                     
                     // CRITICAL: Set kinematic FIRST before any other operations
@@ -339,7 +337,7 @@ namespace DynamicMeshCutter
                     
                     Debug.Log($"[MeshCreation.AnchorTopStemPiece] BEFORE parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
 
-                    // ALWAYS parent the keeper piece, even if it's small (for debugging)
+                    // ALWAYS parent the keeper piece to stemRuntime
                     go.transform.SetParent(stemRuntime.transform, true);
                     
                     // VERIFY: Check state after parenting - get Rigidbody AGAIN in case it changed
@@ -351,12 +349,6 @@ namespace DynamicMeshCutter
                         // FORCE state again after parenting (in case parenting reset something)
                         rb.isKinematic = true;
                         rb.useGravity = false;
-                        
-                        // Add a component that will continuously enforce kinematic state
-                        var enforcer = go.GetComponent<KinematicStateEnforcer>();
-                        if (enforcer == null)
-                            enforcer = go.AddComponent<KinematicStateEnforcer>();
-                        enforcer.targetRb = rb;
                     }
                     
                     // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
@@ -374,22 +366,20 @@ namespace DynamicMeshCutter
                 }
                 else
                 {
-                    // DEBUG: Make falling piece kinematic too to see what's happening
-                    // This is a falling piece - TEMPORARILY MAKE IT KINEMATIC TOO FOR DEBUGGING
-                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] DEBUG: Making falling piece '{go.name}' KINEMATIC (temporary for debugging)", go);
+                    // This is a falling piece - make it dynamic with gravity ON
+                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] Making falling piece '{go.name}' DYNAMIC (gravity ON)", go);
                     
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
+                    rb.isKinematic = false;
+                    rb.useGravity = true;
                     rb.constraints = RigidbodyConstraints.None;
                     
-                    // Add enforcer for falling pieces too
+                    // Remove any kinematic enforcer if it exists (falling pieces shouldn't have this)
                     var enforcer = go.GetComponent<KinematicStateEnforcer>();
-                    if (enforcer == null)
-                        enforcer = go.AddComponent<KinematicStateEnforcer>();
-                    enforcer.targetRb = rb;
+                    if (enforcer != null)
+                        Destroy(enforcer);
                     
-                    // Don't cleanup falling pieces during debug
-                    // CleanupFallingPiece(go);
+                    // Cleanup falling pieces to optimize performance
+                    CleanupFallingPiece(go);
                 }
             }
         }

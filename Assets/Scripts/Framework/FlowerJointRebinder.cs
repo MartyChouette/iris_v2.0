@@ -160,13 +160,22 @@ public class FlowerJointRebinder : MonoBehaviour
     {
         if (!enableAnchorHold) return;
         if (!keepAnchorBodySnapped) return;
-        if (anchorBody == null || anchorPoint == null) return;
+        if (anchorBody == null) return;
 
-        // Keep the anchor truly stable in world-space.
+        // CRITICAL: Use StemTip as anchor point if available (it tracks the cut location)
+        Transform targetAnchor = anchorPoint;
+        if (stemRuntime != null && stemRuntime.StemTip != null)
+        {
+            targetAnchor = stemRuntime.StemTip;
+        }
+        
+        if (targetAnchor == null) return;
+
+        // Keep the anchor truly stable in world-space at the NEW cut location.
         anchorBody.isKinematic = true;
         anchorBody.useGravity = false;
-        anchorBody.transform.position = anchorPoint.position;
-        anchorBody.transform.rotation = anchorPoint.rotation;
+        anchorBody.transform.position = targetAnchor.position;
+        anchorBody.transform.rotation = targetAnchor.rotation;
     }
 
     /// <summary>
@@ -270,6 +279,11 @@ public class FlowerJointRebinder : MonoBehaviour
         // Priority: Use SoftStemAnchor if available (best solution), otherwise use kinematic parenting
         bool isParentedToStem = (stemRuntime != null && held.transform.IsChildOf(stemRuntime.transform));
         
+        // CRITICAL: Get the NEW cut location from StemTip (this is where the anchor should be)
+        Vector3 newCutLocation = stemRuntime != null && stemRuntime.StemTip != null 
+            ? stemRuntime.StemTip.position 
+            : (anchorPoint != null ? anchorPoint.position : held.worldCenterOfMass);
+        
         // Try SoftStemAnchor first (if enabled)
         if (useSoftStemAnchor)
         {
@@ -285,13 +299,15 @@ public class FlowerJointRebinder : MonoBehaviour
                 held.isKinematic = false; // MUST be dynamic for joints to work
                 held.useGravity = false; // Gravity off, joint holds it
                 
-                Vector3 anchorPos = anchorPoint != null ? anchorPoint.position : held.worldCenterOfMass;
-                softAnchor.AnchorHeldStem(held, anchorPos);
-                LogYellow($"[Rebinder] HELD '{held.name}' using SoftStemAnchor (DYNAMIC, gravity OFF, joint holds it)", held);
+                // CRITICAL: Use the NEW cut location (StemTip) as the anchor point
+                // This ensures the anchor moves to where the cut happened
+                softAnchor.AnchorHeldStem(held, newCutLocation);
+                LogYellow($"[Rebinder] HELD '{held.name}' using SoftStemAnchor at NEW cut location {newCutLocation} (DYNAMIC, gravity OFF, joint holds it)", held);
             }
             else
             {
-                LogYellowWarning("[Rebinder] Soft anchor enabled but no SoftStemAnchor found; skipping sway anchor.");
+                LogYellowWarning("[Rebinder] Soft anchor enabled but no SoftStemAnchor found; falling back to kinematic parenting.");
+                useSoftStemAnchor = false; // Fall through to kinematic approach
             }
         }
         
@@ -311,8 +327,14 @@ public class FlowerJointRebinder : MonoBehaviour
             {
                 // Not parented - use joint-based anchor hold
                 EnsureAnchorBody();
+                // CRITICAL: Update anchor point to new cut location
+                if (stemRuntime != null && stemRuntime.StemTip != null)
+                {
+                    anchorPoint = stemRuntime.StemTip;
+                    anchorBody.transform.position = newCutLocation;
+                }
                 ApplyAnchorHoldToHeld(held);
-                LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold with KINEMATIC (gravity OFF)", held);
+                LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold at NEW cut location {newCutLocation} with KINEMATIC (gravity OFF)", held);
             }
             else
             {
@@ -423,12 +445,26 @@ public class FlowerJointRebinder : MonoBehaviour
         // Create or reuse OUR joint on held.
         _anchorHoldJoint = FindOrCreateOwnedAnchorJoint(held);
 
-        // Resolve current world target.
-        Vector3 worldTarget = (anchorPoint != null) ? anchorPoint.position : held.worldCenterOfMass;
+        // CRITICAL: Resolve current world target - prefer StemTip (new cut location) over anchorPoint
+        Vector3 worldTarget;
+        if (stemRuntime != null && stemRuntime.StemTip != null)
+        {
+            worldTarget = stemRuntime.StemTip.position;
+            anchorBody.transform.rotation = stemRuntime.StemTip.rotation;
+        }
+        else if (anchorPoint != null)
+        {
+            worldTarget = anchorPoint.position;
+            anchorBody.transform.rotation = anchorPoint.rotation;
+        }
+        else
+        {
+            worldTarget = held.worldCenterOfMass;
+            anchorBody.transform.rotation = Quaternion.identity;
+        }
 
-        // Snap anchorBody to world target.
+        // Snap anchorBody to world target (the new cut location).
         anchorBody.transform.position = worldTarget;
-        if (anchorPoint != null) anchorBody.transform.rotation = anchorPoint.rotation;
 
         _anchorHoldJoint.connectedBody = anchorBody;
         _anchorHoldJoint.autoConfigureConnectedAnchor = false;
@@ -845,30 +881,28 @@ public class FlowerJointRebinder : MonoBehaviour
 
     private void ForceChunksDynamicAndAwake(Rigidbody[] chunks)
     {
-        // DEBUG: Don't make chunks dynamic - keep everything kinematic
+        // Make falling chunks dynamic with gravity ON so they actually fall
         foreach (var rb in chunks)
         {
             if (rb == null) continue;
             
-            // DEBUG: Keep everything kinematic
-            Debug.Log($"[Rebinder] DEBUG: Keeping chunk '{rb.name}' KINEMATIC (temporary for debugging)", rb);
-            rb.isKinematic = true;
-            rb.useGravity = false;
-            
-            // OLD CODE - commented out for debugging
-            // bool isParentedToStem = (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform));
-            // if (!isParentedToStem)
-            // {
-            //     rb.isKinematic = false;
-            //     rb.useGravity = true;
-            //     rb.WakeUp();
-            // }
-            // else
-            // {
-            //     rb.isKinematic = true;
-            //     rb.useGravity = false;
-            //     LogYellowWarning($"[Rebinder] Kept piece '{rb.name}' was in falling chunks list - corrected to KINEMATIC", rb);
-            // }
+            // Check if this chunk is actually parented (shouldn't be in falling list)
+            bool isParentedToStem = (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform));
+            if (!isParentedToStem)
+            {
+                // This is a true falling chunk - make it dynamic
+                rb.isKinematic = false;
+                rb.useGravity = true;
+                rb.WakeUp();
+                LogYellow($"[Rebinder] Falling chunk '{rb.name}' set to DYNAMIC (gravity ON)", rb);
+            }
+            else
+            {
+                // This chunk is parented but was in falling list - keep it kinematic
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                LogYellowWarning($"[Rebinder] Kept piece '{rb.name}' was in falling chunks list - corrected to KINEMATIC", rb);
+            }
         }
     }
 
