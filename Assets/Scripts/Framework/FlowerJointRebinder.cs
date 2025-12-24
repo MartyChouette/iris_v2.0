@@ -183,6 +183,7 @@ public class FlowerJointRebinder : MonoBehaviour
         if (stemRuntime == null) return;
 
         // 1) Collect stem piece RBs
+        // CRITICAL: Only get NEW cut pieces, NOT the original stem
         var markers = FindObjectsByType<StemPieceMarker>(FindObjectsSortMode.None);
         var stemPieces = markers
             .Where(m => m != null && m.stemRuntime == stemRuntime)
@@ -191,8 +192,17 @@ public class FlowerJointRebinder : MonoBehaviour
             .Distinct()
             .ToArray();
 
+        // CRITICAL FIX: Don't fallback to GetComponentsInChildren - that includes the ORIGINAL stem!
+        // Only use pieces that have StemPieceMarker (these are the NEW cut pieces)
         if (stemPieces.Length == 0)
-            stemPieces = stemRuntime.GetComponentsInChildren<Rigidbody>(true);
+        {
+            LogYellowWarning("[Rebinder] No stem pieces found with StemPieceMarker! Cut pieces may not have been marked correctly.");
+            // Don't fallback - return early instead of including original stem
+            return;
+        }
+        
+        // DEBUG: Log what pieces we found
+        LogYellow($"[Rebinder] Found {stemPieces.Length} cut stem pieces: [{string.Join(", ", stemPieces.Select(r => r.name))}]");
 
         if (stemPieces == null || stemPieces.Length == 0) return;
 
@@ -204,12 +214,24 @@ public class FlowerJointRebinder : MonoBehaviour
         Rigidbody held = null;
         
         // Priority 1: Find parented pieces (these are already marked as kept by AnchorTopStemPiece)
+        // CRITICAL: Make sure we're not selecting the original stem (it might also be parented)
         foreach (var rb in stemPieces)
         {
-            if (rb != null && stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform))
+            if (rb == null) continue;
+            
+            // Skip if this is the original stem (check if it has StemPieceMarker - cut pieces have this)
+            var marker = rb.GetComponent<StemPieceMarker>();
+            if (marker == null)
+            {
+                // This doesn't have a marker - it's probably the original stem, skip it
+                LogYellow($"[Rebinder] Skipping '{rb.name}' - no StemPieceMarker (likely original stem)", rb);
+                continue;
+            }
+            
+            if (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform))
             {
                 held = rb;
-                LogYellow($"[Rebinder] Found parented piece as HELD: '{held.name}'", held);
+                LogYellow($"[Rebinder] Found parented CUT piece as HELD: '{held.name}'", held);
                 break;
             }
         }
