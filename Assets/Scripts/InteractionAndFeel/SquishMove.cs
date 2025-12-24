@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file SquishMove.cs
  * @brief SquishMove script.
  * @details
@@ -132,9 +132,24 @@ public class SquishMove : MonoBehaviour
 
     void Start()
     {
-        originalMesh = GetComponent<MeshFilter>().sharedMesh;
+        var meshFilter = GetComponent<MeshFilter>();
+        if (meshFilter == null)
+        {
+            Debug.LogWarning($"[SquishMove] No MeshFilter found on '{gameObject.name}'. SquishMove requires a MeshFilter.", this);
+            enabled = false;
+            return;
+        }
+        
+        originalMesh = meshFilter.sharedMesh;
+        if (originalMesh == null)
+        {
+            Debug.LogWarning($"[SquishMove] MeshFilter on '{gameObject.name}' has no mesh assigned. SquishMove disabled.", this);
+            enabled = false;
+            return;
+        }
+        
         meshClone = Instantiate(originalMesh);
-        GetComponent<MeshFilter>().sharedMesh = meshClone;
+        meshFilter.sharedMesh = meshClone;
 
         meshRenderer = GetComponent<MeshRenderer>();
 
