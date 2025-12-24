@@ -415,7 +415,17 @@ public class XYTetherJoint : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.isKinematic = false;
+        
+        // CRITICAL FIX: Don't reset kinematic state if this Rigidbody belongs to a stem piece
+        // Stem pieces need to stay kinematic (they're parented or anchored)
+        // Only reset kinematic for leaf/petal parts that should be dynamic
+        bool isStemPiece = (rb.GetComponent<StemPieceMarker>() != null);
+        if (!isStemPiece)
+        {
+            rb.isKinematic = false;
+        }
+        // If it's a stem piece, preserve its existing kinematic state
+        
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
