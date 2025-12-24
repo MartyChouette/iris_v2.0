@@ -419,6 +419,8 @@ namespace DynamicMeshCutter
                 typeof(LeafAttachmentMarker), // These are handled by rebinder
                 typeof(EnsureCompoundConvex), // Don't copy - should stay where it is
                 typeof(EnsureConvexCollider), // Don't copy - should stay where it is
+                typeof(GrabPull), // Don't copy - this is for leaves/petals, not stems
+                typeof(SquishMove), // Don't copy - might cause issues on cut pieces
             };
 
             var components = originalStemRoot.GetComponents<Component>();
