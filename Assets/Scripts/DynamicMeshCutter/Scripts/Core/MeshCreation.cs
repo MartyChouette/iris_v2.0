@@ -553,11 +553,29 @@ namespace DynamicMeshCutter
 
                 if (!shouldKeep)
                 {
+                    // CRITICAL: Check if component is still valid before destroying
+                    // This prevents memory corruption from destroying already-destroyed objects
+                    if (comp == null) continue;
+                    
+                    // Don't destroy if it's a Joint that's still connected (could cause corruption)
+                    if (comp is Joint joint && joint.connectedBody != null)
+                    {
+                        // Skip joints that are still connected - let them be cleaned up by their owner
+                        continue;
+                    }
+                    
                     // Remove unnecessary component
-                    if (Application.isPlaying)
-                        UnityEngine.Object.Destroy(comp);
-                    else
-                        UnityEngine.Object.DestroyImmediate(comp);
+                    try
+                    {
+                        if (Application.isPlaying)
+                            UnityEngine.Object.Destroy(comp);
+                        else
+                            UnityEngine.Object.DestroyImmediate(comp);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogWarning($"[MeshCreation.CleanupFallingPiece] Failed to destroy component {compType.Name}: {ex.Message}", fallingPiece);
+                    }
                 }
             }
 
@@ -585,18 +603,35 @@ namespace DynamicMeshCutter
 
                     if (!shouldKeep)
                     {
-                        // CRITICAL: Don't remove Rigidbody if EnsureConvexCollider exists (it requires Rigidbody)
+                        // CRITICAL: Check if component is still valid before destroying
+                        if (comp == null) continue;
+                        
+                        // Don't remove Rigidbody if EnsureConvexCollider exists (it requires Rigidbody)
                         if (compType == typeof(Rigidbody))
                         {
                             var ensureConvex = child.GetComponent<EnsureConvexCollider>();
                             if (ensureConvex != null)
                                 continue; // Skip - can't remove Rigidbody when EnsureConvexCollider depends on it
                         }
+                        
+                        // Don't destroy if it's a Joint that's still connected (could cause corruption)
+                        if (comp is Joint joint && joint.connectedBody != null)
+                        {
+                            // Skip joints that are still connected
+                            continue;
+                        }
 
-                        if (Application.isPlaying)
-                            UnityEngine.Object.Destroy(comp);
-                        else
-                            UnityEngine.Object.DestroyImmediate(comp);
+                        try
+                        {
+                            if (Application.isPlaying)
+                                UnityEngine.Object.Destroy(comp);
+                            else
+                                UnityEngine.Object.DestroyImmediate(comp);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            Debug.LogWarning($"[MeshCreation.CleanupFallingPiece] Failed to destroy child component {compType.Name}: {ex.Message}", child);
+                        }
                     }
                 }
             }

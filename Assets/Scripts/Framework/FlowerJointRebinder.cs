@@ -376,7 +376,15 @@ public class FlowerJointRebinder : MonoBehaviour
         // If HELD changed, destroy the old anchor joint we owned to avoid leaving junk.
         if (_anchorHeldBody != null && _anchorHeldBody != held && _anchorHoldJoint != null)
         {
-            Destroy(_anchorHoldJoint);
+            try
+            {
+                if (_anchorHoldJoint != null)
+                    Destroy(_anchorHoldJoint);
+            }
+            catch (System.Exception ex)
+            {
+                LogYellowWarning($"[Rebinder] Failed to destroy old anchor joint: {ex.Message}");
+            }
             _anchorHoldJoint = null;
         }
 
@@ -751,8 +759,19 @@ public class FlowerJointRebinder : MonoBehaviour
             LogYellow($"[Rebinder] Severing TRUE cross-chunk joint '{j.GetType().Name}' on '{j.name}' " +
                       $"(owner='{ownerRb.name}' -> connected='{j.connectedBody.name}', HELD='{held.name}').", j);
 
-            Destroy(j);
-            killed++;
+            // CRITICAL: Null check before destroying to prevent memory corruption
+            if (j != null)
+            {
+                try
+                {
+                    Destroy(j);
+                    killed++;
+                }
+                catch (System.Exception ex)
+                {
+                    LogYellowWarning($"[Rebinder] Failed to destroy joint '{j.name}': {ex.Message}", j);
+                }
+            }
         }
 
         if (killed > 0)
