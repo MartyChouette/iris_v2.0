@@ -272,7 +272,7 @@ public class FlowerJointRebinder : MonoBehaviour
         LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]");
 
         // 2.5) Ensure HELD piece doesn't fall
-        // Priority: Use SoftStemAnchor if available (best solution), otherwise use kinematic parenting
+        // Check if piece is already parented to stem (AnchorTopStemPiece already handled it)
         bool isParentedToStem = (stemRuntime != null && held.transform.IsChildOf(stemRuntime.transform));
         
         // CRITICAL: Get the NEW cut location from StemTip (this is where the anchor should be)
@@ -280,8 +280,18 @@ public class FlowerJointRebinder : MonoBehaviour
             ? stemRuntime.StemTip.position 
             : (anchorPoint != null ? anchorPoint.position : held.worldCenterOfMass);
         
-        // Try SoftStemAnchor first (if enabled)
-        if (useSoftStemAnchor)
+        // If piece is already parented to stem, AnchorTopStemPiece already set it up correctly
+        // Skip SoftStemAnchor - just ensure kinematic/frozen state is preserved
+        if (isParentedToStem)
+        {
+            // Piece is already correctly configured by AnchorTopStemPiece - just reinforce the settings
+            held.isKinematic = true;
+            held.useGravity = false;
+            held.constraints = RigidbodyConstraints.FreezeAll;
+            LogYellow($"[Rebinder] HELD '{held.name}' already parented - reinforcing KINEMATIC, gravity OFF, FROZEN", held);
+        }
+        // Only use SoftStemAnchor if piece is NOT already parented (fallback case)
+        else if (useSoftStemAnchor)
         {
             if (softAnchor == null)
                 softAnchor = flowerRoot != null 
@@ -307,36 +317,31 @@ public class FlowerJointRebinder : MonoBehaviour
             }
         }
         
-        // If not using SoftStemAnchor, use kinematic parenting approach
-        if (!useSoftStemAnchor || softAnchor == null)
+        // Fallback: If not parented and not using SoftStemAnchor, use kinematic parenting approach
+        if (!isParentedToStem && (!useSoftStemAnchor || softAnchor == null))
         {
-            // ALWAYS set kinematic and disable gravity for held piece
+            // Set kinematic, disable gravity, and freeze for held piece
             held.isKinematic = true;
             held.useGravity = false;
+            held.constraints = RigidbodyConstraints.FreezeAll;
             
-            // If parented, it's already set up correctly by AnchorTopStemPiece
-            if (isParentedToStem)
+            if (enableAnchorHold)
             {
-                LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem - KINEMATIC (gravity OFF) - already configured", held);
-            }
-            else if (enableAnchorHold)
-            {
-                // Not parented - use joint-based anchor hold
+                // Use joint-based anchor hold
                 EnsureAnchorBody();
-                // CRITICAL: Update anchor point to new cut location
                 if (stemRuntime != null && stemRuntime.StemTip != null)
                 {
                     anchorPoint = stemRuntime.StemTip;
                     anchorBody.transform.position = newCutLocation;
                 }
                 ApplyAnchorHoldToHeld(held);
-                LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold at NEW cut location {newCutLocation} with KINEMATIC (gravity OFF)", held);
+                LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold - KINEMATIC, gravity OFF, FROZEN", held);
             }
             else
             {
-                // Not parented and no anchor hold - parent it to stemRuntime as fallback
+                // Parent to stemRuntime as fallback
                 held.transform.SetParent(stemRuntime.transform, true);
-                LogYellow($"[Rebinder] HELD '{held.name}' not parented - parenting to stemRuntime and setting KINEMATIC (gravity OFF)", held);
+                LogYellow($"[Rebinder] HELD '{held.name}' parenting to stemRuntime - KINEMATIC, gravity OFF, FROZEN", held);
             }
         }
         
