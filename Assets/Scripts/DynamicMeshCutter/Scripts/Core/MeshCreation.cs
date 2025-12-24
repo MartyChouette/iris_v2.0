@@ -341,12 +341,22 @@ namespace DynamicMeshCutter
                         // Parent to the flower so it moves with the system.
                         go.transform.SetParent(stemRuntime.transform, true);
                         
-                        // VERIFY: Check state after parenting
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] AFTER parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
-                        
-                        // FORCE state again after parenting (in case parenting reset something)
-                        rb.isKinematic = true;
-                        rb.useGravity = false;
+                        // VERIFY: Check state after parenting - get Rigidbody AGAIN in case it changed
+                        rb = go.GetComponent<Rigidbody>();
+                        if (rb != null)
+                        {
+                            Debug.Log($"[MeshCreation.AnchorTopStemPiece] AFTER parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
+                            
+                            // FORCE state again after parenting (in case parenting reset something)
+                            rb.isKinematic = true;
+                            rb.useGravity = false;
+                            
+                            // Add a component that will continuously enforce kinematic state
+                            var enforcer = go.GetComponent<KinematicStateEnforcer>();
+                            if (enforcer == null)
+                                enforcer = go.AddComponent<KinematicStateEnforcer>();
+                            enforcer.targetRb = rb;
+                        }
                         
                         // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
                         if (originalStemRoot != null)
@@ -354,8 +364,12 @@ namespace DynamicMeshCutter
                             PreserveComponentsForKeptPiece(originalStemRoot, go);
                         }
                         
-                        // FINAL VERIFY
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] FINAL: KEPT piece '{go.name}': isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parented to '{stemRuntime.name}'", go);
+                        // FINAL VERIFY - get Rigidbody one more time
+                        rb = go.GetComponent<Rigidbody>();
+                        if (rb != null)
+                        {
+                            Debug.Log($"[MeshCreation.AnchorTopStemPiece] FINAL: KEPT piece '{go.name}': isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parented to '{stemRuntime.name}'", go);
+                        }
                     }
                     else
                     {
@@ -380,6 +394,12 @@ namespace DynamicMeshCutter
                     rb.isKinematic = true;
                     rb.useGravity = false;
                     rb.constraints = RigidbodyConstraints.None;
+                    
+                    // Add enforcer for falling pieces too
+                    var enforcer = go.GetComponent<KinematicStateEnforcer>();
+                    if (enforcer == null)
+                        enforcer = go.AddComponent<KinematicStateEnforcer>();
+                    enforcer.targetRb = rb;
                     
                     // Don't cleanup falling pieces during debug
                     // CleanupFallingPiece(go);
