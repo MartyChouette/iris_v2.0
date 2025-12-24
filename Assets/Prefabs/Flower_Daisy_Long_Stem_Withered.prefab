@@ -692,7 +692,6 @@ Transform:
   - {fileID: 5500830333604011075}
   - {fileID: 8158085854842250014}
   - {fileID: 3313480212655941833}
-  - {fileID: 6112998096651251505}
   - {fileID: 7514762177730499403}
   - {fileID: 2641778875234352785}
   - {fileID: 4828255766170251400}
@@ -2056,6 +2055,20 @@ MonoBehaviour:
   forceCrownJointsToHeld: 1
   severStemInternalCrossChunkJoints: 1
   forceFallingChunksDynamic: 1
+  enableAnchorHold: 1
+  anchorPoint: {fileID: 0}
+  anchorBody: {fileID: 0}
+  cutHoldSeconds: 0.12
+  anchorLockLinear: 1
+  anchorAngularLimited: 1
+  anchorAngularLimitDegrees: 15
+  anchorUseProjection: 1
+  anchorProjectionDistance: 0.02
+  anchorProjectionAngle: 5
+  keepAnchorBodySnapped: 1
+  minHeldSolverIterations: 20
+  minHeldSolverVelocityIterations: 20
+  anchorConnectedMassScale: 100
   debugLogs: 1
 --- !u!114 &4575817706176515094
 MonoBehaviour:
@@ -2069,8 +2082,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6b2a21a04cc02941b0114a94875a9b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerStemRuntime
-  stemStart: {fileID: 2431428626403178645}
-  stemEnd: {fileID: 8062156348110857516}
+  StemAnchor: {fileID: 0}
+  StemTip: {fileID: 0}
   cutNormalRef: {fileID: 272389923787343692}
   referenceAxisLocal: {x: 0, y: 1, z: 0}
   minAllowedCutY: 50
@@ -3067,7 +3080,7 @@ Transform:
   m_GameObject: {fileID: 4152715805218652263}
   serializedVersion: 2
   m_LocalRotation: {x: -0.5102293, y: -0.2629623, z: 0.81260896, w: -0.100913584}
-  m_LocalPosition: {x: 0.00639682, y: 0.57080144, z: -0.0037429687}
+  m_LocalPosition: {x: 0.00639682, y: -0.003, z: -0.0037429687}
   m_LocalScale: {x: -0.018748121, y: -1.4049436, z: -0.54271376}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5189,15 +5202,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6639155120957833715}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.22946, y: 3.66, z: -4.2685}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0.5, y: -0.5, z: -0.5, w: 0.5}
+  m_LocalPosition: {x: -0.0058737295, y: -0.18571761, z: 0.005893538}
+  m_LocalScale: {x: -0.034459412, y: -0.0016416541, z: -0.037058298}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2431428626403178645}
   - {fileID: 272389923787343692}
   - {fileID: 8062156348110857516}
-  m_Father: {fileID: 980246482983634666}
+  m_Father: {fileID: 3313480212655941833}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6640870136799324162
 GameObject:
@@ -5274,6 +5287,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3654950414081106419}
+  - {fileID: 6112998096651251505}
   m_Father: {fileID: 980246482983634666}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 90}
 --- !u!33 &8179518834851408489

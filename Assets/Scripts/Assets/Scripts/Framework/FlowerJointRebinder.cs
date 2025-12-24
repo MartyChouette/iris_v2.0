@@ -69,6 +69,16 @@ public class FlowerJointRebinder : MonoBehaviour
     [Tooltip("If true, makes falling stem chunks dynamic & awake.")]
     public bool forceFallingChunksDynamic = true;
 
+    [Header("Soft Anchor (sway)")]
+    [Tooltip("If true, uses SoftStemAnchor to give the held chunk a gentle sway instead of a rigid lock.")]
+    public bool useSoftStemAnchor = false;
+
+    [Tooltip("Optional reference to the SoftStemAnchor. Auto-resolves on this flower root if left null.")]
+    public SoftStemAnchor softAnchor;
+
+    [Tooltip("Optional world-space anchor point for the soft anchor. Falls back to AnchorPoint/Crown.")]
+    public Transform softAnchorPoint;
+
     [Header("Anchor Hold (Optional)")]
     [Tooltip("If true, creates/uses a kinematic anchor Rigidbody at anchorPoint and tethers the HELD chunk to it.")]
     public bool enableAnchorHold = true;
@@ -217,38 +227,47 @@ public class FlowerJointRebinder : MonoBehaviour
 
         LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]");
 
-        // 2.5) Ensure HELD piece doesn't fall
-        // If it's parented to stemRuntime (set by AnchorTopStemPiece), keep it kinematic
-        // Otherwise, use anchor hold joint if enabled
-        bool isParentedToStem = (stemRuntime != null && held.transform.IsChildOf(stemRuntime.transform));
-        
-        if (isParentedToStem)
+        // 2.5) Optional: prevent HELD dropping immediately by anchoring it.
+        if (enableAnchorHold && !useSoftStemAnchor)
         {
-            // Parented pieces should be kinematic - they move with the parent
-            // CRITICAL: Force kinematic and disable gravity - this piece MUST stay attached
-            held.isKinematic = true;
-            held.useGravity = false;
-            held.linearVelocity = Vector3.zero;
-            held.angularVelocity = Vector3.zero;
-            LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem, set to KINEMATIC (gravity OFF)", held);
-        }
-        else if (enableAnchorHold)
-        {
-            // Not parented - use joint-based anchor hold
-            // Still ensure kinematic for safety
-            held.isKinematic = true;
-            held.useGravity = false;
             EnsureAnchorBody();
             ApplyAnchorHoldToHeld(held);
-            // Don't use HoldRoutine for kinematic pieces - it would try to restore gravity
-            LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold with KINEMATIC (gravity OFF)", held);
+            StartCoroutine(HoldRoutine(held, cutHoldSeconds));
         }
-        else
+
+        // Optional: soft anchor with sway instead of rigid lock
+        if (useSoftStemAnchor)
         {
-            // No anchor hold and not parented - make kinematic as fallback
-            held.isKinematic = true;
-            held.useGravity = false;
-            LogYellow($"[Rebinder] HELD '{held.name}' not parented and anchor hold disabled, set to KINEMATIC as fallback (gravity OFF)", held);
+            if (softAnchor == null)
+            {
+                softAnchor = flowerRoot != null
+                    ? flowerRoot.GetComponent<SoftStemAnchor>()
+                    : GetComponentInParent<SoftStemAnchor>();
+            }
+
+            if (softAnchor != null)
+            {
+                Vector3 anchorPos =
+                    softAnchorPoint != null ? softAnchorPoint.position :
+                    anchorPoint != null ? anchorPoint.position :
+                    crownRoot != null ? crownRoot.position :
+                    held.worldCenterOfMass;
+
+                softAnchor.AnchorHeldStem(held, anchorPos);
+
+                // Ensure falling chunks are not accidentally anchored
+                if (falling != null && falling.Length > 0)
+                {
+                    foreach (var f in falling)
+                        softAnchor.ReleaseStem(f);
+                }
+
+                LogYellow($"[Rebinder] SoftAnchor applied: HELD '{held.name}' -> {anchorPos}", held);
+            }
+            else
+            {
+                LogYellowWarning("[Rebinder] Soft anchor enabled but no SoftStemAnchor found; skipping sway anchor.");
+            }
         }
 
         // 3) Targeted fixes:
@@ -457,23 +476,12 @@ public class FlowerJointRebinder : MonoBehaviour
         if (rb == null || seconds <= 0f) yield break;
 
         bool oldGrav = rb.useGravity;
-        bool wasKinematic = rb.isKinematic;
         rb.useGravity = false;
         rb.WakeUp();
 
         yield return new WaitForSeconds(seconds);
 
-        // CRITICAL FIX: Only restore gravity if the piece is NOT kinematic
-        // Kinematic pieces should never have gravity (they're parented/moved by joints)
-        if (rb != null && !rb.isKinematic)
-        {
-            rb.useGravity = oldGrav;
-        }
-        // If kinematic, ensure gravity stays off (it should already be off from AnchorTopStemPiece)
-        else if (rb != null && rb.isKinematic)
-        {
-            rb.useGravity = false;
-        }
+        if (rb != null) rb.useGravity = oldGrav;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -750,23 +758,9 @@ public class FlowerJointRebinder : MonoBehaviour
         foreach (var rb in chunks)
         {
             if (rb == null) continue;
-            
-            // CRITICAL: Only make dynamic if NOT parented to stemRuntime (parented = kept piece)
-            // Parented pieces should remain kinematic
-            bool isParentedToStem = (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform));
-            if (!isParentedToStem)
-            {
-                rb.isKinematic = false;
-                rb.useGravity = true;
-                rb.WakeUp();
-            }
-            else
-            {
-                // Safety check: if somehow a kept piece got in here, ensure it stays kinematic
-                rb.isKinematic = true;
-                rb.useGravity = false;
-                LogYellowWarning($"[Rebinder] Kept piece '{rb.name}' was in falling chunks list - corrected to KINEMATIC", rb);
-            }
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.WakeUp();
         }
     }
 

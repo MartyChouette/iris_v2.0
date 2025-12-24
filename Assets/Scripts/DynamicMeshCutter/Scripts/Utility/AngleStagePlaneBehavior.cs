@@ -267,7 +267,15 @@ namespace DynamicMeshCutter
 
                 if (stemRuntime != null)
                 {
-                    var marker = piece.AddComponent<StemPieceMarker>();
+                    // CRITICAL FIX: The Rigidbody is on the physics root (CreatedObjects[i]), 
+                    // NOT on the child mesh object (CreatedTargets[i].gameObject).
+                    // AnchorTopStemPiece operates on CreatedObjects[i], so we must too!
+                    GameObject physicsRoot = (i < cData.CreatedObjects.Length) ? cData.CreatedObjects[i] : null;
+                    
+                    if (physicsRoot == null)
+                        continue;
+
+                    var marker = physicsRoot.AddComponent<StemPieceMarker>();
                     marker.stemRuntime = stemRuntime;
 
                     // CRITICAL FIX: Get the physics root GameObject (where the Rigidbody actually lives)
@@ -301,7 +309,7 @@ namespace DynamicMeshCutter
                     if (debugLogs)
                     {
                         string physicsRootInfo = physicsRoot != null ? $"physicsRoot='{physicsRoot.name}', physicsRootIsChildOf={physicsRoot.transform.IsChildOf(stemRuntime.transform)}" : "physicsRoot=null";
-                        Debug.Log($"[AngleStagePlaneBehaviour] Piece '{piece.name}': parent={piece.transform.parent?.name ?? "null"}, {physicsRootInfo}, isKeptStemPiece={isKeptStemPiece}, current isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", piece);
+                        Debug.Log($"[AngleStagePlaneBehaviour] Piece '{piece.name}': physicsRoot='{physicsRoot.name}', {physicsRootInfo}, isKeptStemPiece={isKeptStemPiece}, current isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", physicsRoot);
                     }
 
                     // Only override if AnchorTopStemPiece hasn't already set it correctly

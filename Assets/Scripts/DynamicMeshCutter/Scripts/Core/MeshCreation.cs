@@ -21,20 +21,6 @@ namespace DynamicMeshCutter
     /**
      * @class MeshCreationData
      * @brief MeshCreationData component.
-     * @details
-     * Responsibilities:
-     * - (Documented) See fields and methods below.
-     *
-     * Unity lifecycle:
-     * - Awake(): cache references / validate setup.
-     * - OnEnable()/OnDisable(): hook/unhook events.
-     * - Update(): per-frame behavior (if any).
-     *
-     * Gotchas:
-     * - Keep hot paths allocation-free (Update/cuts/spawns).
-     * - Prefer event-driven UI updates over per-frame string building.
-     *
-     * @ingroup thirdparty
      */
     public class MeshCreationData
     {
@@ -47,25 +33,11 @@ namespace DynamicMeshCutter
             CreatedTargets = new MeshTarget[size];
         }
     }
+
     /**
      * @class MeshCreation
      * @brief MeshCreation component.
-     * @details
-     * Responsibilities:
-     * - (Documented) See fields and methods below.
-     *
-     * Unity lifecycle:
-     * - Awake(): cache references / validate setup.
-     * - OnEnable()/OnDisable(): hook/unhook events.
-     * - Update(): per-frame behavior (if any).
-     *
-     * Gotchas:
-     * - Keep hot paths allocation-free (Update/cuts/spawns).
-     * - Prefer event-driven UI updates over per-frame string building.
-     *
-     * @ingroup thirdparty
      */
-
     public static class MeshCreation
     {
         static float _ragdoll_vertex_threshold = 0.75f;
@@ -214,12 +186,6 @@ namespace DynamicMeshCutter
                 if (parent == null || root == null)
                     continue;
 
-                // Cull ultra-thin fragments to avoid jittering slivers.
-                const float MIN_FRAGMENT_THICKNESS = 0.00075f; // tune this for your scale
-                // Note: User provided code didn't have CullIfTooThin definition, assuming it exists in class or handled elsewere
-                // if (CullIfTooThin(parent, MIN_FRAGMENT_THICKNESS)) continue; 
-
-
                 // Ensure a MeshTarget lives on the root
                 var nTarget = root.GetComponent<MeshTarget>();
                 if (nTarget == null)
@@ -272,63 +238,52 @@ namespace DynamicMeshCutter
         }
 
         /// <summary>
-        /// For stem cuts: keep the stem piece closest to the crown (stemStart)
+        /// For stem cuts: keep the stem piece closest to the crown (StemAnchor)
         /// as the "held" stem, and let all other pieces fall away.
-        /// This avoids relying on DMC's BT/top-side classification, which can flip
-        /// depending on plane normal orientation.
         /// </summary>
         static void AnchorTopStemPiece(GameObject[] createdObjects,
                                        global::FlowerStemRuntime stemRuntime,
                                        GameObject originalStemRoot = null)
         {
-            if (createdObjects == null || stemRuntime == null)
+            if (stemRuntime == null || pieces == null || pieces.Length == 0)
                 return;
 
-            // If we don't know where the crown is, we can't determine directionality easily.
-            if (stemRuntime.stemStart == null)
-                return;
+            // 1. Identify the ANCHOR (The part of the stem attached to the flower head/crown)
+            //    We want to KEEP the piece closest to this point.
+            //    Renamed logic: stemStart -> StemAnchor
+            Vector3 anchorPos = stemRuntime.StemAnchor != null
+                                ? stemRuntime.StemAnchor.position
+                                : stemRuntime.transform.position;
 
-            Vector3 crownPos = stemRuntime.stemStart.position;
+            GameObject keeper = null;
+            float closestDistSq = float.MaxValue;
 
-            // Find the piece whose bounds center is closest to the crown.
-            int bestIndex = -1;
-            float bestDist = float.MaxValue;
-            float bestHeight = 0f;
-
-            for (int i = 0; i < createdObjects.Length; i++)
+            // 2. Find the winner (The piece closest to the Anchor)
+            foreach (var p in pieces)
             {
-                var go = createdObjects[i];
-                if (go == null)
-                    continue;
+                if (p == null) continue;
 
-                var col = go.GetComponentInChildren<Collider>();
-                var rend = go.GetComponentInChildren<Renderer>();
-                if (col == null && rend == null)
-                    continue;
+                // Check distance from the piece's center to the Anchor
+                var rb = p.GetComponent<Rigidbody>();
+                Vector3 center = rb ? rb.worldCenterOfMass : p.transform.position;
 
-                Bounds b = (col != null) ? col.bounds : rend.bounds;
-                float dist = Vector3.Distance(b.center, crownPos);
+                // Refinement: If you have a collider, use ClosestPoint for better accuracy on curved stems
+                var col = p.GetComponent<Collider>();
+                if (col != null)
+                    center = col.ClosestPoint(anchorPos);
 
-                if (dist < bestDist)
+                float d = (center - anchorPos).sqrMagnitude;
+                if (d < closestDistSq)
                 {
-                    bestDist = dist;
-                    bestIndex = i;
-                    bestHeight = b.size.y; // Keep track of its size
+                    closestDistSq = d;
+                    keeper = p;
                 }
             }
 
-            if (bestIndex < 0)
-            {
-                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] Could not find best piece (bestIndex < 0)", stemRuntime);
-                return;
-            }
+            // 3. Apply Physics Rules
+            float collapseThreshold = 0.10f; // Minimum length to stay kinematic
 
-            // IRIS MOD: Check if the "best" piece is actually substantial enough to exist.
-            // If the piece attached to the crown is microscopic, you cut it too high/low.
-            bool mainPieceSurvives = (bestHeight >= CollapseThreshold);
-
-            // Keep the crown-side piece "in hand" (IF it survives), let others fall.
-            for (int i = 0; i < createdObjects.Length; i++)
+            foreach (var p in pieces)
             {
                 var go = createdObjects[i];
                 if (go == null)
@@ -361,8 +316,9 @@ namespace DynamicMeshCutter
                 }
                 else
                 {
-                    // It's either a cut-off chunk OR the main piece was too small (CollapseThreshold).
-                    // Either way, it falls.
+                    // Check metric cruelty (is the piece too small to exist?)
+                    MeshFilter mf = p.GetComponent<MeshFilter>();
+                    float height = mf ? mf.sharedMesh.bounds.size.y : 0.1f;
 
                     // SAFETY CHECK: Ensure this piece is NOT parented before making it fall
                     bool isParented = go.transform.IsChildOf(stemRuntime.transform);
@@ -385,9 +341,11 @@ namespace DynamicMeshCutter
                     // Keep only: Rigidbody, Collider, and essential components
                     CleanupFallingPiece(go);
 
-                    if (i == bestIndex && !mainPieceSurvives)
+                        // Note: FlowerStemRuntime.ApplyCutFromPlane handles updating StemTip.
+                    }
+                    else
                     {
-                        Debug.Log($"[Iris] Cut too close! Main stem piece was {bestHeight:F3} (Threshold: {CollapseThreshold}). Collapsing.");
+                        Debug.Log($"[MeshCreation] Cut too close to anchor! Piece size {height:F3} < {collapseThreshold}. Collapsing.");
                     }
                 }
             }
@@ -640,9 +598,6 @@ namespace DynamicMeshCutter
             }
         }
 
-        /// <summary>
-        /// will the ragdoll have any valid colliders left after considering the cutoff threshold?
-        /// </summary>
         static bool WillBeValidRagdoll(DynamicRagdoll ragdoll, VirtualMesh vMesh)
         {
             foreach (int key in ragdoll.Parts.Keys)
