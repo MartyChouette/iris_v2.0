@@ -253,9 +253,9 @@ namespace DynamicMeshCutter
                 ? stemRuntime.StemAnchor.position
                 : stemRuntime.transform.position;
 
-            // Find the piece closest to crown by center of mass distance
+            // Find the piece FARTHEST from crown (usually the rooted bottom piece)
             GameObject keeper = null;
-            float closestDistSq = float.MaxValue;
+            float farthestDistSq = -1f;
 
             foreach (var go in createdObjects)
             {
@@ -268,9 +268,9 @@ namespace DynamicMeshCutter
                 float distSq = (rb.worldCenterOfMass - crownPos).sqrMagnitude;
                 Debug.Log($"[AnchorTopStemPiece] Piece '{go.name}' (rb on '{rb.gameObject.name}') distance to crown: {Mathf.Sqrt(distSq):F3}", go);
                 
-                if (distSq < closestDistSq)
+                if (distSq > farthestDistSq)
                 {
-                    closestDistSq = distSq;
+                    farthestDistSq = distSq;
                     keeper = go;
                 }
             }
@@ -278,7 +278,7 @@ namespace DynamicMeshCutter
             if (keeper == null)
                 return;
 
-            Debug.Log($"[AnchorTopStemPiece] Selected keeper: '{keeper.name}' (closest to crown)", keeper);
+            Debug.Log($"[AnchorTopStemPiece] Selected keeper: '{keeper.name}' (farthest from crown)", keeper);
 
             // Configure all pieces
             foreach (var go in createdObjects)
