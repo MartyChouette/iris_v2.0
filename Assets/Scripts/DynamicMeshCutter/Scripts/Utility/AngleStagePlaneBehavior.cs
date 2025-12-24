@@ -278,10 +278,6 @@ namespace DynamicMeshCutter
                     var marker = physicsRoot.AddComponent<StemPieceMarker>();
                     marker.stemRuntime = stemRuntime;
 
-                    // CRITICAL FIX: Get the physics root GameObject (where the Rigidbody actually lives)
-                    // AnchorTopStemPiece operates on CreatedObjects[i] (physics root), not CreatedTargets[i].gameObject (child mesh)
-                    GameObject physicsRoot = (i < cData.CreatedObjects.Length) ? cData.CreatedObjects[i] : null;
-                    
                     // Get Rigidbody from physics root, not from the child mesh
                     Rigidbody rb = null;
                     if (physicsRoot != null)
