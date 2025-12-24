@@ -518,9 +518,9 @@ namespace DynamicMeshCutter
                 {
                     // Remove unnecessary component
                     if (Application.isPlaying)
-                        Object.Destroy(comp);
+                        UnityEngine.Object.Destroy(comp);
                     else
-                        Object.DestroyImmediate(comp);
+                        UnityEngine.Object.DestroyImmediate(comp);
                 }
             }
 
@@ -545,9 +545,9 @@ namespace DynamicMeshCutter
                     if (!shouldKeep)
                     {
                         if (Application.isPlaying)
-                            Object.Destroy(comp);
+                            UnityEngine.Object.Destroy(comp);
                         else
-                            Object.DestroyImmediate(comp);
+                            UnityEngine.Object.DestroyImmediate(comp);
                     }
                 }
             }
