@@ -261,11 +261,12 @@ namespace DynamicMeshCutter
             {
                 if (go == null) continue;
                 
-                var rb = go.GetComponent<Rigidbody>();
+                // Find rigidbody - check on this object first, then parent
+                var rb = go.GetComponent<Rigidbody>() ?? go.GetComponentInParent<Rigidbody>();
                 if (rb == null) continue;
                 
                 float distSq = (rb.worldCenterOfMass - crownPos).sqrMagnitude;
-                Debug.Log($"[AnchorTopStemPiece] Piece '{go.name}' distance to crown: {Mathf.Sqrt(distSq):F3}", go);
+                Debug.Log($"[AnchorTopStemPiece] Piece '{go.name}' (rb on '{rb.gameObject.name}') distance to crown: {Mathf.Sqrt(distSq):F3}", go);
                 
                 if (distSq < closestDistSq)
                 {
@@ -284,15 +285,44 @@ namespace DynamicMeshCutter
             {
                 if (go == null) continue;
                 
+                // Find rigidbody - check on this object first, then parent
                 var rb = go.GetComponent<Rigidbody>();
+                if (rb == null)
+                {
+                    rb = go.GetComponentInParent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        Debug.Log($"[AnchorTopStemPiece] Found Rigidbody on PARENT '{rb.gameObject.name}' for piece '{go.name}'", rb);
+                    }
+                }
                 if (rb == null) continue;
 
                 if (go == keeper)
                 {
-                    // Keeper: freeze in place, parent to stem to replace original
+                    // Debug: trace the hierarchy
+                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}' hierarchy trace:", go);
+                    Debug.Log($"  - go.transform.parent = {(go.transform.parent != null ? go.transform.parent.name : "NULL")}", go);
+                    
+                    // Check for Rigidbody on this object and parent
+                    var rbOnGo = go.GetComponent<Rigidbody>();
+                    var rbOnParent = go.transform.parent != null ? go.transform.parent.GetComponent<Rigidbody>() : null;
+                    Debug.Log($"  - Rigidbody on go: {(rbOnGo != null ? "YES" : "NO")}", go);
+                    Debug.Log($"  - Rigidbody on go.parent: {(rbOnParent != null ? "YES - " + go.transform.parent.name : "NO")}", go);
+                    
+                    // Configure the rigidbody we found
                     rb.isKinematic = true;
                     rb.useGravity = false;
                     rb.constraints = RigidbodyConstraints.FreezeAll;
+                    Debug.Log($"  - Set rb on '{rb.gameObject.name}': isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, constraints={rb.constraints}", rb);
+                    
+                    // Also check and configure parent's rigidbody if different
+                    if (rbOnParent != null && rbOnParent != rb)
+                    {
+                        rbOnParent.isKinematic = true;
+                        rbOnParent.useGravity = false;
+                        rbOnParent.constraints = RigidbodyConstraints.FreezeAll;
+                        Debug.Log($"  - ALSO set rb on PARENT '{rbOnParent.gameObject.name}': isKinematic={rbOnParent.isKinematic}, useGravity={rbOnParent.useGravity}", rbOnParent);
+                    }
                     
                     // Parent to stem runtime (keeps world position with true)
                     go.transform.SetParent(stemRuntime.transform, true);
