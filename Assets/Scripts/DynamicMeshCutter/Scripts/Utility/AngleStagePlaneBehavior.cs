@@ -322,19 +322,34 @@ namespace DynamicMeshCutter
                     {
                         // This is STEM WASTE (bottom/falling piece).
                         // It must fall (Gravity) and be dynamic.
-                        // Force these settings to ensure it falls
-                        rb.isKinematic = false;
-                        rb.useGravity = true;
-                        rb.constraints = RigidbodyConstraints.None;
+                        // SAFETY CHECK: Ensure this is NOT a kept piece before making it fall
+                        bool isActuallyKept = (stemRuntime != null && physicsRoot != null && 
+                                               physicsRoot.transform.IsChildOf(stemRuntime.transform));
                         
-                        // Add despawn component for falling pieces (on physics root if it exists)
-                        GameObject despawnTarget = physicsRoot != null ? physicsRoot : piece;
-                        var despawner = despawnTarget.GetComponent<OffScreenDespawner>();
-                        if (despawner == null)
-                            despawner = despawnTarget.AddComponent<OffScreenDespawner>();
-                        
-                        if (debugLogs)
-                            Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{physicsRoot?.name ?? piece.name}' to DYNAMIC with gravity (falling piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", physicsRoot ?? piece);
+                        if (!isActuallyKept)
+                        {
+                            // Force these settings to ensure it falls
+                            rb.isKinematic = false;
+                            rb.useGravity = true;
+                            rb.constraints = RigidbodyConstraints.None;
+                            
+                            // Add despawn component for falling pieces (on physics root if it exists)
+                            GameObject despawnTarget = physicsRoot != null ? physicsRoot : piece;
+                            var despawner = despawnTarget.GetComponent<OffScreenDespawner>();
+                            if (despawner == null)
+                                despawner = despawnTarget.AddComponent<OffScreenDespawner>();
+                            
+                            if (debugLogs)
+                                Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{physicsRoot?.name ?? piece.name}' to DYNAMIC with gravity (falling piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", physicsRoot ?? piece);
+                        }
+                        else
+                        {
+                            // Safety: This was detected as kept piece - ensure it stays kinematic
+                            rb.isKinematic = true;
+                            rb.useGravity = false;
+                            if (debugLogs)
+                                Debug.LogWarning($"[AngleStagePlaneBehaviour] SAFETY: '{physicsRoot?.name ?? piece.name}' was marked as falling but is parented - corrected to KINEMATIC", physicsRoot ?? piece);
+                        }
                     }
                 }
             }

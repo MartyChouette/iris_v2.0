@@ -265,7 +265,7 @@ namespace DynamicMeshCutter
             // NEW: for stem cuts, treat the longest piece as the main stem
             if (isStemTarget)
             {
-                AnchorTopStemPiece(cData.CreatedObjects, stemRuntime);
+                AnchorTopStemPiece(cData.CreatedObjects, stemRuntime, target.GameobjectRoot);
             }
 
             return cData;
@@ -278,7 +278,8 @@ namespace DynamicMeshCutter
         /// depending on plane normal orientation.
         /// </summary>
         static void AnchorTopStemPiece(GameObject[] createdObjects,
-                                       global::FlowerStemRuntime stemRuntime)
+                                       global::FlowerStemRuntime stemRuntime,
+                                       GameObject originalStemRoot = null)
         {
             if (createdObjects == null || stemRuntime == null)
                 return;
@@ -350,12 +351,26 @@ namespace DynamicMeshCutter
                     // Parent to the flower so it moves with the system.
                     go.transform.SetParent(stemRuntime.transform, true);
                     
+                    // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
+                    if (originalStemRoot != null)
+                    {
+                        PreserveComponentsForKeptPiece(originalStemRoot, go);
+                    }
+                    
                     Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEPT piece '{go.name}': isKinematic=true, useGravity=false, parented to '{stemRuntime.name}'", go);
                 }
                 else
                 {
                     // It's either a cut-off chunk OR the main piece was too small (CollapseThreshold).
                     // Either way, it falls.
+
+                    // SAFETY CHECK: Ensure this piece is NOT parented before making it fall
+                    bool isParented = go.transform.IsChildOf(stemRuntime.transform);
+                    if (isParented)
+                    {
+                        // This shouldn't happen, but if it does, unparent first
+                        go.transform.SetParent(null, true);
+                    }
 
                     rb.useGravity = true;
                     rb.isKinematic = false;
@@ -366,12 +381,190 @@ namespace DynamicMeshCutter
                                         RigidbodyConstraints.FreezePositionZ);
                     // (keeps any rotation freezes you had, just unlocks translation)
 
-                    if (go.transform.IsChildOf(stemRuntime.transform))
-                        go.transform.SetParent(null, true);
+                    // CLEANUP FALLING PIECE: Remove unnecessary components for performance
+                    // Keep only: Rigidbody, Collider, and essential components
+                    CleanupFallingPiece(go);
 
                     if (i == bestIndex && !mainPieceSurvives)
                     {
                         Debug.Log($"[Iris] Cut too close! Main stem piece was {bestHeight:F3} (Threshold: {CollapseThreshold}). Collapsing.");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Preserves important components from the original stem onto the kept piece.
+        /// This ensures the kept piece maintains all necessary attributes for crown/leaf connections.
+        /// Note: Joints are NOT copied here - they're rebounded by FlowerJointRebinder after the cut.
+        /// </summary>
+        static void PreserveComponentsForKeptPiece(GameObject originalStemRoot, GameObject keptPiece)
+        {
+            if (originalStemRoot == null || keptPiece == null) return;
+
+            // Components to preserve (skip ones that shouldn't be copied)
+            var skipTypes = new System.Type[]
+            {
+                typeof(Transform),
+                typeof(MeshFilter),
+                typeof(MeshRenderer),
+                typeof(MeshCollider),
+                typeof(Rigidbody),
+                typeof(FlowerStemRuntime), // Don't copy - this is on the parent hierarchy
+                typeof(StemPieceMarker), // Already added by MeshCreation
+                typeof(Joint), // Joints are rebounded by FlowerJointRebinder
+                typeof(LeafAttachmentMarker), // These are handled by rebinder
+            };
+
+            var components = originalStemRoot.GetComponents<Component>();
+            foreach (var comp in components)
+            {
+                if (comp == null) continue;
+
+                var compType = comp.GetType();
+                
+                // Skip if in skip list
+                bool shouldSkip = false;
+                foreach (var skipType in skipTypes)
+                {
+                    if (skipType.IsAssignableFrom(compType))
+                    {
+                        shouldSkip = true;
+                        break;
+                    }
+                }
+                if (shouldSkip) continue;
+
+                // Skip if component already exists
+                if (keptPiece.GetComponent(compType) != null) continue;
+
+                // Runtime-safe component copying: create new instance and copy serialized fields
+                try
+                {
+                    var newComp = keptPiece.AddComponent(compType);
+                    if (newComp != null)
+                    {
+                        // Copy serialized fields using reflection (runtime-safe)
+                        CopySerializedFields(comp, newComp);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    // Some components can't be copied (e.g., require specific setup)
+                    // Log but don't fail - this is expected for some component types
+                    Debug.LogWarning($"[MeshCreation] Could not copy component {compType.Name} from {originalStemRoot.name} to {keptPiece.name}: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Copies serialized fields from source to destination component using reflection.
+        /// Runtime-safe alternative to UnityEditorInternal.ComponentUtility.
+        /// </summary>
+        static void CopySerializedFields(Component source, Component destination)
+        {
+            if (source == null || destination == null) return;
+            if (source.GetType() != destination.GetType()) return;
+
+            var type = source.GetType();
+            var fields = type.GetFields(System.Reflection.BindingFlags.Public | 
+                                       System.Reflection.BindingFlags.NonPublic | 
+                                       System.Reflection.BindingFlags.Instance);
+
+            foreach (var field in fields)
+            {
+                // Skip certain fields that shouldn't be copied
+                if (field.Name == "m_GameObject" || field.Name == "m_Enabled" || 
+                    field.Name.Contains("m_Rigidbody") || field.Name.Contains("connectedBody"))
+                    continue;
+
+                try
+                {
+                    var value = field.GetValue(source);
+                    if (value != null)
+                    {
+                        field.SetValue(destination, value);
+                    }
+                }
+                catch
+                {
+                    // Skip fields that can't be copied (e.g., read-only or complex types)
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes unnecessary components from falling pieces for optimal performance.
+        /// Keeps only: Rigidbody, Collider, and essential components.
+        /// </summary>
+        static void CleanupFallingPiece(GameObject fallingPiece)
+        {
+            if (fallingPiece == null) return;
+
+            // Components to keep (everything else gets removed)
+            var keepTypes = new System.Type[]
+            {
+                typeof(Transform),
+                typeof(Rigidbody),
+                typeof(Collider),
+                typeof(MeshFilter),
+                typeof(MeshRenderer),
+                typeof(MeshCollider),
+                typeof(StemPieceMarker), // Keep for identification
+                typeof(OffScreenDespawner), // Keep for cleanup
+            };
+
+            var components = fallingPiece.GetComponents<Component>();
+            foreach (var comp in components)
+            {
+                if (comp == null) continue;
+
+                var compType = comp.GetType();
+                bool shouldKeep = false;
+
+                foreach (var keepType in keepTypes)
+                {
+                    if (keepType.IsAssignableFrom(compType))
+                    {
+                        shouldKeep = true;
+                        break;
+                    }
+                }
+
+                if (!shouldKeep)
+                {
+                    // Remove unnecessary component
+                    if (Application.isPlaying)
+                        Object.Destroy(comp);
+                    else
+                        Object.DestroyImmediate(comp);
+                }
+            }
+
+            // Also clean up children recursively (but keep mesh/collider structure)
+            var children = fallingPiece.GetComponentsInChildren<Transform>(true);
+            foreach (var child in children)
+            {
+                if (child == null || child == fallingPiece.transform) continue;
+
+                var childComps = child.GetComponents<Component>();
+                foreach (var comp in childComps)
+                {
+                    if (comp == null) continue;
+
+                    var compType = comp.GetType();
+                    bool shouldKeep = compType == typeof(Transform) ||
+                                     compType == typeof(MeshFilter) ||
+                                     compType == typeof(MeshRenderer) ||
+                                     compType == typeof(Collider) ||
+                                     compType == typeof(MeshCollider);
+
+                    if (!shouldKeep)
+                    {
+                        if (Application.isPlaying)
+                            Object.Destroy(comp);
+                        else
+                            Object.DestroyImmediate(comp);
                     }
                 }
             }

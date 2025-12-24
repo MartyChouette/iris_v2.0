@@ -224,23 +224,30 @@ public class FlowerJointRebinder : MonoBehaviour
         if (isParentedToStem)
         {
             // Parented pieces should be kinematic - they move with the parent
+            // CRITICAL: Force kinematic and disable gravity - this piece MUST stay attached
             held.isKinematic = true;
             held.useGravity = false;
-            LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem, set to KINEMATIC", held);
+            held.linearVelocity = Vector3.zero;
+            held.angularVelocity = Vector3.zero;
+            LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem, set to KINEMATIC (gravity OFF)", held);
         }
         else if (enableAnchorHold)
         {
             // Not parented - use joint-based anchor hold
+            // Still ensure kinematic for safety
+            held.isKinematic = true;
+            held.useGravity = false;
             EnsureAnchorBody();
             ApplyAnchorHoldToHeld(held);
-            StartCoroutine(HoldRoutine(held, cutHoldSeconds));
+            // Don't use HoldRoutine for kinematic pieces - it would try to restore gravity
+            LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold with KINEMATIC (gravity OFF)", held);
         }
         else
         {
             // No anchor hold and not parented - make kinematic as fallback
             held.isKinematic = true;
             held.useGravity = false;
-            LogYellow($"[Rebinder] HELD '{held.name}' not parented and anchor hold disabled, set to KINEMATIC as fallback", held);
+            LogYellow($"[Rebinder] HELD '{held.name}' not parented and anchor hold disabled, set to KINEMATIC as fallback (gravity OFF)", held);
         }
 
         // 3) Targeted fixes:
@@ -449,12 +456,23 @@ public class FlowerJointRebinder : MonoBehaviour
         if (rb == null || seconds <= 0f) yield break;
 
         bool oldGrav = rb.useGravity;
+        bool wasKinematic = rb.isKinematic;
         rb.useGravity = false;
         rb.WakeUp();
 
         yield return new WaitForSeconds(seconds);
 
-        if (rb != null) rb.useGravity = oldGrav;
+        // CRITICAL FIX: Only restore gravity if the piece is NOT kinematic
+        // Kinematic pieces should never have gravity (they're parented/moved by joints)
+        if (rb != null && !rb.isKinematic)
+        {
+            rb.useGravity = oldGrav;
+        }
+        // If kinematic, ensure gravity stays off (it should already be off from AnchorTopStemPiece)
+        else if (rb != null && rb.isKinematic)
+        {
+            rb.useGravity = false;
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -681,9 +699,23 @@ public class FlowerJointRebinder : MonoBehaviour
         foreach (var rb in chunks)
         {
             if (rb == null) continue;
-            rb.isKinematic = false;
-            rb.useGravity = true;
-            rb.WakeUp();
+            
+            // CRITICAL: Only make dynamic if NOT parented to stemRuntime (parented = kept piece)
+            // Parented pieces should remain kinematic
+            bool isParentedToStem = (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform));
+            if (!isParentedToStem)
+            {
+                rb.isKinematic = false;
+                rb.useGravity = true;
+                rb.WakeUp();
+            }
+            else
+            {
+                // Safety check: if somehow a kept piece got in here, ensure it stays kinematic
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                LogYellowWarning($"[Rebinder] Kept piece '{rb.name}' was in falling chunks list - corrected to KINEMATIC", rb);
+            }
         }
     }
 
