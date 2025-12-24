@@ -286,7 +286,7 @@ namespace DynamicMeshCutter
             if (size < 0.05f)
             {
                 Debug.Log($"[AnchorTopStemPiece] Keeper '{keeper.name}' too small ({size:F3} < 0.05), deleting", keeper);
-                Destroy(keeper);
+                UnityEngine.Object.Destroy(keeper);
                 return;
             }
 
