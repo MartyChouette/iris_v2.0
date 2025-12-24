@@ -245,7 +245,7 @@ namespace DynamicMeshCutter
                                        global::FlowerStemRuntime stemRuntime,
                                        GameObject originalStemRoot = null)
         {
-            if (stemRuntime == null || pieces == null || pieces.Length == 0)
+            if (stemRuntime == null || createdObjects == null || createdObjects.Length == 0)
                 return;
 
             // 1. Identify the ANCHOR (The part of the stem attached to the flower head/crown)
@@ -259,16 +259,16 @@ namespace DynamicMeshCutter
             float closestDistSq = float.MaxValue;
 
             // 2. Find the winner (The piece closest to the Anchor)
-            foreach (var p in pieces)
+            foreach (var p in createdObjects)
             {
                 if (p == null) continue;
 
                 // Check distance from the piece's center to the Anchor
                 var rb = p.GetComponent<Rigidbody>();
-                Vector3 center = rb ? rb.worldCenterOfMass : p.transform.position;
+                Vector3 center = rb != null ? rb.worldCenterOfMass : p.transform.position;
 
                 // Refinement: If you have a collider, use ClosestPoint for better accuracy on curved stems
-                var col = p.GetComponent<Collider>();
+                var col = p.GetComponentInChildren<Collider>();
                 if (col != null)
                     center = col.ClosestPoint(anchorPos);
 
@@ -280,12 +280,17 @@ namespace DynamicMeshCutter
                 }
             }
 
+            if (keeper == null)
+            {
+                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] Could not find keeper piece", stemRuntime);
+                return;
+            }
+
             // 3. Apply Physics Rules
             float collapseThreshold = 0.10f; // Minimum length to stay kinematic
 
-            foreach (var p in pieces)
+            foreach (var go in createdObjects)
             {
-                var go = createdObjects[i];
                 if (go == null)
                     continue;
 
@@ -293,33 +298,60 @@ namespace DynamicMeshCutter
                 if (rb == null)
                     continue;
 
-                // Is this the anchor piece? AND is it large enough?
-                if (i == bestIndex && mainPieceSurvives)
-                {
-                    // This is the piece closest to the crown -> the one we keep.
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
-                    rb.linearVelocity = Vector3.zero;
-                    rb.angularVelocity = Vector3.zero;
-                    rb.constraints = RigidbodyConstraints.None;
+                bool isKeeper = (go == keeper);
 
-                    // Parent to the flower so it moves with the system.
-                    go.transform.SetParent(stemRuntime.transform, true);
-                    
-                    // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
-                    if (originalStemRoot != null)
+                if (isKeeper)
+                {
+                    // Check metric cruelty (is the piece too small to exist?)
+                    MeshFilter mf = go.GetComponentInChildren<MeshFilter>();
+                    float height = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.size.y : 0.1f;
+                    bool mainPieceSurvives = (height >= collapseThreshold);
+
+                    if (mainPieceSurvives)
                     {
-                        PreserveComponentsForKeptPiece(originalStemRoot, go);
+                        // This is the piece closest to the crown -> the one we keep.
+                        rb.isKinematic = true;
+                        rb.useGravity = false;
+                        rb.linearVelocity = Vector3.zero;
+                        rb.angularVelocity = Vector3.zero;
+                        rb.constraints = RigidbodyConstraints.None;
+
+                        // Parent to the flower so it moves with the system.
+                        go.transform.SetParent(stemRuntime.transform, true);
+                        
+                        // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
+                        if (originalStemRoot != null)
+                        {
+                            PreserveComponentsForKeptPiece(originalStemRoot, go);
+                        }
+                        
+                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEPT piece '{go.name}': isKinematic=true, useGravity=false, parented to '{stemRuntime.name}'", go);
                     }
-                    
-                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEPT piece '{go.name}': isKinematic=true, useGravity=false, parented to '{stemRuntime.name}'", go);
+                    else
+                    {
+                        // Piece too small - let it fall
+                        Debug.Log($"[MeshCreation] Cut too close to anchor! Piece size {height:F3} < {collapseThreshold}. Collapsing.");
+                        
+                        // SAFETY CHECK: Ensure this piece is NOT parented before making it fall
+                        bool isParented = go.transform.IsChildOf(stemRuntime.transform);
+                        if (isParented)
+                        {
+                            go.transform.SetParent(null, true);
+                        }
+
+                        rb.useGravity = true;
+                        rb.isKinematic = false;
+
+                        rb.constraints &= ~(RigidbodyConstraints.FreezePositionX |
+                                            RigidbodyConstraints.FreezePositionY |
+                                            RigidbodyConstraints.FreezePositionZ);
+
+                        CleanupFallingPiece(go);
+                    }
                 }
                 else
                 {
-                    // Check metric cruelty (is the piece too small to exist?)
-                    MeshFilter mf = p.GetComponent<MeshFilter>();
-                    float height = mf ? mf.sharedMesh.bounds.size.y : 0.1f;
-
+                    // This is a falling piece
                     // SAFETY CHECK: Ensure this piece is NOT parented before making it fall
                     bool isParented = go.transform.IsChildOf(stemRuntime.transform);
                     if (isParented)
@@ -340,13 +372,6 @@ namespace DynamicMeshCutter
                     // CLEANUP FALLING PIECE: Remove unnecessary components for performance
                     // Keep only: Rigidbody, Collider, and essential components
                     CleanupFallingPiece(go);
-
-                        // Note: FlowerStemRuntime.ApplyCutFromPlane handles updating StemTip.
-                    }
-                    else
-                    {
-                        Debug.Log($"[MeshCreation] Cut too close to anchor! Piece size {height:F3} < {collapseThreshold}. Collapsing.");
-                    }
                 }
             }
         }
