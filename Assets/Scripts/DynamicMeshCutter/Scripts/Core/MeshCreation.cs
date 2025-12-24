@@ -261,8 +261,8 @@ namespace DynamicMeshCutter
             {
                 if (go == null) continue;
                 
-                // Find rigidbody - check on this object first, then parent
-                var rb = go.GetComponent<Rigidbody>() ?? go.GetComponentInParent<Rigidbody>();
+                // Find rigidbody - check on this object first, then CHILDREN
+                var rb = go.GetComponent<Rigidbody>() ?? go.GetComponentInChildren<Rigidbody>();
                 if (rb == null) continue;
                 
                 float distSq = (rb.worldCenterOfMass - crownPos).sqrMagnitude;
@@ -285,43 +285,34 @@ namespace DynamicMeshCutter
             {
                 if (go == null) continue;
                 
-                // Find rigidbody - check on this object first, then parent
+                // Find rigidbody - check on this object first, then CHILDREN
                 var rb = go.GetComponent<Rigidbody>();
                 if (rb == null)
                 {
-                    rb = go.GetComponentInParent<Rigidbody>();
+                    rb = go.GetComponentInChildren<Rigidbody>();
                     if (rb != null)
                     {
-                        Debug.Log($"[AnchorTopStemPiece] Found Rigidbody on PARENT '{rb.gameObject.name}' for piece '{go.name}'", rb);
+                        Debug.Log($"[AnchorTopStemPiece] Found Rigidbody on CHILD '{rb.gameObject.name}' for piece '{go.name}'", rb);
                     }
                 }
                 if (rb == null) continue;
 
                 if (go == keeper)
                 {
-                    // Debug: trace the hierarchy
+                    // Debug: trace the hierarchy and find ALL rigidbodies
                     Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}' hierarchy trace:", go);
-                    Debug.Log($"  - go.transform.parent = {(go.transform.parent != null ? go.transform.parent.name : "NULL")}", go);
                     
-                    // Check for Rigidbody on this object and parent
-                    var rbOnGo = go.GetComponent<Rigidbody>();
-                    var rbOnParent = go.transform.parent != null ? go.transform.parent.GetComponent<Rigidbody>() : null;
-                    Debug.Log($"  - Rigidbody on go: {(rbOnGo != null ? "YES" : "NO")}", go);
-                    Debug.Log($"  - Rigidbody on go.parent: {(rbOnParent != null ? "YES - " + go.transform.parent.name : "NO")}", go);
+                    // Find all rigidbodies in this piece (self and children)
+                    var allRigidbodies = go.GetComponentsInChildren<Rigidbody>(true);
+                    Debug.Log($"  - Found {allRigidbodies.Length} Rigidbodies in keeper hierarchy", go);
                     
-                    // Configure the rigidbody we found
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
-                    rb.constraints = RigidbodyConstraints.FreezeAll;
-                    Debug.Log($"  - Set rb on '{rb.gameObject.name}': isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, constraints={rb.constraints}", rb);
-                    
-                    // Also check and configure parent's rigidbody if different
-                    if (rbOnParent != null && rbOnParent != rb)
+                    // Configure ALL rigidbodies in this piece
+                    foreach (var pieceRb in allRigidbodies)
                     {
-                        rbOnParent.isKinematic = true;
-                        rbOnParent.useGravity = false;
-                        rbOnParent.constraints = RigidbodyConstraints.FreezeAll;
-                        Debug.Log($"  - ALSO set rb on PARENT '{rbOnParent.gameObject.name}': isKinematic={rbOnParent.isKinematic}, useGravity={rbOnParent.useGravity}", rbOnParent);
+                        pieceRb.isKinematic = true;
+                        pieceRb.useGravity = false;
+                        pieceRb.constraints = RigidbodyConstraints.FreezeAll;
+                        Debug.Log($"  - Configured rb on '{pieceRb.gameObject.name}': isKinematic=true, useGravity=false, FreezeAll", pieceRb);
                     }
                     
                     // Parent to stem runtime (keeps world position with true)
@@ -331,7 +322,7 @@ namespace DynamicMeshCutter
                     var marker = go.GetComponent<StemPieceMarker>();
                     if (marker != null) marker.isKeptPiece = true;
                     
-                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': kinematic, gravity OFF, frozen, parented to '{stemRuntime.name}'", go);
+                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': ALL rigidbodies frozen, parented to '{stemRuntime.name}'", go);
                 }
                 else
                 {
