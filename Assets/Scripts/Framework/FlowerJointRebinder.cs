@@ -70,6 +70,12 @@ public class FlowerJointRebinder : MonoBehaviour
     public bool forceFallingChunksDynamic = true;
 
     [Header("Anchor Hold (Optional)")]
+    [Tooltip("If true, uses SoftStemAnchor to give the held chunk a gentle sway instead of a rigid lock.")]
+    public bool useSoftStemAnchor = false;
+
+    [Tooltip("Optional reference to the SoftStemAnchor. Auto-resolves on this flower root if left null.")]
+    public SoftStemAnchor softAnchor;
+
     [Tooltip("If true, creates/uses a kinematic anchor Rigidbody at anchorPoint and tethers the HELD chunk to it.")]
     public bool enableAnchorHold = true;
 
