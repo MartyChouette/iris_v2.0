@@ -201,6 +201,14 @@ public class FlowerJointRebinder : MonoBehaviour
             return;
         }
         
+        // CRITICAL: Exclude the original stem's Rigidbody if it somehow got in the list
+        var originalStemRb = stemRuntime.GetComponent<Rigidbody>();
+        if (originalStemRb != null)
+        {
+            stemPieces = stemPieces.Where(rb => rb != originalStemRb).ToArray();
+            LogYellow($"[Rebinder] Excluded original stem Rigidbody '{originalStemRb.name}' from cut pieces list");
+        }
+        
         // DEBUG: Log what pieces we found
         LogYellow($"[Rebinder] Found {stemPieces.Length} cut stem pieces: [{string.Join(", ", stemPieces.Select(r => r.name))}]");
 
