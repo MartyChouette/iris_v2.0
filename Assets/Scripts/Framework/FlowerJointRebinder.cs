@@ -237,30 +237,59 @@ public class FlowerJointRebinder : MonoBehaviour
         LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]");
 
         // 2.5) Ensure HELD piece doesn't fall
-        // CRITICAL: Always ensure kinematic and no gravity for held piece
+        // Priority: Use SoftStemAnchor if available (best solution), otherwise use kinematic parenting
         bool isParentedToStem = (stemRuntime != null && held.transform.IsChildOf(stemRuntime.transform));
         
-        // ALWAYS set kinematic and disable gravity for held piece
-        held.isKinematic = true;
-        held.useGravity = false;
+        // Try SoftStemAnchor first (if enabled)
+        if (useSoftStemAnchor)
+        {
+            if (softAnchor == null)
+                softAnchor = flowerRoot != null 
+                    ? flowerRoot.GetComponent<SoftStemAnchor>()
+                    : GetComponentInParent<SoftStemAnchor>();
+            
+            if (softAnchor != null)
+            {
+                // SoftStemAnchor expects DYNAMIC body with gravity OFF + joint
+                // This allows natural sway while preventing fall
+                held.isKinematic = false; // MUST be dynamic for joints to work
+                held.useGravity = false; // Gravity off, joint holds it
+                
+                Vector3 anchorPos = anchorPoint != null ? anchorPoint.position : held.worldCenterOfMass;
+                softAnchor.AnchorHeldStem(held, anchorPos);
+                LogYellow($"[Rebinder] HELD '{held.name}' using SoftStemAnchor (DYNAMIC, gravity OFF, joint holds it)", held);
+            }
+            else
+            {
+                LogYellowWarning("[Rebinder] Soft anchor enabled but no SoftStemAnchor found; skipping sway anchor.");
+            }
+        }
         
-        // If parented, it's already set up correctly by AnchorTopStemPiece
-        if (isParentedToStem)
+        // If not using SoftStemAnchor, use kinematic parenting approach
+        if (!useSoftStemAnchor || softAnchor == null)
         {
-            LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem - KINEMATIC (gravity OFF) - already configured", held);
-        }
-        else if (enableAnchorHold)
-        {
-            // Not parented - use joint-based anchor hold
-            EnsureAnchorBody();
-            ApplyAnchorHoldToHeld(held);
-            LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold with KINEMATIC (gravity OFF)", held);
-        }
-        else
-        {
-            // Not parented and no anchor hold - parent it to stemRuntime as fallback
-            held.transform.SetParent(stemRuntime.transform, true);
-            LogYellow($"[Rebinder] HELD '{held.name}' not parented - parenting to stemRuntime and setting KINEMATIC (gravity OFF)", held);
+            // ALWAYS set kinematic and disable gravity for held piece
+            held.isKinematic = true;
+            held.useGravity = false;
+            
+            // If parented, it's already set up correctly by AnchorTopStemPiece
+            if (isParentedToStem)
+            {
+                LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem - KINEMATIC (gravity OFF) - already configured", held);
+            }
+            else if (enableAnchorHold)
+            {
+                // Not parented - use joint-based anchor hold
+                EnsureAnchorBody();
+                ApplyAnchorHoldToHeld(held);
+                LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold with KINEMATIC (gravity OFF)", held);
+            }
+            else
+            {
+                // Not parented and no anchor hold - parent it to stemRuntime as fallback
+                held.transform.SetParent(stemRuntime.transform, true);
+                LogYellow($"[Rebinder] HELD '{held.name}' not parented - parenting to stemRuntime and setting KINEMATIC (gravity OFF)", held);
+            }
         }
         
         // Store for later use (e.g., Back anchor protection)
