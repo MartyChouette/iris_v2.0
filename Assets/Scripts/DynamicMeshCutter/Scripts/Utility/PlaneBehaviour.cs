@@ -76,6 +76,16 @@ namespace DynamicMeshCutter
             // 1. LOCK PHYSICS & EVENTS IMMEDIATELY
             // This prevents leaves from falling off due to the physics calculation jolt
             XYTetherJoint.SetCutBreakSuppressed(true);
+            
+            // CRITICAL: Suppress ALL Unity joints (FixedJoint, ConfigurableJoint, HingeJoint, etc.)
+            // This prevents joints connecting stem to crown from breaking during the cut
+            foreach (var root in roots)
+            {
+                if (root.activeInHierarchy)
+                {
+                    JointCutSuppressor.SuppressAllJoints(root);
+                }
+            }
 
             foreach (var s in sessions)
                 if (s != null) s.suppressDetachEvents = true;
@@ -128,6 +138,7 @@ namespace DynamicMeshCutter
             {
                 // If the code CRASHES here, we must unlock immediately so the game doesn't break.
                 XYTetherJoint.SetCutBreakSuppressed(false);
+                JointCutSuppressor.RestoreAllJoints();
                 foreach (var s in sessions) if (s != null) s.suppressDetachEvents = false;
                 throw;
             }
@@ -145,6 +156,9 @@ namespace DynamicMeshCutter
 
             // 3. RELEASE LOCKS
             XYTetherJoint.SetCutBreakSuppressed(false);
+            
+            // CRITICAL: Restore Unity joint break forces
+            JointCutSuppressor.RestoreAllJoints();
 
             // Transition sessions to their internal grace timer (handles the tail end of effects)
             foreach (var s in sessions)

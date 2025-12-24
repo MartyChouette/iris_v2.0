@@ -182,6 +182,19 @@ namespace DynamicMeshCutter
 
             // suppress XYTether force-breaks for the entire cut
             XYTetherJoint.SetCutBreakSuppressed(true);
+            
+            // CRITICAL: Suppress ALL Unity joints (FixedJoint, ConfigurableJoint, HingeJoint, etc.)
+            // This prevents joints connecting stem to crown from breaking during the cut
+            var flowerRoots = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(
+                FindObjectsSortMode.None
+            );
+            foreach (var session in flowerRoots)
+            {
+                if (session != null && session.transform != null)
+                {
+                    JointCutSuppressor.SuppressAllJoints(session.transform.root.gameObject);
+                }
+            }
 
             try
             {
@@ -231,6 +244,9 @@ namespace DynamicMeshCutter
             finally
             {
                 XYTetherJoint.SetCutBreakSuppressed(false);
+                
+                // CRITICAL: Restore Unity joint break forces
+                JointCutSuppressor.RestoreAllJoints();
 
                 foreach (var s in sessions)
                     if (s != null) s.suppressDetachEvents = false;
