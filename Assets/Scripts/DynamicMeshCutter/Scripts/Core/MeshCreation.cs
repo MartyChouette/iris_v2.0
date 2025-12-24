@@ -279,17 +279,6 @@ namespace DynamicMeshCutter
 
             Debug.Log($"[AnchorTopStemPiece] Selected keeper: '{keeper.name}' (closest to crown)", keeper);
 
-            // Check size - delete if too small (< 0.05)
-            MeshFilter mf = keeper.GetComponentInChildren<MeshFilter>();
-            float size = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.size.y : 0.1f;
-            
-            if (size < 0.05f)
-            {
-                Debug.Log($"[AnchorTopStemPiece] Keeper '{keeper.name}' too small ({size:F3} < 0.05), deleting", keeper);
-                UnityEngine.Object.Destroy(keeper);
-                return;
-            }
-
             // Configure all pieces
             foreach (var go in createdObjects)
             {
@@ -304,14 +293,25 @@ namespace DynamicMeshCutter
                     rb.useGravity = false;
                     go.transform.SetParent(stemRuntime.transform, true);
                     
-                    // Add marker
+                    // Mark as kept piece
                     var marker = go.GetComponent<StemPieceMarker>();
                     if (marker != null) marker.isKeptPiece = true;
                     
-                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': gravity OFF, parented to stem", go);
+                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': gravity OFF, parented to '{stemRuntime.name}'", go);
                 }
                 else
                 {
+                    // Falling piece: check size first - delete if too small (< 0.005)
+                    MeshFilter mf = go.GetComponentInChildren<MeshFilter>();
+                    float size = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.size.magnitude : 0.1f;
+                    
+                    if (size < 0.005f)
+                    {
+                        Debug.Log($"[AnchorTopStemPiece] Falling piece '{go.name}' too small ({size:F4} < 0.005), deleting", go);
+                        UnityEngine.Object.Destroy(go);
+                        continue;
+                    }
+                    
                     // Falling piece: enable gravity
                     rb.isKinematic = false;
                     rb.useGravity = true;
