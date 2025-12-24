@@ -229,20 +229,25 @@ namespace DynamicMeshCutter
                 cData.CreatedTargets[i] = nTarget;
             }
 
-            // NEW: for stem cuts, treat the longest piece as the main stem
+            // NEW: for stem cuts, use the BT (bottom/top) flags to identify the keeper
             if (isStemTarget)
             {
-                AnchorTopStemPiece(cData.CreatedObjects, stemRuntime, target.GameobjectRoot);
+                AnchorTopStemPiece(cData.CreatedObjects, info.BT, stemRuntime, target.GameobjectRoot);
             }
 
             return cData;
         }
 
         /// <summary>
-        /// For stem cuts: keep the stem piece closest to the crown (StemAnchor)
-        /// as the "held" stem, and let all other pieces fall away.
+        /// For stem cuts: keep the TOP piece (BT[i] == 1, connected to crown) as the "held" stem,
+        /// and let all BOTTOM pieces (BT[i] == 0) fall away.
         /// </summary>
+        /// <param name="createdObjects">Array of created GameObjects from the cut</param>
+        /// <param name="btFlags">Bottom(0)/Top(1) flags from the cut info - TOP pieces stay, BOTTOM pieces fall</param>
+        /// <param name="stemRuntime">The FlowerStemRuntime for this stem</param>
+        /// <param name="originalStemRoot">The original stem root GameObject</param>
         static void AnchorTopStemPiece(GameObject[] createdObjects,
+                                       int[] btFlags,
                                        global::FlowerStemRuntime stemRuntime,
                                        GameObject originalStemRoot = null)
         {
@@ -258,44 +263,57 @@ namespace DynamicMeshCutter
                 return;
             }
 
-            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Starting with {createdObjects.Length} pieces, StemAnchor={(stemRuntime.StemAnchor != null ? stemRuntime.StemAnchor.name : "NULL")}", stemRuntime);
+            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Starting with {createdObjects.Length} pieces, btFlags={(btFlags != null ? string.Join(",", btFlags) : "NULL")}", stemRuntime);
 
-            // 1. Identify the ANCHOR (The part of the stem attached to the flower head/crown)
-            //    We want to KEEP the piece closest to this point.
-            //    Renamed logic: stemStart -> StemAnchor
-            Vector3 anchorPos = stemRuntime.StemAnchor != null
-                                ? stemRuntime.StemAnchor.position
-                                : stemRuntime.transform.position;
-
+            // 1. Find the keeper using BT flags (TOP piece = BT[i] == 1)
+            //    The cutting system already knows which piece is "top" (connected to crown)
+            //    vs "bottom" (the piece that should fall). Use this directly!
             GameObject keeper = null;
-            float closestDistSq = float.MaxValue;
-
-            // 2. Find the winner (The piece whose CENTER OF MASS is closest to the Anchor)
-            //    IMPORTANT: We use worldCenterOfMass, NOT ClosestPoint on collider!
-            //    ClosestPoint was causing bugs where a longer falling piece had a surface point
-            //    closer to the anchor than the keeper piece's center, selecting the wrong piece.
-            foreach (var p in createdObjects)
+            
+            if (btFlags != null && btFlags.Length == createdObjects.Length)
             {
-                if (p == null) continue;
-
-                // Check distance from the piece's center to the Anchor
-                var rb = p.GetComponent<Rigidbody>();
-                if (rb == null)
+                // Find the TOP piece (BT == 1) - this is the one connected to the crown
+                for (int i = 0; i < createdObjects.Length; i++)
                 {
-                    Debug.LogWarning($"[MeshCreation.AnchorTopStemPiece] Piece '{p.name}' has no Rigidbody!", p);
-                    continue;
+                    if (createdObjects[i] == null) continue;
+                    
+                    bool isTop = btFlags[i] == 1;
+                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] Piece '{createdObjects[i].name}' BT={btFlags[i]} (isTop={isTop})", createdObjects[i]);
+                    
+                    if (isTop)
+                    {
+                        keeper = createdObjects[i];
+                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] Selected keeper by BT flag: '{keeper.name}' (BT=1, TOP piece)", keeper);
+                        break; // Found the top piece
+                    }
                 }
+            }
+            
+            // Fallback: If no BT flags or no TOP piece found, use distance to StemAnchor
+            if (keeper == null)
+            {
+                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] No TOP piece found via BT flags, falling back to distance calculation", stemRuntime);
                 
-                // Use worldCenterOfMass for reliable piece selection
-                // This represents the actual center of the piece, not just a surface point
-                Vector3 center = rb.worldCenterOfMass;
+                Vector3 anchorPos = stemRuntime.StemAnchor != null
+                                    ? stemRuntime.StemAnchor.position
+                                    : stemRuntime.transform.position;
+                float closestDistSq = float.MaxValue;
 
-                float d = (center - anchorPos).sqrMagnitude;
-                Debug.Log($"[MeshCreation.AnchorTopStemPiece] Piece '{p.name}' centerOfMass={center}, distance to anchor: {Mathf.Sqrt(d):F3}", p);
-                if (d < closestDistSq)
+                foreach (var p in createdObjects)
                 {
-                    closestDistSq = d;
-                    keeper = p;
+                    if (p == null) continue;
+
+                    var rb = p.GetComponent<Rigidbody>();
+                    if (rb == null) continue;
+                    
+                    Vector3 center = rb.worldCenterOfMass;
+                    float d = (center - anchorPos).sqrMagnitude;
+                    
+                    if (d < closestDistSq)
+                    {
+                        closestDistSq = d;
+                        keeper = p;
+                    }
                 }
             }
 
@@ -305,7 +323,7 @@ namespace DynamicMeshCutter
                 return;
             }
             
-            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Selected keeper: '{keeper.name}'", keeper);
+            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Final selected keeper: '{keeper.name}'", keeper);
 
             // 3. Apply Physics Rules
             float collapseThreshold = 0.10f; // Minimum length to stay kinematic
