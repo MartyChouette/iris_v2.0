@@ -289,6 +289,9 @@ namespace DynamicMeshCutter
 
                 try
                 {
+                    // CRITICAL: Start grace window BEFORE cut to prevent game over during cut process
+                    session?.StartCutGraceWindow();
+                    
                     stem.ApplyCutFromPlane(planePoint, planeNormal);
 
                     float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
@@ -296,11 +299,16 @@ namespace DynamicMeshCutter
                     if (debugLogs)
                         Debug.Log($"[PlaneBehaviour] Stem cut angle:{angle:F1}°, length:{len:F3}", stem);
 
-                    session?.CheckStemCutImmediate();
-
-                    // rebind leaves/petals to nearest stem chunk
+                    // rebind leaves/petals to nearest stem chunk FIRST (before checking game over)
                     var rebinder = stem.GetComponentInParent<FlowerJointRebinder>();
                     rebinder?.RebindAllPartsToClosestStemPiece();
+                    
+                    // Check for game over AFTER rebinding (gives system time to stabilize)
+                    // Use a small delay to ensure physics has settled
+                    if (session != null)
+                    {
+                        session.StartCoroutine(DelayedGameOverCheck(session, 0.1f));
+                    }
                 }
                 finally
                 {
@@ -408,6 +416,15 @@ namespace DynamicMeshCutter
                 cH.useSpring = oH.useSpring;
                 cH.spring = oH.spring;
             }
+        }
+        
+        /// <summary>
+        /// Delays game over check to allow physics to settle after a cut.
+        /// </summary>
+        private System.Collections.IEnumerator DelayedGameOverCheck(FlowerSessionController session, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            session?.CheckStemCutImmediate();
         }
     }
 }
