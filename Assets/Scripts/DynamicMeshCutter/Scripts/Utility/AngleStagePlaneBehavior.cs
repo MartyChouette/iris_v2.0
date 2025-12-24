@@ -343,19 +343,18 @@ namespace DynamicMeshCutter
                         
                         if (!isActuallyKept)
                         {
-                            // Force these settings to ensure it falls
-                            rb.isKinematic = false;
-                            rb.useGravity = true;
+                            // DEBUG: Make falling piece kinematic too
+                            Debug.Log($"[AngleStagePlaneBehaviour] DEBUG: Making falling piece '{physicsRoot?.name ?? piece.name}' KINEMATIC (temporary for debugging)", physicsRoot ?? piece);
+                            rb.isKinematic = true;
+                            rb.useGravity = false;
                             rb.constraints = RigidbodyConstraints.None;
                             
-                            // Add despawn component for falling pieces (on physics root if it exists)
-                            GameObject despawnTarget = physicsRoot != null ? physicsRoot : piece;
-                            var despawner = despawnTarget.GetComponent<OffScreenDespawner>();
-                            if (despawner == null)
-                                despawner = despawnTarget.AddComponent<OffScreenDespawner>();
-                            
-                            if (debugLogs)
-                                Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{physicsRoot?.name ?? piece.name}' to DYNAMIC with gravity (falling piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", physicsRoot ?? piece);
+                            // OLD CODE - commented out for debugging
+                            // rb.isKinematic = false;
+                            // rb.useGravity = true;
+                            // var despawner = despawnTarget.GetComponent<OffScreenDespawner>();
+                            // if (despawner == null)
+                            //     despawner = despawnTarget.AddComponent<OffScreenDespawner>();
                         }
                         else
                         {

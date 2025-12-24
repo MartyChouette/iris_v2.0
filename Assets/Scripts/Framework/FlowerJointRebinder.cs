@@ -810,26 +810,30 @@ public class FlowerJointRebinder : MonoBehaviour
 
     private void ForceChunksDynamicAndAwake(Rigidbody[] chunks)
     {
+        // DEBUG: Don't make chunks dynamic - keep everything kinematic
         foreach (var rb in chunks)
         {
             if (rb == null) continue;
             
-            // CRITICAL: Only make dynamic if NOT parented to stemRuntime (parented = kept piece)
-            // Parented pieces should remain kinematic
-            bool isParentedToStem = (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform));
-            if (!isParentedToStem)
-            {
-                rb.isKinematic = false;
-                rb.useGravity = true;
-                rb.WakeUp();
-            }
-            else
-            {
-                // Safety check: if somehow a kept piece got in here, ensure it stays kinematic
-                rb.isKinematic = true;
-                rb.useGravity = false;
-                LogYellowWarning($"[Rebinder] Kept piece '{rb.name}' was in falling chunks list - corrected to KINEMATIC", rb);
-            }
+            // DEBUG: Keep everything kinematic
+            Debug.Log($"[Rebinder] DEBUG: Keeping chunk '{rb.name}' KINEMATIC (temporary for debugging)", rb);
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            
+            // OLD CODE - commented out for debugging
+            // bool isParentedToStem = (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform));
+            // if (!isParentedToStem)
+            // {
+            //     rb.isKinematic = false;
+            //     rb.useGravity = true;
+            //     rb.WakeUp();
+            // }
+            // else
+            // {
+            //     rb.isKinematic = true;
+            //     rb.useGravity = false;
+            //     LogYellowWarning($"[Rebinder] Kept piece '{rb.name}' was in falling chunks list - corrected to KINEMATIC", rb);
+            // }
         }
     }
 

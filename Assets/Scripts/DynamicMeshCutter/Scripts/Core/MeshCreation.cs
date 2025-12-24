@@ -359,49 +359,30 @@ namespace DynamicMeshCutter
                     }
                     else
                     {
-                        // Piece too small - let it fall
-                        Debug.Log($"[MeshCreation] Cut too close to anchor! Piece size {height:F3} < {collapseThreshold}. Collapsing.");
+                        // Piece too small - DEBUG: Make it kinematic too
+                        Debug.Log($"[MeshCreation] Cut too close to anchor! Piece size {height:F3} < {collapseThreshold}. DEBUG: Making kinematic.", go);
                         
-                        // SAFETY CHECK: Ensure this piece is NOT parented before making it fall
-                        bool isParented = go.transform.IsChildOf(stemRuntime.transform);
-                        if (isParented)
-                        {
-                            go.transform.SetParent(null, true);
-                        }
-
-                        rb.useGravity = true;
-                        rb.isKinematic = false;
-
-                        rb.constraints &= ~(RigidbodyConstraints.FreezePositionX |
-                                            RigidbodyConstraints.FreezePositionY |
-                                            RigidbodyConstraints.FreezePositionZ);
-
-                        CleanupFallingPiece(go);
+                        // DEBUG: Make kinematic instead of falling
+                        rb.isKinematic = true;
+                        rb.useGravity = false;
+                        rb.constraints = RigidbodyConstraints.None;
+                        
+                        // Don't cleanup during debug
+                        // CleanupFallingPiece(go);
                     }
                 }
                 else
                 {
-                    // This is a falling piece
-                    // SAFETY CHECK: Ensure this piece is NOT parented before making it fall
-                    bool isParented = go.transform.IsChildOf(stemRuntime.transform);
-                    if (isParented)
-                    {
-                        // This shouldn't happen, but if it does, unparent first
-                        go.transform.SetParent(null, true);
-                    }
-
-                    rb.useGravity = true;
-                    rb.isKinematic = false;
-
-                    // 🔧 IMPORTANT: remove any position freezes copied from the original stem
-                    rb.constraints &= ~(RigidbodyConstraints.FreezePositionX |
-                                        RigidbodyConstraints.FreezePositionY |
-                                        RigidbodyConstraints.FreezePositionZ);
-                    // (keeps any rotation freezes you had, just unlocks translation)
-
-                    // CLEANUP FALLING PIECE: Remove unnecessary components for performance
-                    // Keep only: Rigidbody, Collider, and essential components
-                    CleanupFallingPiece(go);
+                    // DEBUG: Make falling piece kinematic too to see what's happening
+                    // This is a falling piece - TEMPORARILY MAKE IT KINEMATIC TOO FOR DEBUGGING
+                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] DEBUG: Making falling piece '{go.name}' KINEMATIC (temporary for debugging)", go);
+                    
+                    rb.isKinematic = true;
+                    rb.useGravity = false;
+                    rb.constraints = RigidbodyConstraints.None;
+                    
+                    // Don't cleanup falling pieces during debug
+                    // CleanupFallingPiece(go);
                 }
             }
         }
