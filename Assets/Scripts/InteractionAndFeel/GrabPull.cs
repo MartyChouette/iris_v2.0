@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file GrabPull.cs
  * @brief GrabPull script.
  * @details
@@ -103,6 +103,13 @@ public class GrabPull : MonoBehaviour
     void FixedUpdate()
     {
         if (!grabbing) return;
+        
+        // CRITICAL: Check if Rigidbody still exists (might be destroyed during cut)
+        if (rb == null)
+        {
+            grabbing = false;
+            return;
+        }
 
         // project cursor onto object plane for a stable target
         var ray = cam.ScreenPointToRay(Input.mousePosition);
