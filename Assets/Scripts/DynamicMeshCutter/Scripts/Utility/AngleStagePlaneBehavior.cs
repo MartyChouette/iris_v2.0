@@ -279,22 +279,33 @@ namespace DynamicMeshCutter
                     marker.stemRuntime = stemRuntime;
 
                     // Get Rigidbody from physics root, not from the child mesh
+                    // CRITICAL: Don't create new Rigidbody here - MeshCreation.CreateObjects already created it!
+                    // If we create a new one, it will have default settings and override AnchorTopStemPiece's work
                     Rigidbody rb = null;
                     if (physicsRoot != null)
                     {
                         rb = physicsRoot.GetComponent<Rigidbody>();
+                        // DON'T create if missing - it should already exist from MeshCreation
                         if (rb == null)
-                            rb = physicsRoot.AddComponent<Rigidbody>();
+                        {
+                            Debug.LogWarning($"[AngleStagePlaneBehaviour] Physics root '{physicsRoot.name}' has no Rigidbody! This shouldn't happen.", physicsRoot);
+                            continue; // Skip this piece - can't process without Rigidbody
+                        }
                     }
                     else
                     {
                         // Fallback: try child mesh if physics root doesn't exist
                         rb = piece.GetComponent<Rigidbody>();
                         if (rb == null)
-                            rb = piece.AddComponent<Rigidbody>();
+                        {
+                            Debug.LogWarning($"[AngleStagePlaneBehaviour] Piece '{piece.name}' has no Rigidbody! This shouldn't happen.", piece);
+                            continue; // Skip this piece
+                        }
                     }
                     
-                    rb.interpolation = RigidbodyInterpolation.Interpolate;
+                    // Only set interpolation if not already set (don't override existing settings)
+                    if (rb.interpolation != RigidbodyInterpolation.Interpolate)
+                        rb.interpolation = RigidbodyInterpolation.Interpolate;
 
                     pieceBodies.Add(rb);
 

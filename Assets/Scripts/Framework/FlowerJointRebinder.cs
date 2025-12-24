@@ -70,6 +70,12 @@ public class FlowerJointRebinder : MonoBehaviour
     public bool forceFallingChunksDynamic = true;
 
     [Header("Anchor Hold (Optional)")]
+    [Tooltip("If true, uses SoftStemAnchor to give the held chunk a gentle sway instead of a rigid lock.")]
+    public bool useSoftStemAnchor = false;
+
+    [Tooltip("Optional reference to the SoftStemAnchor. Auto-resolves on this flower root if left null.")]
+    public SoftStemAnchor softAnchor;
+
     [Tooltip("If true, creates/uses a kinematic anchor Rigidbody at anchorPoint and tethers the HELD chunk to it.")]
     public bool enableAnchorHold = true;
 
@@ -193,21 +199,34 @@ public class FlowerJointRebinder : MonoBehaviour
         var stemSet = new HashSet<Rigidbody>(stemPieces);
 
         // 2) Decide HELD piece robustly
-        // IMPORTANT FIX:
-        // If we're using AnchorHold and we have an AnchorPoint (stand/vase),
-        // HELD MUST be the piece closest to that point.
+        // CRITICAL: First check for parented pieces (set by AnchorTopStemPiece)
+        // These are the pieces that should be kept - they're already parented to stemRuntime
         Rigidbody held = null;
+        
+        // Priority 1: Find parented pieces (these are already marked as kept by AnchorTopStemPiece)
+        foreach (var rb in stemPieces)
+        {
+            if (rb != null && stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform))
+            {
+                held = rb;
+                LogYellow($"[Rebinder] Found parented piece as HELD: '{held.name}'", held);
+                break;
+            }
+        }
 
-        if (enableAnchorHold)
+        // Priority 2: If no parented piece found, use anchor point logic
+        if (held == null && enableAnchorHold)
         {
             EnsureAnchorBody(); // ensures anchorPoint fallback is resolved too
             if (anchorPoint != null)
                 held = ChooseHeldStemPieceByAnchorPoint(stemPieces, anchorPoint.position);
         }
 
+        // Priority 3: Fallback to crown joints
         if (held == null)
             held = ChooseHeldStemPieceByCrownJoints(stemPieces, stemSet);
 
+        // Priority 4: Final fallback
         if (held == null)
             held = ChooseHeldStemPieceByHighestYThenProximity(stemPieces);
 
@@ -218,39 +237,63 @@ public class FlowerJointRebinder : MonoBehaviour
         LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]");
 
         // 2.5) Ensure HELD piece doesn't fall
-        // If it's parented to stemRuntime (set by AnchorTopStemPiece), keep it kinematic
-        // Otherwise, use anchor hold joint if enabled
+        // Priority: Use SoftStemAnchor if available (best solution), otherwise use kinematic parenting
         bool isParentedToStem = (stemRuntime != null && held.transform.IsChildOf(stemRuntime.transform));
         
-        if (isParentedToStem)
+        // Try SoftStemAnchor first (if enabled)
+        if (useSoftStemAnchor)
         {
-            // Parented pieces should be kinematic - they move with the parent
-            // CRITICAL: Force kinematic and disable gravity - this piece MUST stay attached
-            // Unity 6.2: Can't set velocity on kinematic bodies, so set kinematic first
+            if (softAnchor == null)
+                softAnchor = flowerRoot != null 
+                    ? flowerRoot.GetComponent<SoftStemAnchor>()
+                    : GetComponentInParent<SoftStemAnchor>();
+            
+            if (softAnchor != null)
+            {
+                // SoftStemAnchor expects DYNAMIC body with gravity OFF + joint
+                // This allows natural sway while preventing fall
+                held.isKinematic = false; // MUST be dynamic for joints to work
+                held.useGravity = false; // Gravity off, joint holds it
+                
+                Vector3 anchorPos = anchorPoint != null ? anchorPoint.position : held.worldCenterOfMass;
+                softAnchor.AnchorHeldStem(held, anchorPos);
+                LogYellow($"[Rebinder] HELD '{held.name}' using SoftStemAnchor (DYNAMIC, gravity OFF, joint holds it)", held);
+            }
+            else
+            {
+                LogYellowWarning("[Rebinder] Soft anchor enabled but no SoftStemAnchor found; skipping sway anchor.");
+            }
+        }
+        
+        // If not using SoftStemAnchor, use kinematic parenting approach
+        if (!useSoftStemAnchor || softAnchor == null)
+        {
+            // ALWAYS set kinematic and disable gravity for held piece
             held.isKinematic = true;
             held.useGravity = false;
-            // Note: In Unity 6.2+, setting velocity on kinematic bodies is not supported
-            // Only set velocity if NOT kinematic (but we want kinematic, so skip)
-            LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem, set to KINEMATIC (gravity OFF)", held);
+            
+            // If parented, it's already set up correctly by AnchorTopStemPiece
+            if (isParentedToStem)
+            {
+                LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem - KINEMATIC (gravity OFF) - already configured", held);
+            }
+            else if (enableAnchorHold)
+            {
+                // Not parented - use joint-based anchor hold
+                EnsureAnchorBody();
+                ApplyAnchorHoldToHeld(held);
+                LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold with KINEMATIC (gravity OFF)", held);
+            }
+            else
+            {
+                // Not parented and no anchor hold - parent it to stemRuntime as fallback
+                held.transform.SetParent(stemRuntime.transform, true);
+                LogYellow($"[Rebinder] HELD '{held.name}' not parented - parenting to stemRuntime and setting KINEMATIC (gravity OFF)", held);
+            }
         }
-        else if (enableAnchorHold)
-        {
-            // Not parented - use joint-based anchor hold
-            // Still ensure kinematic for safety
-            held.isKinematic = true;
-            held.useGravity = false;
-            EnsureAnchorBody();
-            ApplyAnchorHoldToHeld(held);
-            // Don't use HoldRoutine for kinematic pieces - it would try to restore gravity
-            LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold with KINEMATIC (gravity OFF)", held);
-        }
-        else
-        {
-            // No anchor hold and not parented - make kinematic as fallback
-            held.isKinematic = true;
-            held.useGravity = false;
-            LogYellow($"[Rebinder] HELD '{held.name}' not parented and anchor hold disabled, set to KINEMATIC as fallback (gravity OFF)", held);
-        }
+        
+        // Store for later use (e.g., Back anchor protection)
+        _lastHeld = held;
 
         // 3) Targeted fixes:
         if (forceLeafAttachmentsToHeld)

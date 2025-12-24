@@ -246,8 +246,19 @@ namespace DynamicMeshCutter
                                        global::FlowerStemRuntime stemRuntime,
                                        GameObject originalStemRoot = null)
         {
-            if (stemRuntime == null || createdObjects == null || createdObjects.Length == 0)
+            if (stemRuntime == null)
+            {
+                Debug.LogError("[MeshCreation.AnchorTopStemPiece] stemRuntime is NULL!");
                 return;
+            }
+            
+            if (createdObjects == null || createdObjects.Length == 0)
+            {
+                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] No created objects!", stemRuntime);
+                return;
+            }
+
+            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Starting with {createdObjects.Length} pieces, StemAnchor={(stemRuntime.StemAnchor != null ? stemRuntime.StemAnchor.name : "NULL")}", stemRuntime);
 
             // 1. Identify the ANCHOR (The part of the stem attached to the flower head/crown)
             //    We want to KEEP the piece closest to this point.
@@ -266,7 +277,13 @@ namespace DynamicMeshCutter
 
                 // Check distance from the piece's center to the Anchor
                 var rb = p.GetComponent<Rigidbody>();
-                Vector3 center = rb != null ? rb.worldCenterOfMass : p.transform.position;
+                if (rb == null)
+                {
+                    Debug.LogWarning($"[MeshCreation.AnchorTopStemPiece] Piece '{p.name}' has no Rigidbody!", p);
+                    continue;
+                }
+                
+                Vector3 center = rb.worldCenterOfMass;
 
                 // Refinement: If you have a collider, use ClosestPoint for better accuracy on curved stems
                 var col = p.GetComponentInChildren<Collider>();
@@ -274,6 +291,7 @@ namespace DynamicMeshCutter
                     center = col.ClosestPoint(anchorPos);
 
                 float d = (center - anchorPos).sqrMagnitude;
+                Debug.Log($"[MeshCreation.AnchorTopStemPiece] Piece '{p.name}' distance to anchor: {Mathf.Sqrt(d):F3}", p);
                 if (d < closestDistSq)
                 {
                     closestDistSq = d;
@@ -283,9 +301,11 @@ namespace DynamicMeshCutter
 
             if (keeper == null)
             {
-                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] Could not find keeper piece", stemRuntime);
+                Debug.LogError("[MeshCreation.AnchorTopStemPiece] Could not find keeper piece! All pieces will fall!", stemRuntime);
                 return;
             }
+            
+            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Selected keeper: '{keeper.name}'", keeper);
 
             // 3. Apply Physics Rules
             float collapseThreshold = 0.10f; // Minimum length to stay kinematic
@@ -311,15 +331,22 @@ namespace DynamicMeshCutter
                     if (mainPieceSurvives)
                     {
                         // This is the piece closest to the crown -> the one we keep.
-                        // Unity 6.2: Can't set velocity on kinematic bodies, so set kinematic first
+                        // CRITICAL: Set kinematic FIRST before any other operations
                         rb.isKinematic = true;
                         rb.useGravity = false;
-                        // Note: In Unity 6.2+, setting velocity on kinematic bodies is not supported
-                        // Only set velocity if NOT kinematic (but we want kinematic, so skip)
                         rb.constraints = RigidbodyConstraints.None;
+                        
+                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] BEFORE parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
 
                         // Parent to the flower so it moves with the system.
                         go.transform.SetParent(stemRuntime.transform, true);
+                        
+                        // VERIFY: Check state after parenting
+                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] AFTER parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
+                        
+                        // FORCE state again after parenting (in case parenting reset something)
+                        rb.isKinematic = true;
+                        rb.useGravity = false;
                         
                         // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
                         if (originalStemRoot != null)
@@ -327,7 +354,8 @@ namespace DynamicMeshCutter
                             PreserveComponentsForKeptPiece(originalStemRoot, go);
                         }
                         
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEPT piece '{go.name}': isKinematic=true, useGravity=false, parented to '{stemRuntime.name}'", go);
+                        // FINAL VERIFY
+                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] FINAL: KEPT piece '{go.name}': isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parented to '{stemRuntime.name}'", go);
                     }
                     else
                     {
