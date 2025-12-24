@@ -789,12 +789,17 @@ public class FlowerJointRebinder : MonoBehaviour
             LogYellow($"[Rebinder] Severing TRUE cross-chunk joint '{j.GetType().Name}' on '{j.name}' " +
                       $"(owner='{ownerRb.name}' -> connected='{j.connectedBody.name}', HELD='{held.name}').", j);
 
-            // CRITICAL: Null check before destroying to prevent memory corruption
+            // CRITICAL: Disconnect joint first, then destroy with delay to prevent memory corruption
             if (j != null)
             {
                 try
                 {
-                    Destroy(j);
+                    // Disconnect the joint first to prevent physics system from accessing it
+                    j.connectedBody = null;
+                    j.enableCollision = false;
+                    
+                    // Destroy with delay to avoid corruption during physics updates
+                    Destroy(j, 0.1f);
                     killed++;
                 }
                 catch (System.Exception ex)

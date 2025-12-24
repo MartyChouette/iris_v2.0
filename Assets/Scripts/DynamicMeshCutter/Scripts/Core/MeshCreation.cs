@@ -545,18 +545,33 @@ namespace DynamicMeshCutter
                     // This prevents memory corruption from destroying already-destroyed objects
                     if (comp == null) continue;
                     
-                    // Don't destroy if it's a Joint that's still connected (could cause corruption)
-                    if (comp is Joint joint && joint.connectedBody != null)
+                    // CRITICAL: Don't destroy Joints - they're managed by Unity's physics system
+                    // Destroying them while physics is active can cause memory corruption
+                    if (comp is Joint)
                     {
-                        // Skip joints that are still connected - let them be cleaned up by their owner
+                        // Skip joints - let Unity handle them or disconnect them first
                         continue;
                     }
                     
-                    // Remove unnecessary component
+                    // CRITICAL: Don't destroy Rigidbody - physics system needs it
+                    if (comp is Rigidbody)
+                    {
+                        continue;
+                    }
+                    
+                    // CRITICAL: Don't destroy Colliders while physics is active
+                    if (comp is Collider)
+                    {
+                        // Skip colliders - they're needed for physics
+                        continue;
+                    }
+                    
+                    // Remove unnecessary component (but skip physics-critical components)
                     try
                     {
+                        // Use Destroy with delay to avoid corruption during physics updates
                         if (Application.isPlaying)
-                            UnityEngine.Object.Destroy(comp);
+                            UnityEngine.Object.Destroy(comp, 0.1f); // Delay destruction
                         else
                             UnityEngine.Object.DestroyImmediate(comp);
                     }
@@ -594,6 +609,12 @@ namespace DynamicMeshCutter
                         // CRITICAL: Check if component is still valid before destroying
                         if (comp == null) continue;
                         
+                        // CRITICAL: Never destroy physics-critical components
+                        if (comp is Rigidbody || comp is Joint || comp is Collider)
+                        {
+                            continue; // Skip - physics system needs these
+                        }
+                        
                         // Don't remove Rigidbody if EnsureConvexCollider exists (it requires Rigidbody)
                         if (compType == typeof(Rigidbody))
                         {
@@ -601,18 +622,12 @@ namespace DynamicMeshCutter
                             if (ensureConvex != null)
                                 continue; // Skip - can't remove Rigidbody when EnsureConvexCollider depends on it
                         }
-                        
-                        // Don't destroy if it's a Joint that's still connected (could cause corruption)
-                        if (comp is Joint joint && joint.connectedBody != null)
-                        {
-                            // Skip joints that are still connected
-                            continue;
-                        }
 
                         try
                         {
+                            // Use delayed destruction to avoid corruption during physics updates
                             if (Application.isPlaying)
-                                UnityEngine.Object.Destroy(comp);
+                                UnityEngine.Object.Destroy(comp, 0.1f); // Delay destruction
                             else
                                 UnityEngine.Object.DestroyImmediate(comp);
                         }
