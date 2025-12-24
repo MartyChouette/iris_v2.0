@@ -386,17 +386,21 @@ namespace DynamicMeshCutter
             if (originalStemRoot == null || keptPiece == null) return;
 
             // Components to preserve (skip ones that shouldn't be copied)
+            // IMPORTANT: Only copy components that should be on the kept piece
+            // Don't duplicate components that should stay where they are
             var skipTypes = new System.Type[]
             {
                 typeof(Transform),
                 typeof(MeshFilter),
                 typeof(MeshRenderer),
                 typeof(MeshCollider),
-                typeof(Rigidbody),
+                typeof(Rigidbody), // Rigidbody is already created by MeshCreation
                 typeof(FlowerStemRuntime), // Don't copy - this is on the parent hierarchy
                 typeof(StemPieceMarker), // Already added by MeshCreation
                 typeof(Joint), // Joints are rebounded by FlowerJointRebinder
                 typeof(LeafAttachmentMarker), // These are handled by rebinder
+                typeof(EnsureCompoundConvex), // Don't copy - should stay where it is
+                typeof(EnsureConvexCollider), // Don't copy - should stay where it is
             };
 
             var components = originalStemRoot.GetComponents<Component>();
@@ -485,16 +489,19 @@ namespace DynamicMeshCutter
             if (fallingPiece == null) return;
 
             // Components to keep (everything else gets removed)
+            // IMPORTANT: Keep Rigidbody, EnsureCompoundConvex, and EnsureConvexCollider
             var keepTypes = new System.Type[]
             {
                 typeof(Transform),
-                typeof(Rigidbody),
+                typeof(Rigidbody), // CRITICAL: Must keep Rigidbody
                 typeof(Collider),
                 typeof(MeshFilter),
                 typeof(MeshRenderer),
                 typeof(MeshCollider),
                 typeof(StemPieceMarker), // Keep for identification
                 typeof(OffScreenDespawner), // Keep for cleanup
+                typeof(EnsureCompoundConvex), // CRITICAL: Must keep this
+                typeof(EnsureConvexCollider), // CRITICAL: Must keep this
             };
 
             var components = fallingPiece.GetComponents<Component>();
@@ -540,7 +547,9 @@ namespace DynamicMeshCutter
                                      compType == typeof(MeshFilter) ||
                                      compType == typeof(MeshRenderer) ||
                                      compType == typeof(Collider) ||
-                                     compType == typeof(MeshCollider);
+                                     compType == typeof(MeshCollider) ||
+                                     compType == typeof(EnsureCompoundConvex) ||
+                                     compType == typeof(EnsureConvexCollider);
 
                     if (!shouldKeep)
                     {
