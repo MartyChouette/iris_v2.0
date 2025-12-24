@@ -226,10 +226,11 @@ public class FlowerJointRebinder : MonoBehaviour
         {
             // Parented pieces should be kinematic - they move with the parent
             // CRITICAL: Force kinematic and disable gravity - this piece MUST stay attached
+            // Unity 6.2: Can't set velocity on kinematic bodies, so set kinematic first
             held.isKinematic = true;
             held.useGravity = false;
-            held.linearVelocity = Vector3.zero;
-            held.angularVelocity = Vector3.zero;
+            // Note: In Unity 6.2+, setting velocity on kinematic bodies is not supported
+            // Only set velocity if NOT kinematic (but we want kinematic, so skip)
             LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem, set to KINEMATIC (gravity OFF)", held);
         }
         else if (enableAnchorHold)

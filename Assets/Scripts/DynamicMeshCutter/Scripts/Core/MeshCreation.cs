@@ -14,6 +14,7 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace DynamicMeshCutter
@@ -310,10 +311,11 @@ namespace DynamicMeshCutter
                     if (mainPieceSurvives)
                     {
                         // This is the piece closest to the crown -> the one we keep.
+                        // Unity 6.2: Can't set velocity on kinematic bodies, so set kinematic first
                         rb.isKinematic = true;
                         rb.useGravity = false;
-                        rb.linearVelocity = Vector3.zero;
-                        rb.angularVelocity = Vector3.zero;
+                        // Note: In Unity 6.2+, setting velocity on kinematic bodies is not supported
+                        // Only set velocity if NOT kinematic (but we want kinematic, so skip)
                         rb.constraints = RigidbodyConstraints.None;
 
                         // Parent to the flower so it moves with the system.
@@ -532,6 +534,7 @@ namespace DynamicMeshCutter
             }
 
             // Also clean up children recursively (but keep mesh/collider structure)
+            // IMPORTANT: Keep Rigidbody on children too (EnsureConvexCollider requires it)
             var children = fallingPiece.GetComponentsInChildren<Transform>(true);
             foreach (var child in children)
             {
@@ -548,11 +551,20 @@ namespace DynamicMeshCutter
                                      compType == typeof(MeshRenderer) ||
                                      compType == typeof(Collider) ||
                                      compType == typeof(MeshCollider) ||
+                                     compType == typeof(Rigidbody) || // Keep Rigidbody (EnsureConvexCollider requires it)
                                      compType == typeof(EnsureCompoundConvex) ||
                                      compType == typeof(EnsureConvexCollider);
 
                     if (!shouldKeep)
                     {
+                        // CRITICAL: Don't remove Rigidbody if EnsureConvexCollider exists (it requires Rigidbody)
+                        if (compType == typeof(Rigidbody))
+                        {
+                            var ensureConvex = child.GetComponent<EnsureConvexCollider>();
+                            if (ensureConvex != null)
+                                continue; // Skip - can't remove Rigidbody when EnsureConvexCollider depends on it
+                        }
+
                         if (Application.isPlaying)
                             UnityEngine.Object.Destroy(comp);
                         else
