@@ -289,15 +289,19 @@ namespace DynamicMeshCutter
 
                 if (go == keeper)
                 {
-                    // Keeper: disable gravity, parent to stem
+                    // Keeper: freeze in place, parent to stem to replace original
+                    rb.isKinematic = true;
                     rb.useGravity = false;
+                    rb.constraints = RigidbodyConstraints.FreezeAll;
+                    
+                    // Parent to stem runtime (keeps world position with true)
                     go.transform.SetParent(stemRuntime.transform, true);
                     
                     // Mark as kept piece
                     var marker = go.GetComponent<StemPieceMarker>();
                     if (marker != null) marker.isKeptPiece = true;
                     
-                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': gravity OFF, parented to '{stemRuntime.name}'", go);
+                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': kinematic, gravity OFF, frozen, parented to '{stemRuntime.name}'", go);
                 }
                 else
                 {
