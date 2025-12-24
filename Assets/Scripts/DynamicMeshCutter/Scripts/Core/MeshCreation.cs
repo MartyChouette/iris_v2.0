@@ -229,175 +229,93 @@ namespace DynamicMeshCutter
                 cData.CreatedTargets[i] = nTarget;
             }
 
-            // NEW: for stem cuts, use the BT (bottom/top) flags to identify the keeper
+            // For stem cuts, find the keeper (closest to crown) and configure physics
             if (isStemTarget)
             {
-                AnchorTopStemPiece(cData.CreatedObjects, info.BT, stemRuntime, target.GameobjectRoot);
+                AnchorTopStemPiece(cData.CreatedObjects, stemRuntime);
             }
 
             return cData;
         }
 
         /// <summary>
-        /// For stem cuts: keep the TOP piece (BT[i] == 1, connected to crown) as the "held" stem,
-        /// and let all BOTTOM pieces (BT[i] == 0) fall away.
+        /// For stem cuts: find the piece closest to the crown (by center of mass distance),
+        /// disable gravity on it, and let other pieces fall. Delete if too small.
         /// </summary>
-        /// <param name="createdObjects">Array of created GameObjects from the cut</param>
-        /// <param name="btFlags">Bottom(0)/Top(1) flags from the cut info - TOP pieces stay, BOTTOM pieces fall</param>
-        /// <param name="stemRuntime">The FlowerStemRuntime for this stem</param>
-        /// <param name="originalStemRoot">The original stem root GameObject</param>
         static void AnchorTopStemPiece(GameObject[] createdObjects,
-                                       int[] btFlags,
-                                       global::FlowerStemRuntime stemRuntime,
-                                       GameObject originalStemRoot = null)
+                                       global::FlowerStemRuntime stemRuntime)
         {
-            if (stemRuntime == null)
-            {
-                Debug.LogError("[MeshCreation.AnchorTopStemPiece] stemRuntime is NULL!");
+            if (stemRuntime == null || createdObjects == null || createdObjects.Length == 0)
                 return;
-            }
-            
-            if (createdObjects == null || createdObjects.Length == 0)
-            {
-                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] No created objects!", stemRuntime);
-                return;
-            }
 
-            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Starting with {createdObjects.Length} pieces, btFlags={(btFlags != null ? string.Join(",", btFlags) : "NULL")}", stemRuntime);
+            // Get crown anchor position
+            Vector3 crownPos = stemRuntime.StemAnchor != null
+                ? stemRuntime.StemAnchor.position
+                : stemRuntime.transform.position;
 
-            // 1. Find the keeper using BT flags (TOP piece = BT[i] == 1)
-            //    The cutting system already knows which piece is "top" (connected to crown)
-            //    vs "bottom" (the piece that should fall). Use this directly!
+            // Find the piece closest to crown by center of mass distance
             GameObject keeper = null;
-            
-            if (btFlags != null && btFlags.Length == createdObjects.Length)
-            {
-                // Find the TOP piece (BT == 1) - this is the one connected to the crown
-                for (int i = 0; i < createdObjects.Length; i++)
-                {
-                    if (createdObjects[i] == null) continue;
-                    
-                    bool isTop = btFlags[i] == 1;
-                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] Piece '{createdObjects[i].name}' BT={btFlags[i]} (isTop={isTop})", createdObjects[i]);
-                    
-                    if (isTop)
-                    {
-                        keeper = createdObjects[i];
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] Selected keeper by BT flag: '{keeper.name}' (BT=1, TOP piece)", keeper);
-                        break; // Found the top piece
-                    }
-                }
-            }
-            
-            // Fallback: If no BT flags or no TOP piece found, use distance to StemAnchor
-            if (keeper == null)
-            {
-                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] No TOP piece found via BT flags, falling back to distance calculation", stemRuntime);
-                
-                Vector3 anchorPos = stemRuntime.StemAnchor != null
-                                    ? stemRuntime.StemAnchor.position
-                                    : stemRuntime.transform.position;
-                float closestDistSq = float.MaxValue;
-
-                foreach (var p in createdObjects)
-                {
-                    if (p == null) continue;
-
-                    var rb = p.GetComponent<Rigidbody>();
-                    if (rb == null) continue;
-                    
-                    Vector3 center = rb.worldCenterOfMass;
-                    float d = (center - anchorPos).sqrMagnitude;
-                    
-                    if (d < closestDistSq)
-                    {
-                        closestDistSq = d;
-                        keeper = p;
-                    }
-                }
-            }
-
-            if (keeper == null)
-            {
-                Debug.LogError("[MeshCreation.AnchorTopStemPiece] Could not find keeper piece! All pieces will fall!", stemRuntime);
-                return;
-            }
-            
-            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Final selected keeper: '{keeper.name}'", keeper);
-
-            // 3. Apply Physics Rules
-            float collapseThreshold = 0.10f; // Minimum length to stay kinematic
+            float closestDistSq = float.MaxValue;
 
             foreach (var go in createdObjects)
             {
-                if (go == null)
-                    continue;
-
+                if (go == null) continue;
+                
                 var rb = go.GetComponent<Rigidbody>();
-                if (rb == null)
-                    continue;
-
-                bool isKeeper = (go == keeper);
-
-                if (isKeeper)
+                if (rb == null) continue;
+                
+                float distSq = (rb.worldCenterOfMass - crownPos).sqrMagnitude;
+                Debug.Log($"[AnchorTopStemPiece] Piece '{go.name}' distance to crown: {Mathf.Sqrt(distSq):F3}", go);
+                
+                if (distSq < closestDistSq)
                 {
-                    // Check metric cruelty (is the piece too small to exist?)
-                    MeshFilter mf = go.GetComponentInChildren<MeshFilter>();
-                    float height = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.size.y : 0.1f;
-                    bool mainPieceSurvives = (height >= collapseThreshold);
+                    closestDistSq = distSq;
+                    keeper = go;
+                }
+            }
 
-                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEEPER piece '{go.name}': size={height:F3}, threshold={collapseThreshold}, mainPieceSurvives={mainPieceSurvives}", go);
-                    
-                    // CRITICAL: Set kinematic FIRST before any other operations
-                    rb.isKinematic = true;
+            if (keeper == null)
+                return;
+
+            Debug.Log($"[AnchorTopStemPiece] Selected keeper: '{keeper.name}' (closest to crown)", keeper);
+
+            // Check size - delete if too small (< 0.05)
+            MeshFilter mf = keeper.GetComponentInChildren<MeshFilter>();
+            float size = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.size.y : 0.1f;
+            
+            if (size < 0.05f)
+            {
+                Debug.Log($"[AnchorTopStemPiece] Keeper '{keeper.name}' too small ({size:F3} < 0.05), deleting", keeper);
+                Destroy(keeper);
+                return;
+            }
+
+            // Configure all pieces
+            foreach (var go in createdObjects)
+            {
+                if (go == null) continue;
+                
+                var rb = go.GetComponent<Rigidbody>();
+                if (rb == null) continue;
+
+                if (go == keeper)
+                {
+                    // Keeper: disable gravity, parent to stem
                     rb.useGravity = false;
-                    rb.constraints = RigidbodyConstraints.None;
-                    
-                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] BEFORE parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
-
-                    // ALWAYS parent the keeper piece to stemRuntime
                     go.transform.SetParent(stemRuntime.transform, true);
                     
-                    // VERIFY: Check state after parenting - get Rigidbody AGAIN in case it changed
-                    rb = go.GetComponent<Rigidbody>();
-                    if (rb != null)
-                    {
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] AFTER parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
-                        
-                        // FORCE state again after parenting (in case parenting reset something)
-                        rb.isKinematic = true;
-                        rb.useGravity = false;
-                    }
+                    // Add marker
+                    var marker = go.GetComponent<StemPieceMarker>();
+                    if (marker != null) marker.isKeptPiece = true;
                     
-                    // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
-                    if (originalStemRoot != null)
-                    {
-                        PreserveComponentsForKeptPiece(originalStemRoot, go);
-                    }
-                    
-                    // FINAL VERIFY - get Rigidbody one more time
-                    rb = go.GetComponent<Rigidbody>();
-                    if (rb != null)
-                    {
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] FINAL: KEPT piece '{go.name}': isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parented to '{stemRuntime.name}'", go);
-                    }
+                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': gravity OFF, parented to stem", go);
                 }
                 else
                 {
-                    // This is a falling piece - make it dynamic with gravity ON
-                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] Making falling piece '{go.name}' DYNAMIC (gravity ON)", go);
-                    
+                    // Falling piece: enable gravity
                     rb.isKinematic = false;
                     rb.useGravity = true;
-                    rb.constraints = RigidbodyConstraints.None;
-                    
-                    // Remove any kinematic enforcer if it exists (falling pieces shouldn't have this)
-                    var enforcer = go.GetComponent<KinematicStateEnforcer>();
-                    if (enforcer != null)
-                        Destroy(enforcer);
-                    
-                    // Cleanup falling pieces to optimize performance
-                    CleanupFallingPiece(go);
+                    Debug.Log($"[AnchorTopStemPiece] FALLING '{go.name}': gravity ON", go);
                 }
             }
         }

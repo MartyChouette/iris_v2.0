@@ -30,4 +30,9 @@ using UnityEngine;
 public class StemPieceMarker : MonoBehaviour
 {
     public FlowerStemRuntime stemRuntime;
+    
+    /// <summary>
+    /// True if this is the kept piece (connected to crown), false if it's a falling piece.
+    /// </summary>
+    public bool isKeptPiece;
 }

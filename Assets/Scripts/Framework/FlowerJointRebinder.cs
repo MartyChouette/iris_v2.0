@@ -225,49 +225,45 @@ public class FlowerJointRebinder : MonoBehaviour
 
         var stemSet = new HashSet<Rigidbody>(stemPieces);
 
-        // 2) Decide HELD piece robustly
-        // CRITICAL: First check for parented pieces (set by AnchorTopStemPiece)
-        // These are the pieces that should be kept - they're already parented to stemRuntime
+        // 2) Find the HELD piece
+        // Priority 1: Use isKeptPiece flag (set by AnchorTopStemPiece)
         Rigidbody held = null;
         
-        // Priority 1: Find parented pieces (these are already marked as kept by AnchorTopStemPiece)
-        // CRITICAL: Make sure we're not selecting the original stem (it might also be parented)
         foreach (var rb in stemPieces)
         {
             if (rb == null) continue;
-            
-            // Skip if this is the original stem (check if it has StemPieceMarker - cut pieces have this)
             var marker = rb.GetComponent<StemPieceMarker>();
-            if (marker == null)
-            {
-                // This doesn't have a marker - it's probably the original stem, skip it
-                LogYellow($"[Rebinder] Skipping '{rb.name}' - no StemPieceMarker (likely original stem)", rb);
-                continue;
-            }
-            
-            if (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform))
+            if (marker != null && marker.isKeptPiece)
             {
                 held = rb;
-                LogYellow($"[Rebinder] Found parented CUT piece as HELD: '{held.name}'", held);
+                LogYellow($"[Rebinder] Found HELD by isKeptPiece flag: '{held.name}'", held);
                 break;
             }
         }
 
-        // Priority 2: If no parented piece found, use anchor point logic
-        if (held == null && enableAnchorHold)
+        // Priority 2: Fallback to parented piece
+        if (held == null)
         {
-            EnsureAnchorBody(); // ensures anchorPoint fallback is resolved too
-            if (anchorPoint != null)
-                held = ChooseHeldStemPieceByAnchorPoint(stemPieces, anchorPoint.position);
+            foreach (var rb in stemPieces)
+            {
+                if (rb == null) continue;
+                if (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform))
+                {
+                    held = rb;
+                    LogYellow($"[Rebinder] Found HELD by parenting: '{held.name}'", held);
+                    break;
+                }
+            }
         }
 
-        // Priority 3: Fallback to crown joints
+        // Priority 3: Fallback to center of mass distance to crown
         if (held == null)
-            held = ChooseHeldStemPieceByCrownJoints(stemPieces, stemSet);
-
-        // Priority 4: Final fallback
-        if (held == null)
-            held = ChooseHeldStemPieceByHighestYThenProximity(stemPieces);
+        {
+            Vector3 crownPos = stemRuntime.StemAnchor != null 
+                ? stemRuntime.StemAnchor.position 
+                : stemRuntime.transform.position;
+            held = ChooseHeldStemPieceByAnchorPoint(stemPieces, crownPos);
+        }
 
         if (held == null) return;
 
