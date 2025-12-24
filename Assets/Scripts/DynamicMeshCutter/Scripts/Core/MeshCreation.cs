@@ -328,61 +328,48 @@ namespace DynamicMeshCutter
                     float height = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.size.y : 0.1f;
                     bool mainPieceSurvives = (height >= collapseThreshold);
 
-                    if (mainPieceSurvives)
-                    {
-                        // This is the piece closest to the crown -> the one we keep.
-                        // CRITICAL: Set kinematic FIRST before any other operations
-                        rb.isKinematic = true;
-                        rb.useGravity = false;
-                        rb.constraints = RigidbodyConstraints.None;
-                        
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] BEFORE parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
+                    // DEBUG: Always parent and make kinematic, regardless of size
+                    // This helps us see if parenting is the issue
+                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEEPER piece '{go.name}': size={height:F3}, threshold={collapseThreshold}, mainPieceSurvives={mainPieceSurvives}", go);
+                    
+                    // CRITICAL: Set kinematic FIRST before any other operations
+                    rb.isKinematic = true;
+                    rb.useGravity = false;
+                    rb.constraints = RigidbodyConstraints.None;
+                    
+                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] BEFORE parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
 
-                        // Parent to the flower so it moves with the system.
-                        go.transform.SetParent(stemRuntime.transform, true);
-                        
-                        // VERIFY: Check state after parenting - get Rigidbody AGAIN in case it changed
-                        rb = go.GetComponent<Rigidbody>();
-                        if (rb != null)
-                        {
-                            Debug.Log($"[MeshCreation.AnchorTopStemPiece] AFTER parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
-                            
-                            // FORCE state again after parenting (in case parenting reset something)
-                            rb.isKinematic = true;
-                            rb.useGravity = false;
-                            
-                            // Add a component that will continuously enforce kinematic state
-                            var enforcer = go.GetComponent<KinematicStateEnforcer>();
-                            if (enforcer == null)
-                                enforcer = go.AddComponent<KinematicStateEnforcer>();
-                            enforcer.targetRb = rb;
-                        }
-                        
-                        // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
-                        if (originalStemRoot != null)
-                        {
-                            PreserveComponentsForKeptPiece(originalStemRoot, go);
-                        }
-                        
-                        // FINAL VERIFY - get Rigidbody one more time
-                        rb = go.GetComponent<Rigidbody>();
-                        if (rb != null)
-                        {
-                            Debug.Log($"[MeshCreation.AnchorTopStemPiece] FINAL: KEPT piece '{go.name}': isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parented to '{stemRuntime.name}'", go);
-                        }
-                    }
-                    else
+                    // ALWAYS parent the keeper piece, even if it's small (for debugging)
+                    go.transform.SetParent(stemRuntime.transform, true);
+                    
+                    // VERIFY: Check state after parenting - get Rigidbody AGAIN in case it changed
+                    rb = go.GetComponent<Rigidbody>();
+                    if (rb != null)
                     {
-                        // Piece too small - DEBUG: Make it kinematic too
-                        Debug.Log($"[MeshCreation] Cut too close to anchor! Piece size {height:F3} < {collapseThreshold}. DEBUG: Making kinematic.", go);
+                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] AFTER parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
                         
-                        // DEBUG: Make kinematic instead of falling
+                        // FORCE state again after parenting (in case parenting reset something)
                         rb.isKinematic = true;
                         rb.useGravity = false;
-                        rb.constraints = RigidbodyConstraints.None;
                         
-                        // Don't cleanup during debug
-                        // CleanupFallingPiece(go);
+                        // Add a component that will continuously enforce kinematic state
+                        var enforcer = go.GetComponent<KinematicStateEnforcer>();
+                        if (enforcer == null)
+                            enforcer = go.AddComponent<KinematicStateEnforcer>();
+                        enforcer.targetRb = rb;
+                    }
+                    
+                    // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
+                    if (originalStemRoot != null)
+                    {
+                        PreserveComponentsForKeptPiece(originalStemRoot, go);
+                    }
+                    
+                    // FINAL VERIFY - get Rigidbody one more time
+                    rb = go.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] FINAL: KEPT piece '{go.name}': isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parented to '{stemRuntime.name}'", go);
                     }
                 }
                 else
