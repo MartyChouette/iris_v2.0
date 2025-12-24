@@ -270,7 +270,10 @@ namespace DynamicMeshCutter
             GameObject keeper = null;
             float closestDistSq = float.MaxValue;
 
-            // 2. Find the winner (The piece closest to the Anchor)
+            // 2. Find the winner (The piece whose CENTER OF MASS is closest to the Anchor)
+            //    IMPORTANT: We use worldCenterOfMass, NOT ClosestPoint on collider!
+            //    ClosestPoint was causing bugs where a longer falling piece had a surface point
+            //    closer to the anchor than the keeper piece's center, selecting the wrong piece.
             foreach (var p in createdObjects)
             {
                 if (p == null) continue;
@@ -283,15 +286,12 @@ namespace DynamicMeshCutter
                     continue;
                 }
                 
+                // Use worldCenterOfMass for reliable piece selection
+                // This represents the actual center of the piece, not just a surface point
                 Vector3 center = rb.worldCenterOfMass;
 
-                // Refinement: If you have a collider, use ClosestPoint for better accuracy on curved stems
-                var col = p.GetComponentInChildren<Collider>();
-                if (col != null)
-                    center = col.ClosestPoint(anchorPos);
-
                 float d = (center - anchorPos).sqrMagnitude;
-                Debug.Log($"[MeshCreation.AnchorTopStemPiece] Piece '{p.name}' distance to anchor: {Mathf.Sqrt(d):F3}", p);
+                Debug.Log($"[MeshCreation.AnchorTopStemPiece] Piece '{p.name}' centerOfMass={center}, distance to anchor: {Mathf.Sqrt(d):F3}", p);
                 if (d < closestDistSq)
                 {
                     closestDistSq = d;

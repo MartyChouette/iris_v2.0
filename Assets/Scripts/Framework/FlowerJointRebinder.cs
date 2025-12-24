@@ -600,8 +600,10 @@ public class FlowerJointRebinder : MonoBehaviour
 
     private Rigidbody ChooseHeldStemPieceByAnchorPoint(Rigidbody[] stemPieces, Vector3 anchorWorldPos)
     {
-        // Choose the piece that physically contains / is closest to the anchor point.
-        // This matches a "flower stand anchor" use case and prevents anchoring the wrong chunk.
+        // Choose the piece whose CENTER OF MASS is closest to the anchor point.
+        // IMPORTANT: We use worldCenterOfMass, NOT ClosestPoint on colliders!
+        // ClosestPoint was causing bugs where a longer falling piece had a surface point
+        // closer to the anchor than the keeper piece's center, selecting the wrong piece.
         Rigidbody best = null;
         float bestDistSq = float.MaxValue;
 
@@ -610,36 +612,18 @@ public class FlowerJointRebinder : MonoBehaviour
             var rb = stemPieces[i];
             if (rb == null) continue;
 
-            var cols = rb.GetComponentsInChildren<Collider>(true);
-            if (cols != null && cols.Length > 0)
+            // Use worldCenterOfMass for reliable piece selection
+            float d = (rb.worldCenterOfMass - anchorWorldPos).sqrMagnitude;
+            LogYellow($"[Rebinder] Piece '{rb.name}' centerOfMass={rb.worldCenterOfMass}, distance to anchor: {Mathf.Sqrt(d):F3}");
+            if (d < bestDistSq)
             {
-                for (int c = 0; c < cols.Length; c++)
-                {
-                    var col = cols[c];
-                    if (col == null) continue;
-
-                    Vector3 p = col.ClosestPoint(anchorWorldPos);
-                    float d = (p - anchorWorldPos).sqrMagnitude;
-                    if (d < bestDistSq)
-                    {
-                        bestDistSq = d;
-                        best = rb;
-                    }
-                }
-            }
-            else
-            {
-                float d = (rb.worldCenterOfMass - anchorWorldPos).sqrMagnitude;
-                if (d < bestDistSq)
-                {
-                    bestDistSq = d;
-                    best = rb;
-                }
+                bestDistSq = d;
+                best = rb;
             }
         }
 
         if (best != null)
-            LogYellow($"[Rebinder] HELD picked by AnchorPoint proximity: '{best.name}'");
+            LogYellow($"[Rebinder] HELD picked by AnchorPoint proximity (using center of mass): '{best.name}'");
 
         return best;
     }
