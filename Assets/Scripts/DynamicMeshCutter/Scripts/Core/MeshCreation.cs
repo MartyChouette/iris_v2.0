@@ -229,157 +229,131 @@ namespace DynamicMeshCutter
                 cData.CreatedTargets[i] = nTarget;
             }
 
-            // NEW: for stem cuts, treat the longest piece as the main stem
+            // For stem cuts, find the keeper (closest to crown) and configure physics
             if (isStemTarget)
             {
-                AnchorTopStemPiece(cData.CreatedObjects, stemRuntime, target.GameobjectRoot);
+                AnchorTopStemPiece(cData.CreatedObjects, stemRuntime);
             }
 
             return cData;
         }
 
+
+        static void SafeDestroy(UnityEngine.Object obj)
+        {
+            if (!obj) return;
+
+            if (Application.isPlaying)
+                UnityEngine.Object.Destroy(obj);          // safe: end-of-frame
+            else
+                SafeDestroy(obj); // editor-time only
+        }
+
+
+
         /// <summary>
-        /// For stem cuts: keep the stem piece closest to the crown (StemAnchor)
-        /// as the "held" stem, and let all other pieces fall away.
+        /// For stem cuts: find the piece closest to the crown (by center of mass distance),
+        /// disable gravity on it, and let other pieces fall. Delete if too small.
         /// </summary>
         static void AnchorTopStemPiece(GameObject[] createdObjects,
-                                       global::FlowerStemRuntime stemRuntime,
-                                       GameObject originalStemRoot = null)
+                                       global::FlowerStemRuntime stemRuntime)
         {
-            if (stemRuntime == null)
-            {
-                Debug.LogError("[MeshCreation.AnchorTopStemPiece] stemRuntime is NULL!");
+            if (stemRuntime == null || createdObjects == null || createdObjects.Length == 0)
                 return;
-            }
-            
-            if (createdObjects == null || createdObjects.Length == 0)
-            {
-                Debug.LogWarning("[MeshCreation.AnchorTopStemPiece] No created objects!", stemRuntime);
-                return;
-            }
 
-            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Starting with {createdObjects.Length} pieces, StemAnchor={(stemRuntime.StemAnchor != null ? stemRuntime.StemAnchor.name : "NULL")}", stemRuntime);
+            // Get crown anchor position
+            Vector3 crownPos = stemRuntime.StemAnchor != null
+                ? stemRuntime.StemAnchor.position
+                : stemRuntime.transform.position;
 
-            // 1. Identify the ANCHOR (The part of the stem attached to the flower head/crown)
-            //    We want to KEEP the piece closest to this point.
-            //    Renamed logic: stemStart -> StemAnchor
-            Vector3 anchorPos = stemRuntime.StemAnchor != null
-                                ? stemRuntime.StemAnchor.position
-                                : stemRuntime.transform.position;
-
+            // Find the piece FARTHEST from crown (usually the rooted bottom piece)
             GameObject keeper = null;
-            float closestDistSq = float.MaxValue;
+            float farthestDistSq = -1f;
 
-            // 2. Find the winner (The piece whose CENTER OF MASS is closest to the Anchor)
-            //    IMPORTANT: We use worldCenterOfMass, NOT ClosestPoint on collider!
-            //    ClosestPoint was causing bugs where a longer falling piece had a surface point
-            //    closer to the anchor than the keeper piece's center, selecting the wrong piece.
-            foreach (var p in createdObjects)
+            foreach (var go in createdObjects)
             {
-                if (p == null) continue;
-
-                // Check distance from the piece's center to the Anchor
-                var rb = p.GetComponent<Rigidbody>();
-                if (rb == null)
-                {
-                    Debug.LogWarning($"[MeshCreation.AnchorTopStemPiece] Piece '{p.name}' has no Rigidbody!", p);
-                    continue;
-                }
+                if (go == null) continue;
                 
-                // Use worldCenterOfMass for reliable piece selection
-                // This represents the actual center of the piece, not just a surface point
-                Vector3 center = rb.worldCenterOfMass;
-
-                float d = (center - anchorPos).sqrMagnitude;
-                Debug.Log($"[MeshCreation.AnchorTopStemPiece] Piece '{p.name}' centerOfMass={center}, distance to anchor: {Mathf.Sqrt(d):F3}", p);
-                if (d < closestDistSq)
+                // Find rigidbody - check on this object first, then CHILDREN
+                var rb = go.GetComponent<Rigidbody>() ?? go.GetComponentInChildren<Rigidbody>();
+                if (rb == null) continue;
+                
+                float distSq = (rb.worldCenterOfMass - crownPos).sqrMagnitude;
+                Debug.Log($"[AnchorTopStemPiece] Piece '{go.name}' (rb on '{rb.gameObject.name}') distance to crown: {Mathf.Sqrt(distSq):F3}", go);
+                
+                if (distSq > farthestDistSq)
                 {
-                    closestDistSq = d;
-                    keeper = p;
+                    farthestDistSq = distSq;
+                    keeper = go;
                 }
             }
 
             if (keeper == null)
-            {
-                Debug.LogError("[MeshCreation.AnchorTopStemPiece] Could not find keeper piece! All pieces will fall!", stemRuntime);
                 return;
-            }
-            
-            Debug.Log($"[MeshCreation.AnchorTopStemPiece] Selected keeper: '{keeper.name}'", keeper);
 
-            // 3. Apply Physics Rules
-            float collapseThreshold = 0.10f; // Minimum length to stay kinematic
+            Debug.Log($"[AnchorTopStemPiece] Selected keeper: '{keeper.name}' (farthest from crown)", keeper);
 
+            // Configure all pieces
             foreach (var go in createdObjects)
             {
-                if (go == null)
-                    continue;
-
+                if (go == null) continue;
+                
+                // Find rigidbody - check on this object first, then CHILDREN
                 var rb = go.GetComponent<Rigidbody>();
                 if (rb == null)
-                    continue;
-
-                bool isKeeper = (go == keeper);
-
-                if (isKeeper)
                 {
-                    // Check metric cruelty (is the piece too small to exist?)
-                    MeshFilter mf = go.GetComponentInChildren<MeshFilter>();
-                    float height = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.size.y : 0.1f;
-                    bool mainPieceSurvives = (height >= collapseThreshold);
+                    rb = go.GetComponentInChildren<Rigidbody>();
+                    if (rb != null)
+                    {
+                        Debug.Log($"[AnchorTopStemPiece] Found Rigidbody on CHILD '{rb.gameObject.name}' for piece '{go.name}'", rb);
+                    }
+                }
+                if (rb == null) continue;
 
-                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] KEEPER piece '{go.name}': size={height:F3}, threshold={collapseThreshold}, mainPieceSurvives={mainPieceSurvives}", go);
+                if (go == keeper)
+                {
+                    // Debug: trace the hierarchy and find ALL rigidbodies
+                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}' hierarchy trace:", go);
                     
-                    // CRITICAL: Set kinematic FIRST before any other operations
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
-                    rb.constraints = RigidbodyConstraints.None;
+                    // Find all rigidbodies in this piece (self and children)
+                    var allRigidbodies = go.GetComponentsInChildren<Rigidbody>(true);
+                    Debug.Log($"  - Found {allRigidbodies.Length} Rigidbodies in keeper hierarchy", go);
                     
-                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] BEFORE parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
-
-                    // ALWAYS parent the keeper piece to stemRuntime
+                    // Configure ALL rigidbodies in this piece
+                    foreach (var pieceRb in allRigidbodies)
+                    {
+                        pieceRb.isKinematic = true;
+                        pieceRb.useGravity = false;
+                        pieceRb.constraints = RigidbodyConstraints.FreezeAll;
+                        Debug.Log($"  - Configured rb on '{pieceRb.gameObject.name}': isKinematic=true, useGravity=false, FreezeAll", pieceRb);
+                    }
+                    
+                    // Parent to stem runtime (keeps world position with true)
                     go.transform.SetParent(stemRuntime.transform, true);
                     
-                    // VERIFY: Check state after parenting - get Rigidbody AGAIN in case it changed
-                    rb = go.GetComponent<Rigidbody>();
-                    if (rb != null)
-                    {
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] AFTER parenting: '{go.name}' isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parent={go.transform.parent?.name ?? "null"}", go);
-                        
-                        // FORCE state again after parenting (in case parenting reset something)
-                        rb.isKinematic = true;
-                        rb.useGravity = false;
-                    }
+                    // Mark as kept piece
+                    var marker = go.GetComponent<StemPieceMarker>();
+                    if (marker != null) marker.isKeptPiece = true;
                     
-                    // PRESERVE COMPONENTS: Copy important components from original stem to kept piece
-                    if (originalStemRoot != null)
-                    {
-                        PreserveComponentsForKeptPiece(originalStemRoot, go);
-                    }
-                    
-                    // FINAL VERIFY - get Rigidbody one more time
-                    rb = go.GetComponent<Rigidbody>();
-                    if (rb != null)
-                    {
-                        Debug.Log($"[MeshCreation.AnchorTopStemPiece] FINAL: KEPT piece '{go.name}': isKinematic={rb.isKinematic}, useGravity={rb.useGravity}, parented to '{stemRuntime.name}'", go);
-                    }
+                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': ALL rigidbodies frozen, parented to '{stemRuntime.name}'", go);
                 }
                 else
                 {
-                    // This is a falling piece - make it dynamic with gravity ON
-                    Debug.Log($"[MeshCreation.AnchorTopStemPiece] Making falling piece '{go.name}' DYNAMIC (gravity ON)", go);
+                    // Falling piece: check size first - delete if too small (< 0.005)
+                    MeshFilter mf = go.GetComponentInChildren<MeshFilter>();
+                    float size = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds.size.magnitude : 0.1f;
                     
+                    if (size < 0.005f)
+                    {
+                        Debug.Log($"[AnchorTopStemPiece] Falling piece '{go.name}' too small ({size:F4} < 0.005), deleting", go);
+                        UnityEngine.Object.Destroy(go);
+                        continue;
+                    }
+                    
+                    // Falling piece: enable gravity
                     rb.isKinematic = false;
                     rb.useGravity = true;
-                    rb.constraints = RigidbodyConstraints.None;
-                    
-                    // Remove any kinematic enforcer if it exists (falling pieces shouldn't have this)
-                    var enforcer = go.GetComponent<KinematicStateEnforcer>();
-                    if (enforcer != null)
-                        Destroy(enforcer);
-                    
-                    // Cleanup falling pieces to optimize performance
-                    CleanupFallingPiece(go);
+                    Debug.Log($"[AnchorTopStemPiece] FALLING '{go.name}': gravity ON", go);
                 }
             }
         }
@@ -565,7 +539,7 @@ namespace DynamicMeshCutter
                         if (Application.isPlaying)
                             UnityEngine.Object.Destroy(comp, 0.1f); // Delay destruction
                         else
-                            UnityEngine.Object.DestroyImmediate(comp);
+                            SafeDestroy(comp);
                     }
                     catch (System.Exception ex)
                     {
@@ -621,7 +595,7 @@ namespace DynamicMeshCutter
                             if (Application.isPlaying)
                                 UnityEngine.Object.Destroy(comp, 0.1f); // Delay destruction
                             else
-                                UnityEngine.Object.DestroyImmediate(comp);
+                                SafeDestroy(comp);
                         }
                         catch (System.Exception ex)
                         {
@@ -742,8 +716,9 @@ namespace DynamicMeshCutter
                     else
                     {
                         for (int k = 0; k < part.Colliders.Length; k++)
-                            GameObject.DestroyImmediate(part.Colliders[k]);
+                            SafeDestroy(part.Colliders[k]);
                         part.Colliders = new Collider[0];
+
                     }
 
                     part.Vertices = vertices;
@@ -751,16 +726,24 @@ namespace DynamicMeshCutter
                 else
                 {
                     if (part.Joint != null)
-                        GameObject.DestroyImmediate(part.Joint);
+                        SafeDestroy(part.Joint);
                     if (part.Rigidbody != null)
-                        GameObject.DestroyImmediate(part.Rigidbody);
+                        SafeDestroy(part.Rigidbody);
+
                     if (part.Colliders != null)
                     {
                         for (int k = 0; k < part.Colliders.Length; k++)
-                            GameObject.DestroyImmediate(part.Colliders[k]);
+                            SafeDestroy(part.Colliders[k]);
                     }
-                    GameObject.DestroyImmediate(part);
+
+                    // optional: clear refs to reduce “use after scheduled destroy” inside your own codepaths
+                    part.Joint = null;
+                    part.Rigidbody = null;
+                    part.Colliders = new Collider[0];
+
+                    SafeDestroy(part);
                     ragdoll.Parts.Remove(key);
+
                 }
             }
         }
@@ -970,7 +953,8 @@ namespace DynamicMeshCutter
                 }
                 else
                 {
-                    GameObject.DestroyImmediate(nAnimator);
+                    SafeDestroy(nAnimator);
+
                 }
             }
 
@@ -1043,7 +1027,8 @@ namespace DynamicMeshCutter
                 if (Application.isPlaying)
                     GameObject.Destroy(cols[i]);
                 else
-                    GameObject.DestroyImmediate(cols[i]);
+                    SafeDestroy(cols[i]);
+       
             }
         }
 

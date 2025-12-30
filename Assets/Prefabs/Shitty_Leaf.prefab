@@ -130,6 +130,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!54 &7291650636675671145
 Rigidbody:
@@ -216,6 +217,7 @@ MonoBehaviour:
   useJointProjection: 1
   projectionDistance: 0.02
   enforceXYConstraints: 1
+  enableJointCollision: 1
   useAdaptiveDrive: 0
   softZoneFraction: 0.6
   tensionCurve:
@@ -259,7 +261,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:

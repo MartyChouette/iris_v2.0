@@ -225,49 +225,45 @@ public class FlowerJointRebinder : MonoBehaviour
 
         var stemSet = new HashSet<Rigidbody>(stemPieces);
 
-        // 2) Decide HELD piece robustly
-        // CRITICAL: First check for parented pieces (set by AnchorTopStemPiece)
-        // These are the pieces that should be kept - they're already parented to stemRuntime
+        // 2) Find the HELD piece
+        // Priority 1: Use isKeptPiece flag (set by AnchorTopStemPiece)
         Rigidbody held = null;
         
-        // Priority 1: Find parented pieces (these are already marked as kept by AnchorTopStemPiece)
-        // CRITICAL: Make sure we're not selecting the original stem (it might also be parented)
         foreach (var rb in stemPieces)
         {
             if (rb == null) continue;
-            
-            // Skip if this is the original stem (check if it has StemPieceMarker - cut pieces have this)
             var marker = rb.GetComponent<StemPieceMarker>();
-            if (marker == null)
-            {
-                // This doesn't have a marker - it's probably the original stem, skip it
-                LogYellow($"[Rebinder] Skipping '{rb.name}' - no StemPieceMarker (likely original stem)", rb);
-                continue;
-            }
-            
-            if (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform))
+            if (marker != null && marker.isKeptPiece)
             {
                 held = rb;
-                LogYellow($"[Rebinder] Found parented CUT piece as HELD: '{held.name}'", held);
+                LogYellow($"[Rebinder] Found HELD by isKeptPiece flag: '{held.name}'", held);
                 break;
             }
         }
 
-        // Priority 2: If no parented piece found, use anchor point logic
-        if (held == null && enableAnchorHold)
+        // Priority 2: Fallback to parented piece
+        if (held == null)
         {
-            EnsureAnchorBody(); // ensures anchorPoint fallback is resolved too
-            if (anchorPoint != null)
-                held = ChooseHeldStemPieceByAnchorPoint(stemPieces, anchorPoint.position);
+            foreach (var rb in stemPieces)
+            {
+                if (rb == null) continue;
+                if (stemRuntime != null && rb.transform.IsChildOf(stemRuntime.transform))
+                {
+                    held = rb;
+                    LogYellow($"[Rebinder] Found HELD by parenting: '{held.name}'", held);
+                    break;
+                }
+            }
         }
 
-        // Priority 3: Fallback to crown joints
+        // Priority 3: Fallback to center of mass distance to crown
         if (held == null)
-            held = ChooseHeldStemPieceByCrownJoints(stemPieces, stemSet);
-
-        // Priority 4: Final fallback
-        if (held == null)
-            held = ChooseHeldStemPieceByHighestYThenProximity(stemPieces);
+        {
+            Vector3 crownPos = stemRuntime.StemAnchor != null 
+                ? stemRuntime.StemAnchor.position 
+                : stemRuntime.transform.position;
+            held = ChooseHeldStemPieceByAnchorPoint(stemPieces, crownPos);
+        }
 
         if (held == null) return;
 
@@ -276,7 +272,7 @@ public class FlowerJointRebinder : MonoBehaviour
         LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]");
 
         // 2.5) Ensure HELD piece doesn't fall
-        // Priority: Use SoftStemAnchor if available (best solution), otherwise use kinematic parenting
+        // Check if piece is already parented to stem (AnchorTopStemPiece already handled it)
         bool isParentedToStem = (stemRuntime != null && held.transform.IsChildOf(stemRuntime.transform));
         
         // CRITICAL: Get the NEW cut location from StemTip (this is where the anchor should be)
@@ -284,8 +280,18 @@ public class FlowerJointRebinder : MonoBehaviour
             ? stemRuntime.StemTip.position 
             : (anchorPoint != null ? anchorPoint.position : held.worldCenterOfMass);
         
-        // Try SoftStemAnchor first (if enabled)
-        if (useSoftStemAnchor)
+        // If piece is already parented to stem, AnchorTopStemPiece already set it up correctly
+        // Skip SoftStemAnchor - just ensure kinematic/frozen state is preserved
+        if (isParentedToStem)
+        {
+            // Piece is already correctly configured by AnchorTopStemPiece - just reinforce the settings
+            held.isKinematic = true;
+            held.useGravity = false;
+            held.constraints = RigidbodyConstraints.FreezeAll;
+            LogYellow($"[Rebinder] HELD '{held.name}' already parented - reinforcing KINEMATIC, gravity OFF, FROZEN", held);
+        }
+        // Only use SoftStemAnchor if piece is NOT already parented (fallback case)
+        else if (useSoftStemAnchor)
         {
             if (softAnchor == null)
                 softAnchor = flowerRoot != null 
@@ -311,36 +317,31 @@ public class FlowerJointRebinder : MonoBehaviour
             }
         }
         
-        // If not using SoftStemAnchor, use kinematic parenting approach
-        if (!useSoftStemAnchor || softAnchor == null)
+        // Fallback: If not parented and not using SoftStemAnchor, use kinematic parenting approach
+        if (!isParentedToStem && (!useSoftStemAnchor || softAnchor == null))
         {
-            // ALWAYS set kinematic and disable gravity for held piece
+            // Set kinematic, disable gravity, and freeze for held piece
             held.isKinematic = true;
             held.useGravity = false;
+            held.constraints = RigidbodyConstraints.FreezeAll;
             
-            // If parented, it's already set up correctly by AnchorTopStemPiece
-            if (isParentedToStem)
+            if (enableAnchorHold)
             {
-                LogYellow($"[Rebinder] HELD '{held.name}' is parented to stem - KINEMATIC (gravity OFF) - already configured", held);
-            }
-            else if (enableAnchorHold)
-            {
-                // Not parented - use joint-based anchor hold
+                // Use joint-based anchor hold
                 EnsureAnchorBody();
-                // CRITICAL: Update anchor point to new cut location
                 if (stemRuntime != null && stemRuntime.StemTip != null)
                 {
                     anchorPoint = stemRuntime.StemTip;
                     anchorBody.transform.position = newCutLocation;
                 }
                 ApplyAnchorHoldToHeld(held);
-                LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold at NEW cut location {newCutLocation} with KINEMATIC (gravity OFF)", held);
+                LogYellow($"[Rebinder] HELD '{held.name}' using anchor hold - KINEMATIC, gravity OFF, FROZEN", held);
             }
             else
             {
-                // Not parented and no anchor hold - parent it to stemRuntime as fallback
+                // Parent to stemRuntime as fallback
                 held.transform.SetParent(stemRuntime.transform, true);
-                LogYellow($"[Rebinder] HELD '{held.name}' not parented - parenting to stemRuntime and setting KINEMATIC (gravity OFF)", held);
+                LogYellow($"[Rebinder] HELD '{held.name}' parenting to stemRuntime - KINEMATIC, gravity OFF, FROZEN", held);
             }
         }
         
@@ -1030,9 +1031,11 @@ public class FlowerJointRebinder : MonoBehaviour
         {
             if (xy == null) continue;
 
+            // If the tether has no live underlying joint, skip.
             if (!xy.HasActiveJoint())
                 continue;
 
+            // Respect permanent detach state.
             var part = xy.GetComponent<FlowerPartRuntime>();
             if (part != null)
             {
@@ -1040,14 +1043,31 @@ public class FlowerJointRebinder : MonoBehaviour
                 if (!part.isAttached) continue;
             }
 
+            // Owner rigidbody for exclude checks / sanity.
             var ownerRb = xy.GetComponent<Rigidbody>();
             if (ownerRb == null) continue;
 
+            // Find closest new stem piece to this part.
             Vector3 refPos = xy.transform.position;
             var newBody = FindClosestStemPiece(refPos, stemPieces, ownerRb);
 
+            // Only rebind if we found a valid new parent body and it actually changed.
             if (newBody != null && newBody != ownerRb && xy.connectedBody != newBody)
-                xy.SetConnectedBody(newBody);
+            {
+                // --- INSERTED FROM YOUR SNIPPET (adapted to this context) ---
+
+                // 1) Calculate the new parent body
+                Rigidbody newParentBody = newBody;
+
+                // 2) Look for the Custom Tether Joint (we already have it as 'xy', but keep the pattern)
+                XYTetherJoint tether = xy; // or: xy.GetComponent<XYTetherJoint>();
+
+                if (tether != null)
+                {
+                    // 3) Force the update using the new method
+                    tether.UpdateConnectedBody(newParentBody);
+                }
+            }
         }
     }
 
