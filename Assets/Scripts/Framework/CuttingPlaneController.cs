@@ -165,6 +165,15 @@ public class CuttingPlaneController : MonoBehaviour
     [Tooltip("0 disables fluid feedback; 1 is full intensity.")]
     public float goreIntensity = 1f;
 
+    [Header("Advanced (Pose Root)")]
+    [Tooltip("If set, height movement is applied to this transform (recommended: VisualAsset). If null, we auto-pick plane.transform.parent if it exists.")]
+    public Transform planePoseRootOverride;
+
+    private Transform _poseTransform;   // the thing we actually move in Y (and want to share with tilt)
+    private float _authoredStartLocalY;
+    private float _lockedLocalX;
+    private float _lockedLocalZ;
+
     // ─────────────────────────────────────────────────────────────
     // Ownership gating
     // ─────────────────────────────────────────────────────────────
@@ -214,6 +223,8 @@ public class CuttingPlaneController : MonoBehaviour
 
     private float _cutArmedAtTime = -999f;
 
+
+
     /// <summary>
     /// When true, we ignore cut input until the cut control is released once.
     /// Used to prevent "pickup click" from immediately cutting.
@@ -230,9 +241,17 @@ public class CuttingPlaneController : MonoBehaviour
     private void Awake()
     {
         if (plane == null) plane = GetComponentInChildren<PlaneBehaviour>(true);
-        _planeTransform = plane != null ? plane.transform : transform;
 
-        // Capture authored start pose at scene load.
+        var planeTf = (plane != null) ? plane.transform : transform;
+
+        // ✅ YOU NEED THIS BACK (Update + HandleCutEffects rely on it)
+        _planeTransform = planeTf;
+
+        // ✅ Move the shared pose root (VisualAsset) so tilt + height are combined.
+        _poseTransform = planePoseRootOverride != null
+            ? planePoseRootOverride
+            : (planeTf.parent != null ? planeTf.parent : planeTf);
+
         CaptureAuthoredPoseForClampAndLock();
 
         if (minYOffset > maxYOffset)
@@ -242,6 +261,7 @@ public class CuttingPlaneController : MonoBehaviour
             maxYOffset = tmp;
         }
     }
+
 
     private void Start()
     {
@@ -369,18 +389,20 @@ public class CuttingPlaneController : MonoBehaviour
 
             _targetY += dy * mouseYWorldPerPixel * mult * accel;
         }
-
-        // Clamp relative to authored pose (prevents drift and snaps)
-        float minY = _authoredStartY + minYOffset;
-        float maxY = _authoredStartY + maxYOffset;
+        // Clamp relative to authored LOCAL pose
+        float minY = _authoredStartLocalY + minYOffset;
+        float maxY = _authoredStartLocalY + maxYOffset;
         _targetY = Mathf.Clamp(_targetY, minY, maxY);
 
-        // Smooth glide
-        Vector3 pos = _planeTransform.position;
-        pos.x = _lockedX;
-        pos.z = _lockedZ;
-        pos.y = Mathf.SmoothDamp(pos.y, _targetY, ref _yVel, ySmoothTime);
-        _planeTransform.position = pos;
+        // Smooth glide (LOCAL)
+        Vector3 lp = _poseTransform.localPosition;
+        lp.x = _lockedLocalX;
+        lp.z = _lockedLocalZ;
+        lp.y = Mathf.SmoothDamp(lp.y, _targetY, ref _yVel, ySmoothTime);
+        _poseTransform.localPosition = lp;
+
+
+ 
 
         // ─────────────────────────────────────────────────────────────
         // CUT LOGIC
@@ -429,17 +451,18 @@ public class CuttingPlaneController : MonoBehaviour
 
     private void CaptureAuthoredPoseForClampAndLock()
     {
-        if (_planeTransform == null) return;
+        if (_poseTransform == null) return;
 
-        Vector3 p = _planeTransform.position;
+        Vector3 lp = _poseTransform.localPosition;
 
-        _authoredStartY = p.y;
-        _lockedX = p.x;
-        _lockedZ = p.z;
+        _authoredStartLocalY = lp.y;
+        _lockedLocalX = lp.x;
+        _lockedLocalZ = lp.z;
 
-        _targetY = p.y;
+        _targetY = lp.y;
         _yVel = 0f;
     }
+
 
     // ─────────────────────────────────────────────────────────────
     // Input helpers
