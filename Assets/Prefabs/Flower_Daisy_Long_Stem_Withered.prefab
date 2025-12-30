@@ -249,7 +249,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -439,7 +439,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8062156348110857516}
-  - component: {fileID: 1692395913357596294}
   m_Layer: 7
   m_Name: End_top_stem
   m_TagString: Untagged
@@ -456,25 +455,12 @@ Transform:
   m_GameObject: {fileID: 1479693258632375633}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50293887, y: -0.49704376, z: -0.4970438, w: 0.50293887}
-  m_LocalPosition: {x: 5.39, y: 8.62, z: 0.3}
+  m_LocalPosition: {x: 5.39, y: -6.78, z: 0.3}
   m_LocalScale: {x: 100, y: 99.999985, z: 99.999985}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6112998096651251505}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1692395913357596294
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1479693258632375633}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
-  mode: 1
 --- !u!1 &1557948336043810704
 GameObject:
   m_ObjectHideFlags: 0
@@ -962,7 +948,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.511
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -1365,7 +1351,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -1733,7 +1719,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -2050,12 +2036,14 @@ MonoBehaviour:
   stemRuntime: {fileID: 4575817706176515094}
   flowerRoot: {fileID: 2142817813479958454}
   crownRoot: {fileID: 2641778875234352785}
-  requireExplicitStemSwapGate: 1
+  requireExplicitStemSwapGate: 0
   forceLeafAttachmentsToHeld: 0
   forceCrownJointsToHeld: 1
   severStemInternalCrossChunkJoints: 1
   forceFallingChunksDynamic: 1
-  enableAnchorHold: 1
+  useSoftStemAnchor: 0
+  softAnchor: {fileID: 774424612799908584}
+  enableAnchorHold: 0
   anchorPoint: {fileID: 0}
   anchorBody: {fileID: 0}
   cutHoldSeconds: 0.12
@@ -2083,10 +2071,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerStemRuntime
   StemAnchor: {fileID: 0}
-  StemTip: {fileID: 0}
+  StemTip: {fileID: 8062156348110857516}
   cutNormalRef: {fileID: 272389923787343692}
   referenceAxisLocal: {x: 0, y: 1, z: 0}
-  minAllowedCutY: 50
+  minAllowedCutY: 0.1
   lastCutHeight: -99999
 --- !u!114 &8416529037761675240
 MonoBehaviour:
@@ -2106,7 +2094,7 @@ MonoBehaviour:
   bottomIsKinematic: 1
   makeTopDynamic: 1
   topUseGravity: 1
-  topConstraints: 126
+  topConstraints: 0
 --- !u!114 &774424612799908584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2114,7 +2102,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2553351889821507379}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbfff1eb0d8b0ab44916514858848eeb, type: 3}
   m_Name: 
@@ -2481,7 +2469,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -3279,6 +3267,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2431428626403178645}
+  - component: {fileID: 6629186178124197365}
   m_Layer: 7
   m_Name: Start_bottom_stem
   m_TagString: Untagged
@@ -3295,12 +3284,25 @@ Transform:
   m_GameObject: {fileID: 4309141015983922623}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50293887, y: -0.49704376, z: -0.4970438, w: 0.50293887}
-  m_LocalPosition: {x: 5.4, y: -6.92, z: 0.05845976}
+  m_LocalPosition: {x: 5.4, y: 9.6, z: 0.05845976}
   m_LocalScale: {x: 100, y: 99.999985, z: 99.999985}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6112998096651251505}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6629186178124197365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4309141015983922623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
+  mode: 1
 --- !u!1 &4366669530580084483
 GameObject:
   m_ObjectHideFlags: 0
@@ -3798,7 +3800,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -4166,7 +4168,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -4596,7 +4598,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -5266,9 +5268,10 @@ GameObject:
   - component: {fileID: 1320559352868591709}
   - component: {fileID: 6463962271534695426}
   - component: {fileID: 3605954231757112808}
+  - component: {fileID: 5341107448944868756}
   m_Layer: 7
   m_Name: Long_Stem
-  m_TagString: Untagged
+  m_TagString: Stem
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5393,7 +5396,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 126
+  m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!114 &8773017590686910007
 MonoBehaviour:
@@ -5452,8 +5455,8 @@ MonoBehaviour:
   hardMaxSpeed: 15
   coupledStem: {fileID: 3449460478309753257}
   stemAttachPoint: {fileID: 4828255766170251400}
-  stemTugRadius: 0.35
-  stemTugStrength: 0.7
+  stemTugRadius: 0.15
+  stemTugStrength: 0.3
 --- !u!138 &1546741301647645091
 FixedJoint:
   m_ObjectHideFlags: 0
@@ -5508,7 +5511,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DynamicMeshCutter.MeshTarget
   GameobjectRoot: {fileID: 6656621808879889486}
   OverrideFaceMaterial: {fileID: -2813467912831258332, guid: cd353f4b259411f439a6e66723a8b6a7, type: 3}
-  SeparateMeshes: 0
+  SeparateMeshes: 1
   ApplyTranslation: 1
   DefaultBehaviour: 0000000000000000
   DynamicRagdoll: {fileID: 0}
@@ -5552,7 +5555,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6656621808879889486}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 23a76c5115d38c84dbedaddac5f0f157, type: 3}
   m_Name: 
@@ -5573,6 +5576,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StemPieceMarker
   stemRuntime: {fileID: 4575817706176515094}
+  isKeptPiece: 0
+--- !u!114 &5341107448944868756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6656621808879889486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 269347413b4426a489a20756bbccc008, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OffScreenDespawner
+  despawnYThreshold: -10
+  checkDelay: 0.5
+  checkInterval: 0.2
+  debugLogs: 0
 --- !u!1 &7399660993037628528
 GameObject:
   m_ObjectHideFlags: 0
@@ -5824,7 +5844,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.49
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -6227,7 +6247,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -6657,7 +6677,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -7026,7 +7046,7 @@ MonoBehaviour:
   passiveMultiplierOverride: 0.93
   onlyBreakWhenEngaged: 1
   enableAudio: 1
-  enableFluid: 1
+  enableFluid: 0
   preferDeterministicSapDirection: 0
   onBroke:
     m_PersistentCalls:
@@ -7281,6 +7301,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7291650636675671145, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
       propertyPath: m_ExcludeLayers.m_Bits
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7291650636675671145, guid: 624919f7d1352a743a40a4606e6f38fe, type: 3}
+      propertyPath: m_IncludeLayers.m_Bits
       value: 64
       objectReference: {fileID: 0}
     m_RemovedComponents: []

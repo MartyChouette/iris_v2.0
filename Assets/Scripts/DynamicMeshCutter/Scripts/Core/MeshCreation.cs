@@ -238,6 +238,19 @@ namespace DynamicMeshCutter
             return cData;
         }
 
+
+        static void SafeDestroy(UnityEngine.Object obj)
+        {
+            if (!obj) return;
+
+            if (Application.isPlaying)
+                UnityEngine.Object.Destroy(obj);          // safe: end-of-frame
+            else
+                SafeDestroy(obj); // editor-time only
+        }
+
+
+
         /// <summary>
         /// For stem cuts: find the piece closest to the crown (by center of mass distance),
         /// disable gravity on it, and let other pieces fall. Delete if too small.
@@ -526,7 +539,7 @@ namespace DynamicMeshCutter
                         if (Application.isPlaying)
                             UnityEngine.Object.Destroy(comp, 0.1f); // Delay destruction
                         else
-                            UnityEngine.Object.DestroyImmediate(comp);
+                            SafeDestroy(comp);
                     }
                     catch (System.Exception ex)
                     {
@@ -582,7 +595,7 @@ namespace DynamicMeshCutter
                             if (Application.isPlaying)
                                 UnityEngine.Object.Destroy(comp, 0.1f); // Delay destruction
                             else
-                                UnityEngine.Object.DestroyImmediate(comp);
+                                SafeDestroy(comp);
                         }
                         catch (System.Exception ex)
                         {
@@ -703,8 +716,9 @@ namespace DynamicMeshCutter
                     else
                     {
                         for (int k = 0; k < part.Colliders.Length; k++)
-                            GameObject.DestroyImmediate(part.Colliders[k]);
+                            SafeDestroy(part.Colliders[k]);
                         part.Colliders = new Collider[0];
+
                     }
 
                     part.Vertices = vertices;
@@ -712,16 +726,24 @@ namespace DynamicMeshCutter
                 else
                 {
                     if (part.Joint != null)
-                        GameObject.DestroyImmediate(part.Joint);
+                        SafeDestroy(part.Joint);
                     if (part.Rigidbody != null)
-                        GameObject.DestroyImmediate(part.Rigidbody);
+                        SafeDestroy(part.Rigidbody);
+
                     if (part.Colliders != null)
                     {
                         for (int k = 0; k < part.Colliders.Length; k++)
-                            GameObject.DestroyImmediate(part.Colliders[k]);
+                            SafeDestroy(part.Colliders[k]);
                     }
-                    GameObject.DestroyImmediate(part);
+
+                    // optional: clear refs to reduce “use after scheduled destroy” inside your own codepaths
+                    part.Joint = null;
+                    part.Rigidbody = null;
+                    part.Colliders = new Collider[0];
+
+                    SafeDestroy(part);
                     ragdoll.Parts.Remove(key);
+
                 }
             }
         }
@@ -931,7 +953,8 @@ namespace DynamicMeshCutter
                 }
                 else
                 {
-                    GameObject.DestroyImmediate(nAnimator);
+                    SafeDestroy(nAnimator);
+
                 }
             }
 
@@ -1004,7 +1027,8 @@ namespace DynamicMeshCutter
                 if (Application.isPlaying)
                     GameObject.Destroy(cols[i]);
                 else
-                    GameObject.DestroyImmediate(cols[i]);
+                    SafeDestroy(cols[i]);
+       
             }
         }
 

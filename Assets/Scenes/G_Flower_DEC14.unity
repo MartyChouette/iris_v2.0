@@ -6825,27 +6825,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &524437486 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6656621808879889486, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-  m_PrefabInstance: {fileID: 8426878410151901395}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &524437502
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 524437486}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 269347413b4426a489a20756bbccc008, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::OffScreenDespawner
-  despawnYThreshold: -10
-  checkDelay: 0.5
-  checkInterval: 0.2
-  debugLogs: 0
 --- !u!1 &553966310
 GameObject:
   m_ObjectHideFlags: 0
@@ -7642,16 +7621,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &779741610 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 8062156348110857516, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-  m_PrefabInstance: {fileID: 8426878410151901395}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &804425941 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2641778875234352785, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-  m_PrefabInstance: {fileID: 8426878410151901395}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &818133447
 GameObject:
   m_ObjectHideFlags: 0
@@ -12523,24 +12492,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1946160443}
   m_CullTransparentMesh: 1
---- !u!1 &1974247016 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4309141015983922623, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-  m_PrefabInstance: {fileID: 8426878410151901395}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1974247018
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1974247016}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8741a89316b8f7f478b22784daf09326, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JointCutPolicy
-  mode: 1
 --- !u!1 &1992604176
 GameObject:
   m_ObjectHideFlags: 0
@@ -13116,10 +13067,6 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 163946258417010198, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: crownRoot
-      value: 
-      objectReference: {fileID: 804425941}
-    - target: {fileID: 163946258417010198, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: anchorBody
       value: 
       objectReference: {fileID: 750509607}
@@ -13127,14 +13074,6 @@ PrefabInstance:
       propertyPath: anchorPoint
       value: 
       objectReference: {fileID: 750509611}
-    - target: {fileID: 163946258417010198, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: enableAnchorHold
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 163946258417010198, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: requireExplicitStemSwapGate
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 774424612799908584, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: defaultAnchorPoint
       value: 
@@ -13159,14 +13098,6 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
-    - target: {fileID: 1720263540474747824, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: SeparateMeshes
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1813003878931958912, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: m_IncludeLayers.m_Bits
-      value: 64
-      objectReference: {fileID: 0}
     - target: {fileID: 1944832632533868736, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
@@ -13219,10 +13150,6 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
-    - target: {fileID: 2431428626403178645, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 9.6
-      objectReference: {fileID: 0}
     - target: {fileID: 2553351889821507379, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: m_Name
       value: Flower_Daisy_Long_Stem
@@ -13231,18 +13158,6 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
-    - target: {fileID: 3449460478309753257, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3449460478309753257, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: stemTugRadius
-      value: 0.15
-      objectReference: {fileID: 0}
-    - target: {fileID: 3449460478309753257, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: stemTugStrength
-      value: 0.3
-      objectReference: {fileID: 0}
     - target: {fileID: 3539382513383697139, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: cam
       value: 
@@ -13260,25 +13175,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 330585545}
     - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: StemTip
-      value: 
-      objectReference: {fileID: 779741610}
-    - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: stemEnd
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: stemStart
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: StemAnchor
       value: 
       objectReference: {fileID: 750509611}
-    - target: {fileID: 4575817706176515094, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: minAllowedCutY
-      value: 0.1
-      objectReference: {fileID: 0}
     - target: {fileID: 5525748084404550135, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
@@ -13303,22 +13202,10 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
-    - target: {fileID: 6416235441514034275, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: m_ExcludeLayers.m_Bits
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6416235441514034275, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: m_IncludeLayers.m_Bits
-      value: 64
-      objectReference: {fileID: 0}
     - target: {fileID: 6463962271534695426, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
-    - target: {fileID: 6656621808879889486, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: m_TagString
-      value: Stem
-      objectReference: {fileID: 0}
     - target: {fileID: 6679923496394433050, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
@@ -13336,17 +13223,21 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 847922496}
     - target: {fileID: 7714597951510794044, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7714597951510794044, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
-    - target: {fileID: 8062156348110857516, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -6.78
-      objectReference: {fileID: 0}
     - target: {fileID: 8115630481133984943, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
+    - target: {fileID: 8124414147144744270, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8124414147144744270, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
@@ -13355,10 +13246,6 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
-    - target: {fileID: 8416529037761675240, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      propertyPath: topConstraints
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8720728355318702220, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: cam
       value: 
@@ -13367,7 +13254,7 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
-    - target: {fileID: 8773017590686910007, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+    - target: {fileID: 9209932559024027602, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
@@ -13375,17 +13262,10 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
-    m_RemovedComponents:
-    - {fileID: 1692395913357596294, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6656621808879889486, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 524437502}
-    - targetCorrespondingSourceObject: {fileID: 4309141015983922623, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1974247018}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
 --- !u!114 &8426878410151901396 stripped
 MonoBehaviour:

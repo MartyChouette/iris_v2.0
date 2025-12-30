@@ -1031,9 +1031,11 @@ public class FlowerJointRebinder : MonoBehaviour
         {
             if (xy == null) continue;
 
+            // If the tether has no live underlying joint, skip.
             if (!xy.HasActiveJoint())
                 continue;
 
+            // Respect permanent detach state.
             var part = xy.GetComponent<FlowerPartRuntime>();
             if (part != null)
             {
@@ -1041,14 +1043,31 @@ public class FlowerJointRebinder : MonoBehaviour
                 if (!part.isAttached) continue;
             }
 
+            // Owner rigidbody for exclude checks / sanity.
             var ownerRb = xy.GetComponent<Rigidbody>();
             if (ownerRb == null) continue;
 
+            // Find closest new stem piece to this part.
             Vector3 refPos = xy.transform.position;
             var newBody = FindClosestStemPiece(refPos, stemPieces, ownerRb);
 
+            // Only rebind if we found a valid new parent body and it actually changed.
             if (newBody != null && newBody != ownerRb && xy.connectedBody != newBody)
-                xy.SetConnectedBody(newBody);
+            {
+                // --- INSERTED FROM YOUR SNIPPET (adapted to this context) ---
+
+                // 1) Calculate the new parent body
+                Rigidbody newParentBody = newBody;
+
+                // 2) Look for the Custom Tether Joint (we already have it as 'xy', but keep the pattern)
+                XYTetherJoint tether = xy; // or: xy.GetComponent<XYTetherJoint>();
+
+                if (tether != null)
+                {
+                    // 3) Force the update using the new method
+                    tether.UpdateConnectedBody(newParentBody);
+                }
+            }
         }
     }
 

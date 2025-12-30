@@ -3,7 +3,7 @@
  * @brief XYTetherJoint script.
  * @details
  * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
-*
+ *
  * @ingroup flowers_runtime
  */
 
@@ -191,7 +191,6 @@ using UnityEngine.Events;
  *
  * @ingroup flowers_runtime
  */
-
 public class XYTetherJoint : MonoBehaviour
 {
     public enum TestSpace { XYOnly, XYZ }
@@ -264,6 +263,11 @@ public class XYTetherJoint : MonoBehaviour
 
     [Header("Constraints")]
     public bool enforceXYConstraints = true;
+
+    // MERGED (from small script intent): allow collisions between connected bodies (SpringJoint.enableCollision equivalent)
+    [Header("Joint Collision")]
+    [Tooltip("If true, allows collision between the two connected bodies (ConfigurableJoint.enableCollision).")]
+    public bool enableJointCollision = true;
 
     // ───────────────────────── Feel / Nintendo-ish Stuff ─────────────────────────
 
@@ -395,37 +399,36 @@ public class XYTetherJoint : MonoBehaviour
     // ADDED: cache session for suppression check and clarity
     private FlowerSessionController _session;
 
-
     /**
- * @brief Unity lifecycle setup for the tether’s Rigidbody constraints and cached references.
- *
- * @details
- * Configures this object’s Rigidbody for stable tether behavior:
- * - Ensures non-kinematic, interpolated motion with continuous collision.
- * - Optionally enforces XY-only constraints by freezing Z translation and all rotations.
- *
- * Caches references used in hot paths:
- * - Interaction engagement state (optional)
- * - FlowerPartRuntime (optional, used for authoritative detach)
- * - FlowerSessionController (optional, used for suppression windows)
- *
- * @note This method does not create the joint; joint creation is deferred to Start/OnEnable.
- */
-
+     * @brief Unity lifecycle setup for the tether’s Rigidbody constraints and cached references.
+     *
+     * @details
+     * Configures this object’s Rigidbody for stable tether behavior:
+     * - Ensures non-kinematic, interpolated motion with continuous collision.
+     * - Optionally enforces XY-only constraints by freezing Z translation and all rotations.
+     *
+     * Caches references used in hot paths:
+     * - Interaction engagement state (optional)
+     * - FlowerPartRuntime (optional, used for authoritative detach)
+     * - FlowerSessionController (optional, used for suppression windows)
+     *
+     * @note This method does not create the joint; joint creation is deferred to Start/OnEnable.
+     *
+     * MERGED FIX (from the smaller script):
+     * - Do NOT forcibly set rb.isKinematic=false on stem pieces. Preserve kinematic state if StemPieceMarker exists.
+     */
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        
-        // CRITICAL FIX: Don't reset kinematic state if this Rigidbody belongs to a stem piece
-        // Stem pieces need to stay kinematic (they're parented or anchored)
-        // Only reset kinematic for leaf/petal parts that should be dynamic
-        bool isStemPiece = (rb.GetComponent<StemPieceMarker>() != null);
+
+        // MERGED FIX: Preserve stem piece kinematic state.
+        bool isStemPiece = (GetComponent<StemPieceMarker>() != null);
         if (!isStemPiece)
         {
             rb.isKinematic = false;
         }
-        // If it's a stem piece, preserve its existing kinematic state
-        
+        // If it's a stem piece, preserve its existing kinematic state.
+
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
@@ -439,67 +442,61 @@ public class XYTetherJoint : MonoBehaviour
 
         _engagement = GetComponent<InteractionEngagement>();
 
-        // ADDED:
         _partRuntime = GetComponent<FlowerPartRuntime>();
         _session = GetComponentInParent<FlowerSessionController>();
     }
 
     /**
- * @brief Unity lifecycle entry point that attempts to create the underlying ConfigurableJoint.
- *
- * @details
- * Calls @ref TryCreateJoint once at startup. This is separated from Awake() so that other
- * components can assign @ref connectedBody during initialization before joint creation.
- */
-
+     * @brief Unity lifecycle entry point that attempts to create the underlying ConfigurableJoint.
+     *
+     * @details
+     * Calls @ref TryCreateJoint once at startup. This is separated from Awake() so that other
+     * components can assign @ref connectedBody during initialization before joint creation.
+     */
     void Start() => TryCreateJoint();
 
     /**
- * @brief Unity lifecycle hook to restore the joint if the component is re-enabled.
- *
- * @details
- * If a joint does not exist and a @ref connectedBody is assigned, calls @ref TryCreateJoint.
- * This supports pooling and enable/disable flows without requiring scene reload.
- */
-
+     * @brief Unity lifecycle hook to restore the joint if the component is re-enabled.
+     *
+     * @details
+     * If a joint does not exist and a @ref connectedBody is assigned, calls @ref TryCreateJoint.
+     * This supports pooling and enable/disable flows without requiring scene reload.
+     */
     void OnEnable() { if (!joint && connectedBody) TryCreateJoint(); }
 
     /**
- * @brief Unity lifecycle hook to teardown the joint when disabled.
- *
- * @details
- * Calls @ref DestroyJoint to prevent orphaned joints from persisting while the component is inactive.
- */
-
+     * @brief Unity lifecycle hook to teardown the joint when disabled.
+     *
+     * @details
+     * Calls @ref DestroyJoint to prevent orphaned joints from persisting while the component is inactive.
+     */
     void OnDisable() => DestroyJoint();
 
     /**
- * @brief Physics-step update that computes stretch/velocity/travel and triggers authored breaks.
- *
- * @details
- * FixedUpdate is the hot path for this component. It:
- * - Computes world-space anchor points A/B.
- * - Samples or integrates smoothed velocities (depending on @ref velocityMode).
- * - Updates travel accumulators after the arming delay (@ref armedAt):
- *     - @ref absoluteTravel: total movement of A in chosen test space
- *     - @ref relativeTravel: total change in (A-B) in chosen test space
- * - Computes rest distance and current distance, producing:
- *     - stretch = max(0, currentDistance - restDistance)
- *     - stretchNorm = clamp01(stretch / maxDistance)
- * - Applies adaptive drive (optional) to scale spring/damper based on tension curve and engagement.
- * - Evaluates “feel” break behaviors (optional):
- *     - pluck dwell
- *     - release pop
- * - Evaluates configured @ref BreakCriteria thresholds and calls @ref ForceBreak when exceeded.
- *
- * @note Break evaluation is skipped until Time.time >= @ref armedAt to avoid breaking
- *       immediately during initialization or teleports.
- *
- * @warning This method should remain allocation-free. Avoid adding GetComponent calls or
- *          string formatting unless strictly gated behind debug flags.
- */
-
-
+     * @brief Physics-step update that computes stretch/velocity/travel and triggers authored breaks.
+     *
+     * @details
+     * FixedUpdate is the hot path for this component. It:
+     * - Computes world-space anchor points A/B.
+     * - Samples or integrates smoothed velocities (depending on @ref velocityMode).
+     * - Updates travel accumulators after the arming delay (@ref armedAt):
+     *     - @ref absoluteTravel: total movement of A in chosen test space
+     *     - @ref relativeTravel: total change in (A-B) in chosen test space
+     * - Computes rest distance and current distance, producing:
+     *     - stretch = max(0, currentDistance - restDistance)
+     *     - stretchNorm = clamp01(stretch / maxDistance)
+     * - Applies adaptive drive (optional) to scale spring/damper based on tension curve and engagement.
+     * - Evaluates “feel” break behaviors (optional):
+     *     - pluck dwell
+     *     - release pop
+     * - Evaluates configured @ref BreakCriteria thresholds and calls @ref ForceBreak when exceeded.
+     *
+     * @note Break evaluation is skipped until Time.time >= @ref armedAt to avoid breaking
+     *       immediately during initialization or teleports.
+     *
+     * @warning This method should remain allocation-free. Avoid adding GetComponent calls or
+     *          string formatting unless strictly gated behind debug flags.
+     */
     void FixedUpdate()
     {
         if (!joint || !connectedBody) return;
@@ -644,22 +641,22 @@ public class XYTetherJoint : MonoBehaviour
             }
         }
     }
-    /**
- * @brief Computes the current engagement scaling multiplier for forces/break checks.
- *
- * @details
- * If @ref useEngagementScaling is false, returns 1.
- * Otherwise, returns either an “engaged” multiplier or a “passive” multiplier depending on:
- * - whether @ref _engagement exists
- * - whether @c _engagement.isEngaged is true
- *
- * Engaged/passive values come from:
- * - @ref engagedMultiplier (if > 0)
- * - @ref passiveMultiplierOverride (if > 0), otherwise InteractionEngagement.passiveIntensity
- *
- * @return A multiplier typically in [0..2] used to scale spring/damper (and can be used by callers).
- */
 
+    /**
+     * @brief Computes the current engagement scaling multiplier for forces/break checks.
+     *
+     * @details
+     * If @ref useEngagementScaling is false, returns 1.
+     * Otherwise, returns either an “engaged” multiplier or a “passive” multiplier depending on:
+     * - whether @ref _engagement exists
+     * - whether @c _engagement.isEngaged is true
+     *
+     * Engaged/passive values come from:
+     * - @ref engagedMultiplier (if > 0)
+     * - @ref passiveMultiplierOverride (if > 0), otherwise InteractionEngagement.passiveIntensity
+     *
+     * @return A multiplier typically in [0..2] used to scale spring/damper (and can be used by callers).
+     */
     float GetEngagementFactor()
     {
         if (!useEngagementScaling)
@@ -680,23 +677,21 @@ public class XYTetherJoint : MonoBehaviour
 
     // ───────────────────────── Break callbacks ─────────────────────────
 
-
     /**
- * @brief Unity physics callback invoked when the underlying ConfigurableJoint breaks.
- *
- * @param force The break force reported by Unity.
- *
- * @details
- * This is the “physics decided it broke” pathway. The method:
- * - Exits immediately if static cut suppression is enabled (@ref cutBreakSuppressed).
- * - Optionally logs the break if force-based breaking is enabled.
- * - Writes authoritative detach state to @ref FlowerPartRuntime (permanent).
- * - Triggers optional audio and fluid/sap feedback.
- * - Clears local joint reference and invokes @ref onBroke.
- *
- * @warning This can be called during intense physics events; it must remain fast and allocation-free.
- */
-
+     * @brief Unity physics callback invoked when the underlying ConfigurableJoint breaks.
+     *
+     * @param force The break force reported by Unity.
+     *
+     * @details
+     * This is the “physics decided it broke” pathway. The method:
+     * - Exits immediately if static cut suppression is enabled (@ref cutBreakSuppressed).
+     * - Optionally logs the break if force-based breaking is enabled.
+     * - Writes authoritative detach state to @ref FlowerPartRuntime (permanent).
+     * - Triggers optional audio and fluid/sap feedback.
+     * - Clears local joint reference and invokes @ref onBroke.
+     *
+     * @warning This can be called during intense physics events; it must remain fast and allocation-free.
+     */
     void OnJointBreak(float force)
     {
         if (cutBreakSuppressed)
@@ -709,7 +704,7 @@ public class XYTetherJoint : MonoBehaviour
         if ((criteria & BreakCriteria.Force) != 0 && debugLogs)
             Debug.Log($"[XYTetherJoint] Joint broke by physics force = {force:F1}.", this);
 
-        // ADDED: authoritative permanent detach state (prevents rebinder snapping back later)
+        // Authoritative permanent detach state (prevents rebinder snapping back later)
         MarkPartDetachedAuthoritative(isPlayerAction: false, reasonText: $"Physics JointBreak force={force:F1}");
 
         TriggerBreakAudio();
@@ -719,29 +714,27 @@ public class XYTetherJoint : MonoBehaviour
         onBroke?.Invoke();
     }
 
-
     /**
- * @brief Forces an authored break of the tether (script-driven detachment).
- *
- * @param reason Human-readable reason for debug/logging and detach annotation.
- *
- * @details
- * This is the “authorial break” pathway used for deterministic rules such as:
- * - stretch threshold
- * - speed threshold
- * - travel threshold
- * - pluck dwell / release pop
- * - explicit external calls (e.g., player rip)
- *
- * Behavior:
- * - Exits if static cut suppression is enabled (@ref cutBreakSuppressed).
- * - If @ref onlyBreakWhenEngaged is true, exits unless currently engaged.
- * - Destroys the joint immediately via @ref DestroyJoint.
- * - Writes authoritative detach state to @ref FlowerPartRuntime (permanent).
- * - Triggers optional audio and fluid/sap feedback.
- * - Invokes @ref onBroke.
- */
-
+     * @brief Forces an authored break of the tether (script-driven detachment).
+     *
+     * @param reason Human-readable reason for debug/logging and detach annotation.
+     *
+     * @details
+     * This is the “authorial break” pathway used for deterministic rules such as:
+     * - stretch threshold
+     * - speed threshold
+     * - travel threshold
+     * - pluck dwell / release pop
+     * - explicit external calls (e.g., player rip)
+     *
+     * Behavior:
+     * - Exits if static cut suppression is enabled (@ref cutBreakSuppressed).
+     * - If @ref onlyBreakWhenEngaged is true, exits unless currently engaged.
+     * - Destroys the joint immediately via @ref DestroyJoint.
+     * - Writes authoritative detach state to @ref FlowerPartRuntime (permanent).
+     * - Triggers optional audio and fluid/sap feedback.
+     * - Invokes @ref onBroke.
+     */
     public void ForceBreak(string reason = "Forced")
     {
         if (cutBreakSuppressed)
@@ -766,7 +759,7 @@ public class XYTetherJoint : MonoBehaviour
 
         DestroyJoint();
 
-        // ADDED: authoritative permanent detach state (player intentional rip)
+        // Authoritative permanent detach state (player intentional rip)
         MarkPartDetachedAuthoritative(isPlayerAction: true, reasonText: reason);
 
         TriggerBreakAudio();
@@ -774,28 +767,27 @@ public class XYTetherJoint : MonoBehaviour
 
         onBroke?.Invoke();
     }
-    /**
- * @brief Centralized canonical detach state write into FlowerPartRuntime.
- *
- * @param isPlayerAction If true, detachment is labeled as player-driven (PlayerRipped); otherwise PhysicsBreak.
- * @param reasonText Human-readable annotation for debugging and traceability.
- *
- * @details
- * This method exists to prevent inconsistent “broken but reattached” states by ensuring that
- * a joint break always results in:
- * - @ref FlowerPartRuntime.isAttached = false
- * - @ref FlowerPartRuntime.permanentlyDetached = true
- * - @ref FlowerPartRuntime.lastDetachReason set appropriately
- *
- * Suppression behavior:
- * - If a @ref FlowerSessionController exists and @c suppressDetachEvents is true,
- *   the state write is skipped. This mirrors the project-wide philosophy that cut/rebind
- *   grace windows must not produce accidental detach events.
- *
- * @note If @ref FlowerPartRuntime is not present on the same GameObject, this becomes a no-op.
- */
 
-    // ADDED: centralized state write
+    /**
+     * @brief Centralized canonical detach state write into FlowerPartRuntime.
+     *
+     * @param isPlayerAction If true, detachment is labeled as player-driven (PlayerRipped); otherwise PhysicsBreak.
+     * @param reasonText Human-readable annotation for debugging and traceability.
+     *
+     * @details
+     * This method exists to prevent inconsistent “broken but reattached” states by ensuring that
+     * a joint break always results in:
+     * - @ref FlowerPartRuntime.isAttached = false
+     * - @ref FlowerPartRuntime.permanentlyDetached = true
+     * - @ref FlowerPartRuntime.lastDetachReason set appropriately
+     *
+     * Suppression behavior:
+     * - If a @ref FlowerSessionController exists and @c suppressDetachEvents is true,
+     *   the state write is skipped. This mirrors the project-wide philosophy that cut/rebind
+     *   grace windows must not produce accidental detach events.
+     *
+     * @note If @ref FlowerPartRuntime is not present on the same GameObject, this becomes a no-op.
+     */
     private void MarkPartDetachedAuthoritative(bool isPlayerAction, string reasonText)
     {
         // Respect session suppression here too (keeps your existing philosophy)
@@ -817,22 +809,21 @@ public class XYTetherJoint : MonoBehaviour
         // Permanent detach = true in both cases (prevents rebinding snapped leaves)
         _partRuntime.MarkDetached($"XYTether broke: {reasonText}", reason, permanent: true);
     }
-    /**
- * @brief Triggers break fluid feedback, optionally using deterministic sap direction.
- *
- * @details
- * If @ref enableFluid is false, does nothing.
- * Otherwise:
- * - If @ref preferDeterministicSapDirection is false, calls @ref TriggerBreakFluid (responder-based).
- * - If true, attempts deterministic sap emission using:
- *     - FlowerSapController.Instance
- *     - optional SapOnXYTether component for kind/offset
- *   Direction is computed from connectedBody (source) toward this joint (impact point).
- *
- * @note If required dependencies are missing, falls back to responder-based behavior.
- */
 
-    // ADDED: keeps your responder system, but optionally bypasses bad direction logic.
+    /**
+     * @brief Triggers break fluid feedback, optionally using deterministic sap direction.
+     *
+     * @details
+     * If @ref enableFluid is false, does nothing.
+     * Otherwise:
+     * - If @ref preferDeterministicSapDirection is false, calls @ref TriggerBreakFluid (responder-based).
+     * - If true, attempts deterministic sap emission using:
+     *     - FlowerSapController.Instance
+     *     - optional SapOnXYTether component for kind/offset
+     *   Direction is computed from connectedBody (source) toward this joint (impact point).
+     *
+     * @note If required dependencies are missing, falls back to responder-based behavior.
+     */
     private void TriggerBreakFluidOrDeterministicSap()
     {
         if (!enableFluid) return;
@@ -870,16 +861,16 @@ public class XYTetherJoint : MonoBehaviour
     }
 
     // ───────────────────────── FEEDBACK HELPERS ─────────────────────────
-    /**
- * @brief Triggers audio feedback for joint break if enabled.
- *
- * @details
- * If @ref enableAudio is false, does nothing.
- * Otherwise attempts to find a JointBreakAudioResponder on this GameObject and calls it.
- *
- * @note This is intentionally “best-effort” to keep XYTetherJoint decoupled from specific audio implementations.
- */
 
+    /**
+     * @brief Triggers audio feedback for joint break if enabled.
+     *
+     * @details
+     * If @ref enableAudio is false, does nothing.
+     * Otherwise attempts to find a JointBreakAudioResponder on this GameObject and calls it.
+     *
+     * @note This is intentionally “best-effort” to keep XYTetherJoint decoupled from specific audio implementations.
+     */
     private void TriggerBreakAudio()
     {
         if (!enableAudio) return;
@@ -904,22 +895,44 @@ public class XYTetherJoint : MonoBehaviour
         TryCreateJoint();
     }
 
+    /**
+     * MERGED (from the small script):
+     * Convenience method that matches the callsite you already had: UpdateConnectedBody(newBody).
+     *
+     * Behavior:
+     * - If newBody is null, we tear down the joint (tether disabled).
+     * - Otherwise we set connectedBody and rebuild the ConfigurableJoint so rest baseline re-captures.
+     *
+     * @note This keeps the "attach to new parent after cut" workflow without introducing SpringJoint.
+     */
+    public void UpdateConnectedBody(Rigidbody newBody)
+    {
+        connectedBody = newBody;
+
+        if (newBody == null)
+        {
+            DestroyJoint();
+            return;
+        }
+
+        TryCreateJoint();
+    }
+
 
     /**
- * @brief Updates key tuning parameters and rebuilds the joint.
- *
- * @param newMaxDist New max stretch distance (used for stretch-based breaking).
- * @param newSpring New spring value for xDrive/yDrive.
- * @param newDamper New damper value for xDrive/yDrive.
- * @param newDriveMax Optional maximum drive force (if > 0).
- *
- * @details
- * Writes the new tuning values, optionally updates drive cap, then calls @ref TryCreateJoint
- * to apply them to a new ConfigurableJoint.
- *
- * @note Rebuilding resets arming/travel accumulators and rest baseline.
- */
-
+     * @brief Updates key tuning parameters and rebuilds the joint.
+     *
+     * @param newMaxDist New max stretch distance (used for stretch-based breaking).
+     * @param newSpring New spring value for xDrive/yDrive.
+     * @param newDamper New damper value for xDrive/yDrive.
+     * @param newDriveMax Optional maximum drive force (if > 0).
+     *
+     * @details
+     * Writes the new tuning values, optionally updates drive cap, then calls @ref TryCreateJoint
+     * to apply them to a new ConfigurableJoint.
+     *
+     * @note Rebuilding resets arming/travel accumulators and rest baseline.
+     */
     public void Retune(float newMaxDist, float newSpring, float newDamper, float newDriveMax = -1f)
     {
         maxDistance = newMaxDist;
@@ -928,18 +941,18 @@ public class XYTetherJoint : MonoBehaviour
         if (newDriveMax > 0f) driveMaxForce = newDriveMax;
         TryCreateJoint();
     }
-    /**
- * @brief Convenience preset for making the tether more fragile.
- *
- * @details
- * Sets a set of parameters (maxDistance, breakForce, spring, damper, driveMaxForce)
- * intended to yield a joint that breaks with less stretch and less force.
- * Then rebuilds the joint via @ref TryCreateJoint.
- *
- * @note This is a designer-friendly shortcut and may be used for difficulty scaling,
- *       tutorialization, or “degrading integrity” mechanics.
- */
 
+    /**
+     * @brief Convenience preset for making the tether more fragile.
+     *
+     * @details
+     * Sets a set of parameters (maxDistance, breakForce, spring, damper, driveMaxForce)
+     * intended to yield a joint that breaks with less stretch and less force.
+     * Then rebuilds the joint via @ref TryCreateJoint.
+     *
+     * @note This is a designer-friendly shortcut and may be used for difficulty scaling,
+     *       tutorialization, or “degrading integrity” mechanics.
+     */
     public void MakeEasierToBreak(
         float newMaxDistance = 0.35f,
         float newBreakForce = 100f,
@@ -956,28 +969,28 @@ public class XYTetherJoint : MonoBehaviour
     }
 
     // ───────────────────────── Joint Setup ─────────────────────────
-    /**
- * @brief Creates and configures the underlying ConfigurableJoint for XY tether behavior.
- *
- * @details
- * This is the core setup method. It:
- * - Destroys any existing joint.
- * - Validates @ref connectedBody and clamps key parameters to safe ranges.
- * - Caches base spring/damper for adaptive drive scaling.
- * - Adds a new ConfigurableJoint with:
- *     - linear motion free in X/Y, locked in Z
- *     - angular motion locked
- *     - xDrive/yDrive configured with spring/damper and capped by @ref driveMaxForce
- *     - connectedAnchor set to the connectedBody’s local position corresponding to this transform
- * - Configures optional projection settings.
- * - Applies breakForce behavior via @ref ApplyBreakForceToJoint.
- * - Captures rest baseline and resets sampling accumulators.
- * - Arms break evaluation after @ref armDelay (sets @ref armedAt).
- *
- * @warning This uses AddComponent at runtime and therefore allocates; it should be called
- *          sparingly (setup, tuning changes, connect changes), not per-frame.
- */
 
+    /**
+     * @brief Creates and configures the underlying ConfigurableJoint for XY tether behavior.
+     *
+     * @details
+     * This is the core setup method. It:
+     * - Destroys any existing joint.
+     * - Validates @ref connectedBody and clamps key parameters to safe ranges.
+     * - Caches base spring/damper for adaptive drive scaling.
+     * - Adds a new ConfigurableJoint with:
+     *     - linear motion free in X/Y, locked in Z
+     *     - angular motion locked
+     *     - xDrive/yDrive configured with spring/damper and capped by @ref driveMaxForce
+     *     - connectedAnchor set to the connectedBody’s local position corresponding to this transform
+     * - Configures optional projection settings.
+     * - Applies breakForce behavior via @ref ApplyBreakForceToJoint.
+     * - Captures rest baseline and resets sampling accumulators.
+     * - Arms break evaluation after @ref armDelay (sets @ref armedAt).
+     *
+     * @warning This uses AddComponent at runtime and therefore allocates; it should be called
+     *          sparingly (setup, tuning changes, connect changes), not per-frame.
+     */
     void TryCreateJoint()
     {
         DestroyJoint();
@@ -999,6 +1012,9 @@ public class XYTetherJoint : MonoBehaviour
         joint = gameObject.AddComponent<ConfigurableJoint>();
         joint.connectedBody = connectedBody;
         joint.autoConfigureConnectedAnchor = false;
+
+        // MERGED: mirror SpringJoint.enableCollision intent
+        joint.enableCollision = enableJointCollision;
 
         joint.anchor = Vector3.zero;
         joint.connectedAnchor = connectedBody.transform.InverseTransformPoint(transform.position);
@@ -1053,19 +1069,19 @@ public class XYTetherJoint : MonoBehaviour
             Debug.Log($"[XYTetherJoint] Created → Spring={spring}, Damper={damper}, StretchMax={maxDistance}, DriveMax={driveMaxForce}, BreakForce={bf}, Criteria={criteria}, VelMode={velocityMode}, Projection={(useJointProjection ? "On" : "Off")}", this);
         }
     }
-    /**
- * @brief Applies break force settings to the underlying ConfigurableJoint based on criteria and suppression state.
- *
- * @details
- * If @ref cutBreakSuppressed is true:
- * - joint.breakForce and joint.breakTorque are set to infinity to prevent physics-driven breaks.
- *
- * Otherwise:
- * - joint.breakForce is set to @ref breakForce if @ref BreakCriteria.Force is enabled,
- *   else infinity.
- * - joint.breakTorque remains infinity (rotational breaking is not used).
- */
 
+    /**
+     * @brief Applies break force settings to the underlying ConfigurableJoint based on criteria and suppression state.
+     *
+     * @details
+     * If @ref cutBreakSuppressed is true:
+     * - joint.breakForce and joint.breakTorque are set to infinity to prevent physics-driven breaks.
+     *
+     * Otherwise:
+     * - joint.breakForce is set to @ref breakForce if @ref BreakCriteria.Force is enabled,
+     *   else infinity.
+     * - joint.breakTorque remains infinity (rotational breaking is not used).
+     */
     void ApplyBreakForceToJoint()
     {
         if (!joint) return;
@@ -1090,23 +1106,23 @@ public class XYTetherJoint : MonoBehaviour
         wasAbovePluckThreshold = false;
         armedAt = Time.time + Mathf.Max(0f, armDelay);
     }
-    /**
- * @brief Returns whether a ConfigurableJoint currently exists and is owned by this component.
- *
- * @return True if @ref joint is non-null; otherwise false.
- */
 
+    /**
+     * @brief Returns whether a ConfigurableJoint currently exists and is owned by this component.
+     *
+     * @return True if @ref joint is non-null; otherwise false.
+     */
     public bool HasActiveJoint() => joint != null;
-    /**
- * @brief Destroys the owned ConfigurableJoint if it exists.
- *
- * @details
- * This removes the runtime joint component, clears the cached reference, and (optionally)
- * logs when debug logging is enabled.
- *
- * @note This does not alter @ref connectedBody. It only removes the active tether.
- */
 
+    /**
+     * @brief Destroys the owned ConfigurableJoint if it exists.
+     *
+     * @details
+     * This removes the runtime joint component, clears the cached reference, and (optionally)
+     * logs when debug logging is enabled.
+     *
+     * @note This does not alter @ref connectedBody. It only removes the active tether.
+     */
     void DestroyJoint()
     {
         if (joint)
@@ -1116,29 +1132,29 @@ public class XYTetherJoint : MonoBehaviour
             joint = null;
         }
     }
-    /**
- * @brief Applies the configured test space (XY-only vs XYZ) to a vector.
- *
- * @param v Input vector (usually a delta or velocity).
- * @return Vector in the selected test space.
- *
- * @details
- * When @ref testSpace is XYOnly, Z is zeroed so that stretch/speed/travel calculations
- * ignore Z entirely. This keeps break behavior stable for 2.5D setups.
- */
 
+    /**
+     * @brief Applies the configured test space (XY-only vs XYZ) to a vector.
+     *
+     * @param v Input vector (usually a delta or velocity).
+     * @return Vector in the selected test space.
+     *
+     * @details
+     * When @ref testSpace is XYOnly, Z is zeroed so that stretch/speed/travel calculations
+     * ignore Z entirely. This keeps break behavior stable for 2.5D setups.
+     */
     Vector3 ApplySpace(Vector3 v) => (testSpace == TestSpace.XYOnly) ? new Vector3(v.x, v.y, 0f) : v;
     static float Dist(Vector3 v) => v.magnitude;
-    /**
- * @brief Editor-only visualization of tether line and break radius.
- *
- * @details
- * Draws a line between this object and the connected anchor, and a wire sphere indicating
- * @ref maxDistance at the connected anchor. This provides immediate feedback for tuning.
- *
- * @note This does not run in builds. It should remain lightweight.
- */
 
+    /**
+     * @brief Editor-only visualization of tether line and break radius.
+     *
+     * @details
+     * Draws a line between this object and the connected anchor, and a wire sphere indicating
+     * @ref maxDistance at the connected anchor. This provides immediate feedback for tuning.
+     *
+     * @note This does not run in builds. It should remain lightweight.
+     */
     void OnDrawGizmosSelected()
     {
         if (!drawGizmos) return;
