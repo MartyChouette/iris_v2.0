@@ -7623,7 +7623,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerSapController
   emitterPrefab: {fileID: 4615614034825461725, guid: ffe4fc008102b44409c86d32f25782f8, type: 3}
-  poolSize: 20
+  initialPoolSize: 25
+  maxPoolSize: 50
   poolRoot: {fileID: 1805550389}
   stemEndOffset: 0
   stemTopBurst:
@@ -13022,6 +13023,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 330585545}
     - target: {fileID: 3172925682164621813, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: enableFluid
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3172925682164621813, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3172925682164621813, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: onTensionChanged.m_PersistentCalls.m_Calls.Array.size
       value: 0
       objectReference: {fileID: 0}
@@ -13070,6 +13079,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 847922496}
     - target: {fileID: 6463962271534695426, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6463962271534695426, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
@@ -13082,12 +13095,20 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 847922496}
     - target: {fileID: 6864497909756372314, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: enableFluid
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6864497909756372314, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: softZoneFraction
       value: 0.135
       objectReference: {fileID: 0}
     - target: {fileID: 6864497909756372314, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: releasePopThresholdFraction
       value: 0.902
+      objectReference: {fileID: 0}
+    - target: {fileID: 6864497909756372314, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7020842753179544685, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: cam

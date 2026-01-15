@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d93d0a0d159da459986967b663da6fd0, type: 3}
   m_Name: FluidPassTransparent
   m_EditorClassIdentifier: 
-  voxelSize: 0.1
+  voxelSize: 0.5
   isosurface: 0.05
-  descentIterations: 4
+  descentIterations: 1
   descentIsosurface: 0.25
   descentSpeed: 0.158
-  smoothingIterations: 1
+  smoothingIterations: 0
   smoothingIntensity: 0.8
   bevel: 1
   materialType: 1

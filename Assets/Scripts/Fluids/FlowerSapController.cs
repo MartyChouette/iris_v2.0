@@ -1,9 +1,6 @@
 ﻿/**
  * @file FlowerSapController.cs
  * @brief FlowerSapController script.
- * @details
- * - Auto-generated Doxygen header. Expand @details with intent, invariants, and perf notes as needed.
-*
  * @ingroup thirdparty
  */
 
@@ -11,48 +8,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Obi;
-/**
- * @class FlowerSapController
- * @brief FlowerSapController component.
- * @details
- * Responsibilities:
- * - (Documented) See fields and methods below.
- *
- * Unity lifecycle:
- * - Awake(): cache references / validate setup.
- * - OnEnable()/OnDisable(): hook/unhook events.
- * - Update(): per-frame behavior (if any).
- *
- * Gotchas:
- * - Keep hot paths allocation-free (Update/cuts/spawns).
- * - Prefer event-driven UI updates over per-frame string building.
- *
- * @ingroup thirdparty
- */
 
 public class FlowerSapController : MonoBehaviour
 {
     public static FlowerSapController Instance;
 
     [System.Serializable]
-    /**
-     * @class SapBurstProfile
-     * @brief SapBurstProfile component.
-     * @details
-     * Responsibilities:
-     * - (Documented) See fields and methods below.
-     *
-     * Unity lifecycle:
-     * - Awake(): cache references / validate setup.
-     * - OnEnable()/OnDisable(): hook/unhook events.
-     * - Update(): per-frame behavior (if any).
-     *
-     * Gotchas:
-     * - Keep hot paths allocation-free (Update/cuts/spawns).
-     * - Prefer event-driven UI updates over per-frame string building.
-     *
-     * @ingroup thirdparty
-     */
     public class SapBurstProfile
     {
         public float speed = 10f;
@@ -62,8 +23,13 @@ public class FlowerSapController : MonoBehaviour
 
     [Header("Pooling Settings")]
     public ObiEmitter emitterPrefab;
-    // OPTIMIZATION: Reduced from 20 to 6. This is enough for 1 cut + 4 tears.
-    public int poolSize = 6;
+
+    // START WITH THIS MANY (Pre-loaded for performance)
+    public int initialPoolSize = 25;
+
+    // NEVER GO ABOVE THIS (Safety net to prevent crashing)
+    public int maxPoolSize = 50;
+
     public Transform poolRoot;
 
     [Header("Stem Cut Settings")]
@@ -79,7 +45,9 @@ public class FlowerSapController : MonoBehaviour
     [Min(0f)] public float sapIntensity = 1f;
 
     private List<ObiEmitter> emitterPool;
-    private HashSet<ObiEmitter> activeEmitters;
+
+    // We no longer need 'activeEmitters' set. 
+    // If an emitter is in the "Dungeon" (speed 0), it is free.
 
     private void Awake()
     {
@@ -87,39 +55,81 @@ public class FlowerSapController : MonoBehaviour
         InitializePool();
     }
 
+    // NEW: Force the fluid engine to "warm up" during the first frame
+    private IEnumerator Start()
+    {
+        yield return null; // Wait for Obi to initialize
+
+        // Dry Fire: Turn everyone on for 1 frame to force Mesh compilation
+        foreach (var emitter in emitterPool)
+        {
+            emitter.speed = 1f;
+        }
+
+        yield return new WaitForEndOfFrame(); // Wait for Mesher to panic and build meshes
+
+        // Reset everyone
+        foreach (var emitter in emitterPool)
+        {
+            emitter.speed = 0f;
+            emitter.KillAll();
+        }
+    }
+
     private void InitializePool()
     {
         emitterPool = new List<ObiEmitter>();
-        activeEmitters = new HashSet<ObiEmitter>();
 
         if (emitterPrefab == null) return;
         if (poolRoot == null) poolRoot = transform;
 
-        for (int i = 0; i < poolSize; i++)
+        for (int i = 0; i < initialPoolSize; i++)
         {
-            ObiEmitter newEmitter = Instantiate(emitterPrefab, poolRoot);
-            newEmitter.speed = 0f;
-            newEmitter.gameObject.SetActive(false); // Disable when not in use (Save CPU)
-            newEmitter.gameObject.name = $"SapEmitter_{i}";
-            emitterPool.Add(newEmitter);
+            CreateNewEmitter();
         }
+    }
+
+    // Helper method to create one emitter and add it to the list
+    private ObiEmitter CreateNewEmitter()
+    {
+        ObiEmitter newEmitter = Instantiate(emitterPrefab, poolRoot);
+
+        // CRITICAL FIX: Always Active, never False
+        newEmitter.gameObject.SetActive(true);
+
+        // Hide in Dungeon
+        newEmitter.transform.position = new Vector3(0, -5000f, 0);
+        newEmitter.speed = 0f;
+
+        newEmitter.gameObject.name = $"SapEmitter_{emitterPool.Count}";
+        emitterPool.Add(newEmitter);
+
+        return newEmitter;
     }
 
     private ObiEmitter GetFreeEmitter()
     {
+        // 1. Try to find an existing emitter that is IDLE (speed is 0)
         foreach (var emitter in emitterPool)
         {
-            if (!activeEmitters.Contains(emitter)) return emitter;
+            if (emitter.speed < 0.01f) return emitter;
         }
-        return null; // Pool exhausted? Skip effect. Better than lag.
+
+        // 2. Pool is empty! Can we expand?
+        if (emitterPool.Count < maxPoolSize)
+        {
+            return CreateNewEmitter();
+        }
+
+        // 3. Hard limit reached
+        Debug.LogWarning("Sap Pool Exhausted! Consider increasing Max Pool Size.");
+        return null;
     }
 
-    // --- UPDATED SIGNATURE: Requires Stem Runtime for accurate position ---
     public void EmitStemCut(Vector3 planePoint, Vector3 planeNormal, FlowerStemRuntime stem)
     {
         if (sapIntensity <= 0f) return;
 
-        // FIX: Project the plane point onto the actual stem mesh line
         Vector3 exactPos = planePoint;
         if (stem != null)
         {
@@ -128,61 +138,56 @@ public class FlowerSapController : MonoBehaviour
 
         Vector3 dir = planeNormal.normalized;
 
-        // Fire Top (Held Piece)
         ObiEmitter top = GetFreeEmitter();
-        if (top != null)
-        {
-            activeEmitters.Add(top);
-            StartCoroutine(Burst(top, exactPos + dir * stemEndOffset, dir, stemTopBurst));
-        }
+        if (top != null) StartCoroutine(Burst(top, exactPos + dir * stemEndOffset, dir, stemTopBurst));
 
-        // Fire Bottom (Falling Piece)
         ObiEmitter bottom = GetFreeEmitter();
-        if (bottom != null)
-        {
-            activeEmitters.Add(bottom);
-            StartCoroutine(Burst(bottom, exactPos - dir * stemEndOffset, -dir, stemBottomBurst));
-        }
+        if (bottom != null) StartCoroutine(Burst(bottom, exactPos - dir * stemEndOffset, -dir, stemBottomBurst));
     }
 
-    // (Keep EmitLeafTear and EmitPetalTear as they were...)
     public void EmitLeafTear(Vector3 pos, Vector3 normal)
     {
         if (sapIntensity <= 0f) return;
         ObiEmitter e = GetFreeEmitter();
-        if (e != null) { activeEmitters.Add(e); StartCoroutine(Burst(e, pos, normal.normalized, leafTearBurst)); }
+        if (e != null) StartCoroutine(Burst(e, pos, normal.normalized, leafTearBurst));
     }
 
     public void EmitPetalTear(Vector3 pos, Vector3 normal)
     {
         if (sapIntensity <= 0f) return;
         ObiEmitter e = GetFreeEmitter();
-        if (e != null) { activeEmitters.Add(e); StartCoroutine(Burst(e, pos, normal.normalized, petalTearBurst)); }
+        if (e != null) StartCoroutine(Burst(e, pos, normal.normalized, petalTearBurst));
     }
 
     private IEnumerator Burst(ObiEmitter emitter, Vector3 worldPos, Vector3 mainDir, SapBurstProfile profile)
     {
-        emitter.gameObject.SetActive(true);
-        emitter.KillAll(); // Clear old particles instantly to prevent teleporting trails
+        // 1. Teleport from Dungeon to Leaf
+        emitter.transform.position = worldPos;
 
-        Transform t = emitter.transform;
-        t.position = worldPos;
-
+        // 2. Rotation
         Vector3 dir = mainDir.sqrMagnitude > 0.0001f ? mainDir.normalized : Vector3.up;
         if (profile.angleJitter > 0f)
         {
             Quaternion jitter = Quaternion.AngleAxis(Random.Range(-profile.angleJitter, profile.angleJitter), Random.onUnitSphere);
             dir = jitter * dir;
         }
-        t.rotation = Quaternion.LookRotation(dir);
+        emitter.transform.rotation = Quaternion.LookRotation(dir);
 
+        // 3. Clear old particles (instant)
+        emitter.KillAll();
+
+        // 4. FIRE
         emitter.speed = profile.speed * sapIntensity;
+
         yield return new WaitForSeconds(profile.duration);
 
+        // 5. Stop Firing
         emitter.speed = 0f;
-        yield return new WaitForSeconds(0.5f); // Wait for trail to die
 
-        emitter.gameObject.SetActive(false);
-        activeEmitters.Remove(emitter);
+        // 6. Wait for trail to fall naturally
+        yield return new WaitForSeconds(0.5f);
+
+        // 7. Send back to Dungeon (Do NOT SetActive false)
+        emitter.transform.position = new Vector3(0, -5000f, 0);
     }
 }
