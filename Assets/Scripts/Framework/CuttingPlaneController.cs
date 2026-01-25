@@ -526,7 +526,6 @@ public class CuttingPlaneController : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             var col = _overlapBuffer[i];
-        {
             if (col == null) continue;
 
             var part = col.GetComponentInParent<FlowerPartRuntime>();
