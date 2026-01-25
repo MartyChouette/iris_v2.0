@@ -46,8 +46,8 @@ public class FlowerSapController : MonoBehaviour
 
     private List<ObiEmitter> emitterPool;
 
-    // We no longer need 'activeEmitters' set. 
-    // If an emitter is in the "Dungeon" (speed 0), it is free.
+    // PERF: Track free emitters in a queue for O(1) lookup instead of O(n) linear search
+    private Queue<ObiEmitter> freeEmitterQueue;
 
     private void Awake()
     {
@@ -79,6 +79,7 @@ public class FlowerSapController : MonoBehaviour
     private void InitializePool()
     {
         emitterPool = new List<ObiEmitter>();
+        freeEmitterQueue = new Queue<ObiEmitter>(maxPoolSize);
 
         if (emitterPrefab == null) return;
         if (poolRoot == null) poolRoot = transform;
@@ -104,24 +105,41 @@ public class FlowerSapController : MonoBehaviour
         newEmitter.gameObject.name = $"SapEmitter_{emitterPool.Count}";
         emitterPool.Add(newEmitter);
 
+        // PERF: Add to free queue for O(1) retrieval
+        freeEmitterQueue.Enqueue(newEmitter);
+
         return newEmitter;
     }
 
     private ObiEmitter GetFreeEmitter()
     {
-        // 1. Try to find an existing emitter that is IDLE (speed is 0)
-        foreach (var emitter in emitterPool)
+        // PERF: O(1) lookup from queue instead of O(n) linear search
+        // 1. Try to get from the free queue
+        while (freeEmitterQueue.Count > 0)
         {
-            if (emitter.speed < 0.01f) return emitter;
+            ObiEmitter emitter = freeEmitterQueue.Dequeue();
+            // Double-check it's actually free (speed is 0)
+            if (emitter != null && emitter.speed < 0.01f)
+                return emitter;
         }
 
         // 2. Pool is empty! Can we expand?
         if (emitterPool.Count < maxPoolSize)
         {
-            return CreateNewEmitter();
+            ObiEmitter newEmitter = CreateNewEmitter();
+            // Remove from queue since we're returning it immediately
+            if (freeEmitterQueue.Count > 0 && freeEmitterQueue.Peek() == newEmitter)
+                freeEmitterQueue.Dequeue();
+            return newEmitter;
         }
 
-        // 3. Hard limit reached
+        // 3. Hard limit reached - fallback to linear search
+        // (This shouldn't happen often if timing is right)
+        foreach (var emitter in emitterPool)
+        {
+            if (emitter.speed < 0.01f) return emitter;
+        }
+
         Debug.LogWarning("Sap Pool Exhausted! Consider increasing Max Pool Size.");
         return null;
     }
@@ -189,5 +207,8 @@ public class FlowerSapController : MonoBehaviour
 
         // 7. Send back to Dungeon (Do NOT SetActive false)
         emitter.transform.position = new Vector3(0, -5000f, 0);
+
+        // PERF: Return emitter to free queue for O(1) retrieval next time
+        freeEmitterQueue.Enqueue(emitter);
     }
 }

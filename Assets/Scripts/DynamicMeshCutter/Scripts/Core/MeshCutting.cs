@@ -9,7 +9,6 @@
 
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 using System;
 
 namespace DynamicMeshCutter
@@ -133,8 +132,11 @@ namespace DynamicMeshCutter
                 size[i] = separatedMeshes.Length;
             }
 
-            //combine meshes of both sides
-            VirtualMesh[] meshes = separatedMeshes[0].Concat(separatedMeshes[1]).ToArray();
+            //combine meshes of both sides - PERF: avoid LINQ Concat allocation
+            int totalMeshes = separatedMeshes[0].Length + separatedMeshes[1].Length;
+            VirtualMesh[] meshes = new VirtualMesh[totalMeshes];
+            Array.Copy(separatedMeshes[0], 0, meshes, 0, separatedMeshes[0].Length);
+            Array.Copy(separatedMeshes[1], 0, meshes, separatedMeshes[0].Length, separatedMeshes[1].Length);
             //capture which side the meshes belong to
             //assign top or bottom to targets
             info.Sides = new int[meshes.Length];
@@ -294,8 +296,8 @@ namespace DynamicMeshCutter
             bool hasBoneWeights = data.MeshTarget.HasBoneWeight;
             //bool doDynamicRagdoll = data.MeshTarget.RD != null;
 
-            //keep a list of vertices we've already visited
-            List<Vector3> visited = new List<Vector3>();
+            // PERF: Use HashSet instead of List.Contains() - O(1) vs O(n)
+            HashSet<Vector3> visited = new HashSet<Vector3>();
             int length = data.AddedVertices.Count;
             try
             {
@@ -442,48 +444,71 @@ namespace DynamicMeshCutter
             }
             return center / length;
         }
+        // PERF: Reusable list to avoid allocations in GetBoneweightCenter
+        private static List<KeyValuePair<int, float>> _sortedBoneWeights = new List<KeyValuePair<int, float>>(16);
+        private static Dictionary<int, float> _boneWeightAccum = new Dictionary<int, float>(8);
+
         public BoneWeight GetBoneweightCenter(List<BoneWeight> fBoneWeights)
         {
             BoneWeight center = new BoneWeight();
-            Dictionary<int, float> boneWeights = new Dictionary<int, float>(); //<index,weight>
+            _boneWeightAccum.Clear();
 
             for (int i = 0; i < fBoneWeights.Count; i++)
             {
                 BoneWeight fWeight = fBoneWeights[i];
 
-                boneWeights[fWeight.boneIndex0] = (boneWeights.ContainsKey(fWeight.boneIndex0)) ? boneWeights[fWeight.boneIndex0] + fWeight.weight0 : fWeight.weight0;
-                boneWeights[fWeight.boneIndex1] = (boneWeights.ContainsKey(fWeight.boneIndex1)) ? boneWeights[fWeight.boneIndex1] + fWeight.weight1 : fWeight.weight1;
-                boneWeights[fWeight.boneIndex2] = (boneWeights.ContainsKey(fWeight.boneIndex2)) ? boneWeights[fWeight.boneIndex2] + fWeight.weight2 : fWeight.weight2;
-                boneWeights[fWeight.boneIndex3] = (boneWeights.ContainsKey(fWeight.boneIndex3)) ? boneWeights[fWeight.boneIndex3] + fWeight.weight3 : fWeight.weight3;
+                if (_boneWeightAccum.TryGetValue(fWeight.boneIndex0, out float w0))
+                    _boneWeightAccum[fWeight.boneIndex0] = w0 + fWeight.weight0;
+                else
+                    _boneWeightAccum[fWeight.boneIndex0] = fWeight.weight0;
+
+                if (_boneWeightAccum.TryGetValue(fWeight.boneIndex1, out float w1))
+                    _boneWeightAccum[fWeight.boneIndex1] = w1 + fWeight.weight1;
+                else
+                    _boneWeightAccum[fWeight.boneIndex1] = fWeight.weight1;
+
+                if (_boneWeightAccum.TryGetValue(fWeight.boneIndex2, out float w2))
+                    _boneWeightAccum[fWeight.boneIndex2] = w2 + fWeight.weight2;
+                else
+                    _boneWeightAccum[fWeight.boneIndex2] = fWeight.weight2;
+
+                if (_boneWeightAccum.TryGetValue(fWeight.boneIndex3, out float w3))
+                    _boneWeightAccum[fWeight.boneIndex3] = w3 + fWeight.weight3;
+                else
+                    _boneWeightAccum[fWeight.boneIndex3] = fWeight.weight3;
             }
 
-            //get the heaviest weights. convert to array for faster sort
+            // PERF: Sort without LINQ allocation - copy to list and sort in place
+            _sortedBoneWeights.Clear();
+            foreach (var kvp in _boneWeightAccum)
+                _sortedBoneWeights.Add(kvp);
 
-            var sorted = boneWeights.OrderByDescending(b => b.Value).ToArray();
+            _sortedBoneWeights.Sort((a, b) => b.Value.CompareTo(a.Value)); // Descending
+
             float total = 0;
-            int length = (sorted.Length >= 4) ? 4 : sorted.Length;
+            int length = (_sortedBoneWeights.Count >= 4) ? 4 : _sortedBoneWeights.Count;
             for (int i = 0; i < length; i++)
-                total += sorted[i].Value;
+                total += _sortedBoneWeights[i].Value;
 
             if (length > 0)
             {
-                center.boneIndex0 = sorted[0].Key;
-                center.weight0 = sorted[0].Value / total;
+                center.boneIndex0 = _sortedBoneWeights[0].Key;
+                center.weight0 = _sortedBoneWeights[0].Value / total;
             }
             if (length > 1)
             {
-                center.boneIndex1 = sorted[1].Key;
-                center.weight1 = sorted[1].Value / total;
+                center.boneIndex1 = _sortedBoneWeights[1].Key;
+                center.weight1 = _sortedBoneWeights[1].Value / total;
             }
             if (length > 2)
             {
-                center.boneIndex2 = sorted[2].Key;
-                center.weight2 = sorted[2].Value / total;
+                center.boneIndex2 = _sortedBoneWeights[2].Key;
+                center.weight2 = _sortedBoneWeights[2].Value / total;
             }
             if (length > 3)
             {
-                center.boneIndex3 = sorted[3].Key;
-                center.weight3 = sorted[3].Value / total;
+                center.boneIndex3 = _sortedBoneWeights[3].Key;
+                center.weight3 = _sortedBoneWeights[3].Value / total;
             }
 
             return center;

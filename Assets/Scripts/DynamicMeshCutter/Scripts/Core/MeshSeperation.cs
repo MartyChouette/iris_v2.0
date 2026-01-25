@@ -43,7 +43,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace DynamicMeshCutter
@@ -217,7 +216,9 @@ namespace DynamicMeshCutter
             while (unvisited.Count > 0)
             {
                 // Start a new group from any remaining unvisited vertex.
-                QuantizedV3 start = unvisited.First();
+                // PERF: Avoid LINQ .First() - use enumerator to get first element
+                QuantizedV3 start = default;
+                foreach (var v in unvisited) { start = v; break; }
                 grayQueue.Enqueue(start);
 
                 while (grayQueue.Count > 0)
@@ -338,8 +339,10 @@ namespace DynamicMeshCutter
             {
                 vm.DynamicRagdoll = dynamicMesh.DynamicRagdoll;
                 vm.Assignments = dynamicMesh.RD.ToArray();
-                vm.DynamicGroups = dynamicMesh.ColliderGroups
-                    .ToDictionary(e => e.Key, e => e.Value.ToArray());
+                // PERF: Avoid LINQ ToDictionary - manual copy
+                vm.DynamicGroups = new Dictionary<int, Vector3[]>(dynamicMesh.ColliderGroups.Count);
+                foreach (var kvp in dynamicMesh.ColliderGroups)
+                    vm.DynamicGroups[kvp.Key] = kvp.Value.ToArray();
             }
 
             int[][] subIndices = new int[dynamicMesh.SubIndices.Count][];
