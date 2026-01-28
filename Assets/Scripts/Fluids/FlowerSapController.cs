@@ -1,7 +1,12 @@
 ﻿/**
  * @file FlowerSapController.cs
  * @brief FlowerSapController script.
- * @ingroup thirdparty
+ * @details
+ * Supports two fluid modes:
+ * - ParticleSystem (recommended): Lightweight, GPU-accelerated, supports decal staining
+ * - ObiFluid (legacy): Full SPH simulation, very expensive
+ *
+ * @ingroup fluids
  */
 
 using System.Collections;
@@ -13,6 +18,18 @@ public class FlowerSapController : MonoBehaviour
 {
     public static FlowerSapController Instance;
 
+    public enum FluidMode
+    {
+        [Tooltip("Lightweight GPU particles + decals (RECOMMENDED)")]
+        ParticleSystem,
+        [Tooltip("Full SPH fluid simulation (EXPENSIVE - kills framerate)")]
+        ObiFluid
+    }
+
+    [Header("Fluid Mode")]
+    [Tooltip("ParticleSystem is 10-50x faster and supports surface staining!")]
+    public FluidMode fluidMode = FluidMode.ParticleSystem;
+
     [System.Serializable]
     public class SapBurstProfile
     {
@@ -21,7 +38,7 @@ public class FlowerSapController : MonoBehaviour
         public float angleJitter = 5f;
     }
 
-    [Header("Pooling Settings")]
+    [Header("Obi Pooling Settings (Legacy)")]
     public ObiEmitter emitterPrefab;
 
     // START WITH THIS MANY (Pre-loaded for performance)
@@ -46,24 +63,31 @@ public class FlowerSapController : MonoBehaviour
 
     private List<ObiEmitter> emitterPool;
 
-    // We no longer need 'activeEmitters' set. 
-    // If an emitter is in the "Dungeon" (speed 0), it is free.
+    // PERF: Track free emitters in a queue for O(1) lookup instead of O(n) linear search
+    private Queue<ObiEmitter> freeEmitterQueue;
 
     private void Awake()
     {
         Instance = this;
-        InitializePool();
+
+        if (fluidMode == FluidMode.ObiFluid)
+        {
+            InitializeObiPool();
+        }
+        // ParticleSystem mode uses SapParticleController (separate component)
     }
 
-    // NEW: Force the fluid engine to "warm up" during the first frame
+    // NEW: Force the fluid engine to "warm up" during the first frame (Obi only)
     private IEnumerator Start()
     {
+        if (fluidMode != FluidMode.ObiFluid || emitterPool == null) yield break;
+
         yield return null; // Wait for Obi to initialize
 
         // Dry Fire: Turn everyone on for 1 frame to force Mesh compilation
         foreach (var emitter in emitterPool)
         {
-            emitter.speed = 1f;
+            if (emitter != null) emitter.speed = 1f;
         }
 
         yield return new WaitForEndOfFrame(); // Wait for Mesher to panic and build meshes
@@ -71,26 +95,34 @@ public class FlowerSapController : MonoBehaviour
         // Reset everyone
         foreach (var emitter in emitterPool)
         {
-            emitter.speed = 0f;
-            emitter.KillAll();
+            if (emitter != null)
+            {
+                emitter.speed = 0f;
+                emitter.KillAll();
+            }
         }
     }
 
-    private void InitializePool()
+    private void InitializeObiPool()
     {
         emitterPool = new List<ObiEmitter>();
+        freeEmitterQueue = new Queue<ObiEmitter>(maxPoolSize);
 
-        if (emitterPrefab == null) return;
+        if (emitterPrefab == null)
+        {
+            Debug.LogWarning("[FlowerSapController] ObiFluid mode selected but no emitter prefab assigned!");
+            return;
+        }
         if (poolRoot == null) poolRoot = transform;
 
         for (int i = 0; i < initialPoolSize; i++)
         {
-            CreateNewEmitter();
+            CreateNewObiEmitter();
         }
     }
 
-    // Helper method to create one emitter and add it to the list
-    private ObiEmitter CreateNewEmitter()
+    // Helper method to create one Obi emitter and add it to the list
+    private ObiEmitter CreateNewObiEmitter()
     {
         ObiEmitter newEmitter = Instantiate(emitterPrefab, poolRoot);
 
@@ -104,25 +136,42 @@ public class FlowerSapController : MonoBehaviour
         newEmitter.gameObject.name = $"SapEmitter_{emitterPool.Count}";
         emitterPool.Add(newEmitter);
 
+        // PERF: Add to free queue for O(1) retrieval
+        freeEmitterQueue.Enqueue(newEmitter);
+
         return newEmitter;
     }
 
-    private ObiEmitter GetFreeEmitter()
+    private ObiEmitter GetFreeObiEmitter()
     {
-        // 1. Try to find an existing emitter that is IDLE (speed is 0)
-        foreach (var emitter in emitterPool)
+        // PERF: O(1) lookup from queue instead of O(n) linear search
+        // 1. Try to get from the free queue
+        while (freeEmitterQueue.Count > 0)
         {
-            if (emitter.speed < 0.01f) return emitter;
+            ObiEmitter emitter = freeEmitterQueue.Dequeue();
+            // Double-check it's actually free (speed is 0)
+            if (emitter != null && emitter.speed < 0.01f)
+                return emitter;
         }
 
         // 2. Pool is empty! Can we expand?
         if (emitterPool.Count < maxPoolSize)
         {
-            return CreateNewEmitter();
+            ObiEmitter newEmitter = CreateNewObiEmitter();
+            // Remove from queue since we're returning it immediately
+            if (freeEmitterQueue.Count > 0 && freeEmitterQueue.Peek() == newEmitter)
+                freeEmitterQueue.Dequeue();
+            return newEmitter;
         }
 
-        // 3. Hard limit reached
-        Debug.LogWarning("Sap Pool Exhausted! Consider increasing Max Pool Size.");
+        // 3. Hard limit reached - fallback to linear search
+        // (This shouldn't happen often if timing is right)
+        foreach (var emitter in emitterPool)
+        {
+            if (emitter.speed < 0.01f) return emitter;
+        }
+
+        Debug.LogWarning("[FlowerSapController] Obi Pool Exhausted! Consider increasing Max Pool Size.");
         return null;
     }
 
@@ -130,6 +179,17 @@ public class FlowerSapController : MonoBehaviour
     {
         if (sapIntensity <= 0f) return;
 
+        // Route to appropriate system
+        if (fluidMode == FluidMode.ParticleSystem)
+        {
+            if (SapParticleController.Instance != null)
+            {
+                SapParticleController.Instance.EmitStemCut(planePoint, planeNormal, stem);
+            }
+            return;
+        }
+
+        // Obi Fluid path (legacy)
         Vector3 exactPos = planePoint;
         if (stem != null)
         {
@@ -138,28 +198,55 @@ public class FlowerSapController : MonoBehaviour
 
         Vector3 dir = planeNormal.normalized;
 
-        ObiEmitter top = GetFreeEmitter();
-        if (top != null) StartCoroutine(Burst(top, exactPos + dir * stemEndOffset, dir, stemTopBurst));
+        ObiEmitter top = GetFreeObiEmitter();
+        if (top != null) StartCoroutine(ObiBurst(top, exactPos + dir * stemEndOffset, dir, stemTopBurst));
 
-        ObiEmitter bottom = GetFreeEmitter();
-        if (bottom != null) StartCoroutine(Burst(bottom, exactPos - dir * stemEndOffset, -dir, stemBottomBurst));
+        ObiEmitter bottom = GetFreeObiEmitter();
+        if (bottom != null) StartCoroutine(ObiBurst(bottom, exactPos - dir * stemEndOffset, -dir, stemBottomBurst));
     }
 
     public void EmitLeafTear(Vector3 pos, Vector3 normal)
     {
         if (sapIntensity <= 0f) return;
-        ObiEmitter e = GetFreeEmitter();
-        if (e != null) StartCoroutine(Burst(e, pos, normal.normalized, leafTearBurst));
+
+        // Route to appropriate system
+        if (fluidMode == FluidMode.ParticleSystem)
+        {
+            if (SapParticleController.Instance != null)
+            {
+                SapParticleController.Instance.EmitLeafTear(pos, normal);
+            }
+            return;
+        }
+
+        // Obi Fluid path (legacy)
+        ObiEmitter e = GetFreeObiEmitter();
+        if (e != null) StartCoroutine(ObiBurst(e, pos, normal.normalized, leafTearBurst));
     }
 
     public void EmitPetalTear(Vector3 pos, Vector3 normal)
     {
         if (sapIntensity <= 0f) return;
-        ObiEmitter e = GetFreeEmitter();
-        if (e != null) StartCoroutine(Burst(e, pos, normal.normalized, petalTearBurst));
+
+        // Route to appropriate system
+        if (fluidMode == FluidMode.ParticleSystem)
+        {
+            if (SapParticleController.Instance != null)
+            {
+                SapParticleController.Instance.EmitPetalTear(pos, normal);
+            }
+            return;
+        }
+
+        // Obi Fluid path (legacy)
+        ObiEmitter e = GetFreeObiEmitter();
+        if (e != null) StartCoroutine(ObiBurst(e, pos, normal.normalized, petalTearBurst));
     }
 
-    private IEnumerator Burst(ObiEmitter emitter, Vector3 worldPos, Vector3 mainDir, SapBurstProfile profile)
+    /// <summary>
+    /// Obi Fluid burst coroutine (legacy - expensive!)
+    /// </summary>
+    private IEnumerator ObiBurst(ObiEmitter emitter, Vector3 worldPos, Vector3 mainDir, SapBurstProfile profile)
     {
         // 1. Teleport from Dungeon to Leaf
         emitter.transform.position = worldPos;
@@ -189,5 +276,8 @@ public class FlowerSapController : MonoBehaviour
 
         // 7. Send back to Dungeon (Do NOT SetActive false)
         emitter.transform.position = new Vector3(0, -5000f, 0);
+
+        // PERF: Return emitter to free queue for O(1) retrieval next time
+        freeEmitterQueue.Enqueue(emitter);
     }
 }

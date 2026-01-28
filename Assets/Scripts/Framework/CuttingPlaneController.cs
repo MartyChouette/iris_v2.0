@@ -214,6 +214,9 @@ public class CuttingPlaneController : MonoBehaviour
 
     private Transform _planeTransform;
 
+    // PERF: Pre-allocated buffer for Physics.OverlapBoxNonAlloc to avoid GC
+    private static readonly Collider[] _overlapBuffer = new Collider[32];
+
     private float _authoredStartY;
     private float _lockedX;
     private float _lockedZ;
@@ -509,9 +512,10 @@ public class CuttingPlaneController : MonoBehaviour
         Vector3 halfExtents = new Vector3(cutSenseLength * 0.5f, cutSenseRadius, cutSenseRadius);
         Quaternion rotation = _planeTransform.rotation;
 
-        Collider[] hits = Physics.OverlapBox(center, halfExtents, rotation, cutDetectionMask, QueryTriggerInteraction.Ignore);
+        // PERF: Use NonAlloc version to avoid GC allocation
+        int hitCount = Physics.OverlapBoxNonAlloc(center, halfExtents, _overlapBuffer, rotation, cutDetectionMask, QueryTriggerInteraction.Ignore);
 
-        if (hits == null || hits.Length == 0)
+        if (hitCount == 0)
         {
             TriggerFluid(genericFluidPlane, null);
             return;
@@ -519,8 +523,9 @@ public class CuttingPlaneController : MonoBehaviour
 
         Collider leafCol = null, petalCol = null, stemCol = null;
 
-        foreach (var col in hits)
+        for (int i = 0; i < hitCount; i++)
         {
+            var col = _overlapBuffer[i];
             if (col == null) continue;
 
             var part = col.GetComponentInParent<FlowerPartRuntime>();
@@ -542,6 +547,9 @@ public class CuttingPlaneController : MonoBehaviour
                 else if (leafCol == null && col.CompareTag("Leaf")) leafCol = col;
                 else if (petalCol == null && col.CompareTag("Petal")) petalCol = col;
             }
+
+            // PERF: Early exit if we found all types
+            if (stemCol != null && leafCol != null && petalCol != null) break;
         }
 
         CutHitKind kind = CutHitKind.None;

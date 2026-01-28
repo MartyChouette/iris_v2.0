@@ -24,6 +24,22 @@ namespace DynamicMeshCutter
         private Vector3 _lastPlanePoint;
         private Vector3 _lastPlaneNormal;
 
+        // PERF: Cache references to avoid expensive FindObjects calls every cut
+        private FlowerSessionController[] _cachedSessions;
+        private FlowerStemRuntime _cachedStem;
+        private float _lastCacheTime = -999f;
+        private const float CACHE_REFRESH_INTERVAL = 2f; // Refresh cache every 2 seconds
+
+        private void RefreshCachedReferencesIfNeeded()
+        {
+            if (Time.time - _lastCacheTime > CACHE_REFRESH_INTERVAL)
+            {
+                _cachedSessions = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(FindObjectsSortMode.None);
+                _cachedStem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
+                _lastCacheTime = Time.time;
+            }
+        }
+
         // ───────────────────── Unity ─────────────────────
 
         private void Update()
@@ -68,17 +84,18 @@ namespace DynamicMeshCutter
 
             var roots = SceneManager.GetActiveScene().GetRootGameObjects();
 
-            // Find sessions to manage grace windows
-            var sessions = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(
-                FindObjectsSortMode.None
-            );
+            // PERF: Use cached sessions instead of FindObjectsByType every cut
+            RefreshCachedReferencesIfNeeded();
+            var sessions = _cachedSessions ?? System.Array.Empty<FlowerSessionController>();
 
             // 1. LOCK PHYSICS & EVENTS IMMEDIATELY
             // This prevents leaves from falling off due to the physics calculation jolt
             XYTetherJoint.SetCutBreakSuppressed(true);
-            
+
             // CRITICAL: Suppress ALL Unity joints (FixedJoint, ConfigurableJoint, HingeJoint, etc.)
             // This prevents joints connecting stem to crown from breaking during the cut
+            // PERF: Use suppression cycle for efficient multi-root suppression
+            JointCutSuppressor.BeginSuppressionCycle();
             foreach (var root in roots)
             {
                 if (root.activeInHierarchy)
@@ -86,6 +103,7 @@ namespace DynamicMeshCutter
                     JointCutSuppressor.SuppressAllJoints(root);
                 }
             }
+            JointCutSuppressor.EndSuppressionCycle();
 
             foreach (var s in sessions)
                 if (s != null) s.suppressDetachEvents = true;
@@ -175,7 +193,11 @@ namespace DynamicMeshCutter
         {
             FlowerStemRuntime stem = previewStemOverride;
             if (stem == null)
-                stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
+            {
+                // PERF: Use cached stem instead of FindFirstObjectByType every frame
+                RefreshCachedReferencesIfNeeded();
+                stem = _cachedStem;
+            }
 
             if (stem == null)
                 return;
@@ -266,7 +288,11 @@ namespace DynamicMeshCutter
             if (stem == null)
                 stem = previewStemOverride;
             if (stem == null)
-                stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
+            {
+                // PERF: Use cached stem
+                RefreshCachedReferencesIfNeeded();
+                stem = _cachedStem;
+            }
 
             if (stem != null)
             {
@@ -276,8 +302,8 @@ namespace DynamicMeshCutter
                 var session = previewSessionOverride;
                 if (session == null)
                     session = stem.GetComponentInParent<FlowerSessionController>();
-                if (session == null)
-                    session = UnityEngine.Object.FindFirstObjectByType<FlowerSessionController>();
+                if (session == null && _cachedSessions != null && _cachedSessions.Length > 0)
+                    session = _cachedSessions[0]; // PERF: Use cached session
 
                 // 🔥 SAP HOOK: spray from both ends on straight cuts too
                 var sap = stem.GetComponentInParent<FlowerSapController>();
