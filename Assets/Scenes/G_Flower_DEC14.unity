@@ -12968,6 +12968,10 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 1628754587527761475, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1630927200410653744, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: cam
       value: 
@@ -12980,10 +12984,18 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
+    - target: {fileID: 1660365386017561267, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1944832632533868736, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 2007915581196771053, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2142817813479958454, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -13042,7 +13054,7 @@ PrefabInstance:
       objectReference: {fileID: 330585545}
     - target: {fileID: 3172925682164621813, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: enableFluid
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3172925682164621813, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: preferDeterministicSapDirection
@@ -13096,6 +13108,10 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 6378889382462006503, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6463962271534695426, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -13104,6 +13120,10 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 6676004860495926607, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6679923496394433050, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: sapController
       value: 
@@ -13112,9 +13132,17 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 6809679190509031177, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6823781500025704228, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6864497909756372314, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: enableFluid
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6864497909756372314, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: softZoneFraction
@@ -13136,6 +13164,10 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 7647817696482133021, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7714597951510794044, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -13144,6 +13176,10 @@ PrefabInstance:
       propertyPath: sapController
       value: 
       objectReference: {fileID: 847922496}
+    - target: {fileID: 8115398959476041485, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8115630481133984943, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: cam
       value: 
@@ -13160,6 +13196,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 330585545}
+    - target: {fileID: 8659145364963972383, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      propertyPath: preferDeterministicSapDirection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8720728355318702220, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
       propertyPath: cam
       value: 
