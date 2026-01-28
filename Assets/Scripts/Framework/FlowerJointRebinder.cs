@@ -281,14 +281,20 @@ public class FlowerJointRebinder : MonoBehaviour
             : (anchorPoint != null ? anchorPoint.position : held.worldCenterOfMass);
         
         // If piece is already parented to stem, AnchorTopStemPiece already set it up correctly
-        // Skip SoftStemAnchor - just ensure kinematic/frozen state is preserved
+        // FIXED: Keep the body DYNAMIC (not kinematic) so that joints connecting leaves/petals
+        // can still accumulate force and break when pulled. Only disable gravity to prevent falling.
+        // The parenting to stemRuntime keeps it spatially anchored.
         if (isParentedToStem)
         {
-            // Piece is already correctly configured by AnchorTopStemPiece - just reinforce the settings
-            held.isKinematic = true;
+            // CRITICAL: Don't make kinematic - this prevents attached joints from breaking!
+            // Keep dynamic but disable gravity and constrain position (not rotation, to allow some flex)
+            held.isKinematic = false;
             held.useGravity = false;
-            held.constraints = RigidbodyConstraints.FreezeAll;
-            LogYellow($"[Rebinder] HELD '{held.name}' already parented - reinforcing KINEMATIC, gravity OFF, FROZEN", held);
+            held.constraints = RigidbodyConstraints.FreezePosition;
+            // Add drag to dampen any residual movement
+            held.linearDamping = 5f;
+            held.angularDamping = 5f;
+            LogYellow($"[Rebinder] HELD '{held.name}' already parented - DYNAMIC, gravity OFF, position frozen (joints can still break)", held);
         }
         // Only use SoftStemAnchor if piece is NOT already parented (fallback case)
         else if (useSoftStemAnchor)
@@ -932,6 +938,15 @@ public class FlowerJointRebinder : MonoBehaviour
             {
                 if (leafAttachMarker.owningLeaf != null && leafAttachMarker.owningLeaf.permanentlyDetached)
                     continue;
+
+                // FIXED: If forceLeafAttachmentsToHeld already handled this joint,
+                // don't override with closest-piece logic. The forced connection to HELD
+                // should take priority to keep leaves attached to the correct chunk.
+                if (forceLeafAttachmentsToHeld && fj.connectedBody != null && stemSet.Contains(fj.connectedBody))
+                {
+                    // Already connected to a stem piece (likely HELD) - skip closest-piece override
+                    continue;
+                }
 
                 Vector3 anchorWorld = fj.transform.TransformPoint(fj.anchor);
                 var newBody = FindClosestStemPiece(anchorWorld, stemPieces, ownerRb);

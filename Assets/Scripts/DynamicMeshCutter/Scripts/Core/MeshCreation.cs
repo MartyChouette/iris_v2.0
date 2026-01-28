@@ -314,28 +314,32 @@ namespace DynamicMeshCutter
                 {
                     // Debug: trace the hierarchy and find ALL rigidbodies
                     Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}' hierarchy trace:", go);
-                    
+
                     // Find all rigidbodies in this piece (self and children)
                     var allRigidbodies = go.GetComponentsInChildren<Rigidbody>(true);
                     Debug.Log($"  - Found {allRigidbodies.Length} Rigidbodies in keeper hierarchy", go);
-                    
+
                     // Configure ALL rigidbodies in this piece
+                    // FIXED: Keep DYNAMIC (not kinematic) so joints to leaves/petals can still break.
+                    // Only freeze position, not rotation, and disable gravity.
                     foreach (var pieceRb in allRigidbodies)
                     {
-                        pieceRb.isKinematic = true;
+                        pieceRb.isKinematic = false;
                         pieceRb.useGravity = false;
-                        pieceRb.constraints = RigidbodyConstraints.FreezeAll;
-                        Debug.Log($"  - Configured rb on '{pieceRb.gameObject.name}': isKinematic=true, useGravity=false, FreezeAll", pieceRb);
+                        pieceRb.constraints = RigidbodyConstraints.FreezePosition;
+                        pieceRb.linearDamping = 5f;
+                        pieceRb.angularDamping = 5f;
+                        Debug.Log($"  - Configured rb on '{pieceRb.gameObject.name}': DYNAMIC, useGravity=false, FreezePosition (joints can break)", pieceRb);
                     }
-                    
+
                     // Parent to stem runtime (keeps world position with true)
                     go.transform.SetParent(stemRuntime.transform, true);
-                    
+
                     // Mark as kept piece
                     var marker = go.GetComponent<StemPieceMarker>();
                     if (marker != null) marker.isKeptPiece = true;
-                    
-                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': ALL rigidbodies frozen, parented to '{stemRuntime.name}'", go);
+
+                    Debug.Log($"[AnchorTopStemPiece] KEEPER '{go.name}': rigidbodies DYNAMIC with position frozen, parented to '{stemRuntime.name}'", go);
                 }
                 else
                 {
