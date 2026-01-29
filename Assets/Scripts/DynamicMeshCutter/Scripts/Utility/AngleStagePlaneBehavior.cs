@@ -8,10 +8,9 @@ namespace DynamicMeshCutter
     /// Plane-based cutter for the ANGLE STAGE.
     /// - Stores plane (point + normal) from this transform
     /// - Lets HUD query the plane
-    /// - Performs cuts using the real DMC API with OnCreated
-    /// - Applies guard rails (XYTether suppression, session suppressDetachEvents)
-    /// - Sets up rigidbodies so bottom stem piece is anchored, top pieces fall
-    /// - Notifies FlowerStemRuntime + FlowerSessionController + FlowerJointRebinder
+    /// - Supports virtual stem cut (non-destructive, no joint rebinding)
+    /// - Falls back to DMC destructive path if virtual cutter is unavailable
+    /// - Notifies FlowerStemRuntime + FlowerSessionController
     /// - Optionally triggers FlowerSapController on stem cuts
     /// </summary>
     [DisallowMultipleComponent]
@@ -52,6 +51,13 @@ namespace DynamicMeshCutter
         [Tooltip("MeshTargets that this angle plane will cut. Drag your stem MeshTarget(s) here.")]
         public MeshTarget[] angleTargets;
 
+        [Header("Virtual Stem Cut")]
+        [Tooltip("If true, stem cuts use the non-destructive virtual cut path. The original stem GameObject is preserved, eliminating joint rebinding entirely.")]
+        public bool useVirtualStemCut = true;
+
+        [Tooltip("Reference to the VirtualStemCutter component. If null, auto-found on this GameObject or parents.")]
+        public VirtualStemCutter virtualStemCutter;
+
         // ───────────────────── Cached plane (for other systems / UI) ─────────────────────
 
         private Vector3 _lastPlanePoint;
@@ -64,6 +70,14 @@ namespace DynamicMeshCutter
         public Vector3 LastPlaneNormal => _lastPlaneNormal;
 
         // ───────────────────── Unity lifecycle ─────────────────────
+
+        private void Start()
+        {
+            if (virtualStemCutter == null)
+                virtualStemCutter = GetComponent<VirtualStemCutter>();
+            if (virtualStemCutter == null)
+                virtualStemCutter = GetComponentInParent<VirtualStemCutter>();
+        }
 
         private void OnEnable()
         {
@@ -151,13 +165,16 @@ namespace DynamicMeshCutter
             {
                 float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
                 float len = stem.CurrentLength;
-                Debug.Log($"[AngleStagePlaneBehaviour] PREVIEW angle:{angle:F1}°, length:{len:F3}", stem);
+                Debug.Log($"[AngleStagePlaneBehaviour] PREVIEW angle:{angle:F1}, length:{len:F3}", stem);
             }
         }
 
         /// <summary>
         /// Stage 2: actually perform the cut on all angleTargets.
-        /// Uses the real DMC API with OnCreated callback, plus XYTether suppression.
+        ///
+        /// If useVirtualStemCut is enabled, stem targets are routed through
+        /// VirtualStemCutter (non-destructive, no joint rebinding needed).
+        /// Falls back to DMC destructive path otherwise.
         /// </summary>
         public void PerformCut()
         {
@@ -172,22 +189,81 @@ namespace DynamicMeshCutter
             if (debugLogs)
                 Debug.Log($"[AngleStagePlaneBehaviour] Cutting with plane point:{_lastPlanePoint}, normal:{_lastPlaneNormal}", this);
 
-            // suppress detach events on all sessions while slicing
-            var sessions = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(
-                FindObjectsSortMode.None
-            );
+            // ── Try virtual stem cut path first ──
+            if (useVirtualStemCut && virtualStemCutter != null)
+            {
+                bool anyVirtualCuts = false;
+
+                foreach (var target in angleTargets)
+                {
+                    if (target == null) continue;
+
+                    var mf = target.GetComponent<MeshFilter>();
+                    var smr = target.GetComponent<SkinnedMeshRenderer>();
+                    bool hasMesh = (mf != null && mf.sharedMesh != null) ||
+                                   (smr != null && smr.sharedMesh != null);
+                    if (!hasMesh) continue;
+
+                    var stemRuntime = target.GetComponentInParent<FlowerStemRuntime>();
+                    if (stemRuntime == null) continue;
+                    if (target.GetComponent<FlowerPartRuntime>() != null) continue;
+
+                    try
+                    {
+                        bool success = virtualStemCutter.PerformVirtualCut(
+                            target, stemRuntime,
+                            _lastPlanePoint, _lastPlaneNormal,
+                            DefaultMaterial);
+
+                        if (success)
+                        {
+                            anyVirtualCuts = true;
+
+                            // Fire sap effects
+                            var sap = stemRuntime.GetComponentInParent<FlowerSapController>();
+                            sap?.EmitStemCut(_lastPlanePoint, _lastPlaneNormal, stemRuntime);
+
+                            // Check for game over (stem too short)
+                            var session = previewSessionOverride;
+                            if (session == null)
+                                session = stemRuntime.GetComponentInParent<FlowerSessionController>();
+                            if (session == null)
+                                session = UnityEngine.Object.FindFirstObjectByType<FlowerSessionController>();
+
+                            if (session != null)
+                            {
+                                session.StartCutGraceWindow();
+                                StartCoroutine(DelayedGameOverCheck(session, 0.1f));
+                            }
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        if (debugLogs)
+                            Debug.LogWarning($"[AngleStagePlaneBehaviour] Virtual cut failed for '{target.name}': {e.Message}\n{e.StackTrace}", target);
+                    }
+                }
+
+                if (anyVirtualCuts)
+                {
+                    if (debugLogs)
+                        Debug.Log("[AngleStagePlaneBehaviour] Virtual stem cut completed successfully.", this);
+                    return; // Done - no DMC path needed
+                }
+            }
+
+            // ── Fallback: DMC destructive path ──
+            if (debugLogs)
+                Debug.Log("[AngleStagePlaneBehaviour] Using DMC destructive path (virtual cutter unavailable or failed).", this);
+
+            var sessions = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(FindObjectsSortMode.None);
 
             foreach (var s in sessions)
                 if (s != null) s.suppressDetachEvents = true;
 
-            // suppress XYTether force-breaks for the entire cut
             XYTetherJoint.SetCutBreakSuppressed(true);
-            
-            // CRITICAL: Suppress ALL Unity joints (FixedJoint, ConfigurableJoint, HingeJoint, etc.)
-            // This prevents joints connecting stem to crown from breaking during the cut
-            var flowerRoots = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(
-                FindObjectsSortMode.None
-            );
+
+            var flowerRoots = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(FindObjectsSortMode.None);
             foreach (var session in flowerRoots)
             {
                 if (session != null && session.transform != null)
@@ -202,31 +278,21 @@ namespace DynamicMeshCutter
 
                 foreach (var target in angleTargets)
                 {
-                    if (target == null)
-                        continue;
+                    if (target == null) continue;
 
-                    // Must actually have a mesh
                     var mf = target.GetComponent<MeshFilter>();
                     var smr = target.GetComponent<SkinnedMeshRenderer>();
-                    bool hasMesh =
-                        (mf != null && mf.sharedMesh != null) ||
-                        (smr != null && smr.sharedMesh != null);
+                    bool hasMesh = (mf != null && mf.sharedMesh != null) ||
+                                   (smr != null && smr.sharedMesh != null);
+                    if (!hasMesh) continue;
 
-                    if (!hasMesh)
-                        continue;
-
-                    // Must belong to a stem hierarchy
                     var stemRuntime = target.GetComponentInParent<FlowerStemRuntime>();
-                    if (stemRuntime == null)
-                        continue;
-
-                    // Must NOT be leaves / petals / crown (FlowerPartRuntime)
-                    if (target.GetComponent<FlowerPartRuntime>() != null)
-                        continue;
+                    if (stemRuntime == null) continue;
+                    if (target.GetComponent<FlowerPartRuntime>() != null) continue;
 
                     try
                     {
-                        Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreated);
+                        Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreatedFallback);
                         anyCut = true;
                     }
                     catch (System.Exception e)
@@ -244,8 +310,6 @@ namespace DynamicMeshCutter
             finally
             {
                 XYTetherJoint.SetCutBreakSuppressed(false);
-                
-                // CRITICAL: Restore Unity joint break forces
                 JointCutSuppressor.RestoreAllJoints();
 
                 foreach (var s in sessions)
@@ -253,16 +317,16 @@ namespace DynamicMeshCutter
             }
         }
 
-        // ───────────────────── DMC callback ─────────────────────
-        // This is essentially the same logic as PlaneBehaviour.OnCreated,
-        // with a small hook for sap.
+        // ───────────────────── DMC fallback callback ─────────────────────
 
-        private void OnCreated(Info info, MeshCreationData cData)
+        /// <summary>
+        /// Fallback DMC callback - only used when virtual cutter is unavailable.
+        /// Handles physics setup and rebinding for the destructive cut path.
+        /// </summary>
+        private void OnCreatedFallback(Info info, MeshCreationData cData)
         {
-            if (cData == null)
-                return;
+            if (cData == null) return;
 
-            // Let DMC move/offset the created objects first
             MeshCreation.TranslateCreatedObjects(info,
                                                  cData.CreatedObjects,
                                                  cData.CreatedTargets,
@@ -270,132 +334,48 @@ namespace DynamicMeshCutter
 
             var stemRuntime = info.MeshTarget.GetComponentInParent<FlowerStemRuntime>();
 
-            // create rigidbodies + marker for each piece
-            var pieceBodies = new List<Rigidbody>();
-
             for (int i = 0; i < cData.CreatedTargets.Length; i++)
             {
                 var createdTarget = cData.CreatedTargets[i];
-                if (createdTarget == null)
-                    continue;
+                if (createdTarget == null) continue;
 
-                GameObject piece = createdTarget.gameObject;
+                GameObject physicsRoot = (i < cData.CreatedObjects.Length) ? cData.CreatedObjects[i] : null;
+                if (physicsRoot == null) continue;
 
                 if (stemRuntime != null)
                 {
-                    // CRITICAL FIX: The Rigidbody is on the physics root (CreatedObjects[i]), 
-                    // NOT on the child mesh object (CreatedTargets[i].gameObject).
-                    // AnchorTopStemPiece operates on CreatedObjects[i], so we must too!
-                    GameObject physicsRoot = (i < cData.CreatedObjects.Length) ? cData.CreatedObjects[i] : null;
-                    
-                    if (physicsRoot == null)
-                        continue;
-
                     var marker = physicsRoot.AddComponent<StemPieceMarker>();
                     marker.stemRuntime = stemRuntime;
 
-                    // Get Rigidbody from physics root, not from the child mesh
-                    // CRITICAL: Don't create new Rigidbody here - MeshCreation.CreateObjects already created it!
-                    // If we create a new one, it will have default settings and override AnchorTopStemPiece's work
-                    Rigidbody rb = null;
-                    if (physicsRoot != null)
-                    {
-                        rb = physicsRoot.GetComponent<Rigidbody>();
-                        // DON'T create if missing - it should already exist from MeshCreation
-                        if (rb == null)
-                        {
-                            Debug.LogWarning($"[AngleStagePlaneBehaviour] Physics root '{physicsRoot.name}' has no Rigidbody! This shouldn't happen.", physicsRoot);
-                            continue; // Skip this piece - can't process without Rigidbody
-                        }
-                    }
-                    else
-                    {
-                        // Fallback: try child mesh if physics root doesn't exist
-                        rb = piece.GetComponent<Rigidbody>();
-                        if (rb == null)
-                        {
-                            Debug.LogWarning($"[AngleStagePlaneBehaviour] Piece '{piece.name}' has no Rigidbody! This shouldn't happen.", piece);
-                            continue; // Skip this piece
-                        }
-                    }
-                    
-                    // Only set interpolation if not already set (don't override existing settings)
-                    if (rb.interpolation != RigidbodyInterpolation.Interpolate)
-                        rb.interpolation = RigidbodyInterpolation.Interpolate;
+                    Rigidbody rb = physicsRoot.GetComponent<Rigidbody>();
+                    if (rb == null) continue;
 
-                    pieceBodies.Add(rb);
+                    bool isKeptStemPiece = (stemRuntime != null && physicsRoot.transform.IsChildOf(stemRuntime.transform));
 
-                    // Check if this piece has already been "claimed" by the MeshCreation smart logic
-                    // (MeshCreation.AnchorTopStemPiece parents the "Kept" piece's physics root to the StemRuntime transform)
-                    bool isKeptStemPiece = (stemRuntime != null && physicsRoot != null && physicsRoot.transform.IsChildOf(stemRuntime.transform));
-
-                    if (debugLogs)
-                    {
-                        string physicsRootInfo = physicsRoot != null ? $"physicsRoot='{physicsRoot.name}', physicsRootIsChildOf={physicsRoot.transform.IsChildOf(stemRuntime.transform)}" : "physicsRoot=null";
-                        Debug.Log($"[AngleStagePlaneBehaviour] Piece '{piece.name}': physicsRoot='{physicsRoot.name}', {physicsRootInfo}, isKeptStemPiece={isKeptStemPiece}, current isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", physicsRoot);
-                    }
-
-                    // Only override if AnchorTopStemPiece hasn't already set it correctly
-                    // (AnchorTopStemPiece should have set isKinematic=true for kept pieces)
                     if (isKeptStemPiece)
                     {
-                        // This is the FLOWER HEAD (top piece with crown and leaves).
-                        // It must stay in hand (Kinematic) and NOT fall.
-                        // Force these settings even if they were set by AnchorTopStemPiece
                         rb.isKinematic = true;
                         rb.useGravity = false;
                         rb.constraints = RigidbodyConstraints.None;
-                        
-                        if (debugLogs)
-                            Debug.Log($"[AngleStagePlaneBehaviour] FORCED '{physicsRoot?.name ?? piece.name}' to KINEMATIC (kept piece) - isKinematic={rb.isKinematic}, useGravity={rb.useGravity}", physicsRoot ?? piece);
                     }
                     else
                     {
-                        // This is STEM WASTE (bottom/falling piece).
-                        // It must fall (Gravity) and be dynamic.
-                        // SAFETY CHECK: Ensure this is NOT a kept piece before making it fall
-                        bool isActuallyKept = (stemRuntime != null && physicsRoot != null && 
-                                               physicsRoot.transform.IsChildOf(stemRuntime.transform));
-                        
-                        if (!isActuallyKept)
-                        {
-                            // DEBUG: Make falling piece kinematic too
-                            Debug.Log($"[AngleStagePlaneBehaviour] DEBUG: Making falling piece '{physicsRoot?.name ?? piece.name}' KINEMATIC (temporary for debugging)", physicsRoot ?? piece);
-                            rb.isKinematic = true;
-                            rb.useGravity = false;
-                            rb.constraints = RigidbodyConstraints.None;
-                            
-                            // OLD CODE - commented out for debugging
-                            // rb.isKinematic = false;
-                            // rb.useGravity = true;
-                            // var despawner = despawnTarget.GetComponent<OffScreenDespawner>();
-                            // if (despawner == null)
-                            //     despawner = despawnTarget.AddComponent<OffScreenDespawner>();
-                        }
-                        else
-                        {
-                            // Safety: This was detected as kept piece - ensure it stays kinematic
-                            rb.isKinematic = true;
-                            rb.useGravity = false;
-                            if (debugLogs)
-                                Debug.LogWarning($"[AngleStagePlaneBehaviour] SAFETY: '{physicsRoot?.name ?? piece.name}' was marked as falling but is parented - corrected to KINEMATIC", physicsRoot ?? piece);
-                        }
+                        rb.isKinematic = false;
+                        rb.useGravity = true;
+                        var despawner = physicsRoot.GetComponent<OffScreenDespawner>();
+                        if (despawner == null)
+                            physicsRoot.AddComponent<OffScreenDespawner>();
                     }
                 }
             }
 
-            // ─────────────────────────────────────────────
-            // Inform the flower stem & session AFTER the cut
-            // ─────────────────────────────────────────────
-
+            // Inform stem & session
             var stem = info.MeshTarget != null
                 ? info.MeshTarget.GetComponentInParent<FlowerStemRuntime>()
                 : null;
 
-            if (stem == null)
-                stem = previewStemOverride;
-            if (stem == null)
-                stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
+            if (stem == null) stem = previewStemOverride;
+            if (stem == null) stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
 
             if (stem != null)
             {
@@ -408,39 +388,20 @@ namespace DynamicMeshCutter
                 if (session == null)
                     session = UnityEngine.Object.FindFirstObjectByType<FlowerSessionController>();
 
-                // 🔥 SAP HOOK: spray from both ends on angle cuts too
                 var sap = stem.GetComponentInParent<FlowerSapController>();
-                if (sap != null)
-                {
-                    sap.EmitStemCut(planePoint, planeNormal, stem);
-                }
+                sap?.EmitStemCut(planePoint, planeNormal, stem);
 
-                // CRITICAL: Start grace window BEFORE cut to prevent game over during cut process
                 session?.StartCutGraceWindow();
-                
-                try
-                {
-                    stem.ApplyCutFromPlane(planePoint, planeNormal);
 
-                    float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
-                    float len = stem.CurrentLength;
-                    if (debugLogs)
-                        Debug.Log($"[AngleStagePlaneBehaviour] Stem cut angle:{angle:F1}°, length:{len:F3}", stem);
+                stem.ApplyCutFromPlane(planePoint, planeNormal);
 
-                    // rebind leaves/petals to nearest stem chunk FIRST (before checking game over)
-                    var rebinder = stem.GetComponentInParent<FlowerJointRebinder>();
-                    rebinder?.RebindAllPartsToClosestStemPiece();
-                    
-                    // Check for game over AFTER rebinding (gives system time to stabilize)
-                    // Use a small delay to ensure physics has settled
-                    if (session != null)
-                    {
-                        session.StartCoroutine(DelayedGameOverCheck(session, 0.1f));
-                    }
-                }
-                finally
+                // Fallback: use rebinder (only when virtual cut is not available)
+                var rebinder = stem.GetComponentInParent<FlowerJointRebinder>();
+                rebinder?.RebindAllPartsToClosestStemPiece();
+
+                if (session != null)
                 {
-                    // Grace window is managed by StartCutGraceWindow, don't manually disable here
+                    session.StartCoroutine(DelayedGameOverCheck(session, 0.1f));
                 }
             }
         }
@@ -450,7 +411,6 @@ namespace DynamicMeshCutter
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            // Keep plane info in sync even when not playing.
             CachePlaneFromTransform();
 
             Vector3 p = _lastPlanePoint;
@@ -459,7 +419,6 @@ namespace DynamicMeshCutter
             Gizmos.color = Color.cyan;
             float halfLen = debugPlaneLength * 0.5f;
 
-            // Tangent lying in the plane.
             Vector3 arbitrary = Mathf.Abs(Vector3.Dot(n, Vector3.up)) > 0.9f ? Vector3.forward : Vector3.up;
             Vector3 tangent = Vector3.Cross(n, arbitrary).normalized;
 
@@ -467,12 +426,10 @@ namespace DynamicMeshCutter
             Vector3 b = p - tangent * halfLen;
             Gizmos.DrawLine(a, b);
 
-            // Normal arrow.
             float normalLen = halfLen;
             Vector3 end = p + n * normalLen;
             Gizmos.DrawLine(p, end);
 
-            // Arrow head.
             Vector3 side = Vector3.Cross(n, tangent).normalized;
             float headSize = normalLen * 0.2f;
             Vector3 headA = end - n * headSize + side * headSize * 0.5f;
@@ -481,7 +438,7 @@ namespace DynamicMeshCutter
             Gizmos.DrawLine(end, headB);
         }
 #endif
-        
+
         /// <summary>
         /// Delays game over check to allow physics to settle after a cut.
         /// </summary>

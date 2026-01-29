@@ -20,6 +20,13 @@ namespace DynamicMeshCutter
         [Tooltip("Optional explicit session to use for instant fail checks. If null, taken from stem's parent.")]
         public FlowerSessionController previewSessionOverride;
 
+        [Header("Virtual Stem Cut")]
+        [Tooltip("If true, stem cuts use the non-destructive virtual cut path. The original stem GameObject is preserved, eliminating joint rebinding entirely.")]
+        public bool useVirtualStemCut = true;
+
+        [Tooltip("Reference to the VirtualStemCutter component. If null, auto-found on this GameObject or parents.")]
+        public VirtualStemCutter virtualStemCutter;
+
         // Cache these so we can debug plane pose
         private Vector3 _lastPlanePoint;
         private Vector3 _lastPlaneNormal;
@@ -28,7 +35,16 @@ namespace DynamicMeshCutter
         private FlowerSessionController[] _cachedSessions;
         private FlowerStemRuntime _cachedStem;
         private float _lastCacheTime = -999f;
-        private const float CACHE_REFRESH_INTERVAL = 2f; // Refresh cache every 2 seconds
+        private const float CACHE_REFRESH_INTERVAL = 2f;
+
+        private void Start()
+        {
+            // Auto-resolve virtual stem cutter if not assigned
+            if (virtualStemCutter == null)
+                virtualStemCutter = GetComponent<VirtualStemCutter>();
+            if (virtualStemCutter == null)
+                virtualStemCutter = GetComponentInParent<VirtualStemCutter>();
+        }
 
         private void RefreshCachedReferencesIfNeeded()
         {
@@ -59,7 +75,6 @@ namespace DynamicMeshCutter
 
         private void OnDrawGizmosSelected()
         {
-            // Simple visual for the plane
             Gizmos.color = Color.cyan;
             Vector3 center = transform.position;
             Vector3 dir = transform.forward;
@@ -73,6 +88,10 @@ namespace DynamicMeshCutter
         /// <summary>
         /// Stage 2: Call this from UI / input to actually perform the cut
         /// with the current plane pose.
+        ///
+        /// If useVirtualStemCut is enabled, stem targets are routed through
+        /// VirtualStemCutter (non-destructive, no joint rebinding needed).
+        /// Non-stem targets still use the standard DMC destructive path.
         /// </summary>
         public void Cut()
         {
@@ -84,106 +103,159 @@ namespace DynamicMeshCutter
 
             var roots = SceneManager.GetActiveScene().GetRootGameObjects();
 
-            // PERF: Use cached sessions instead of FindObjectsByType every cut
             RefreshCachedReferencesIfNeeded();
             var sessions = _cachedSessions ?? System.Array.Empty<FlowerSessionController>();
 
-            // 1. LOCK PHYSICS & EVENTS IMMEDIATELY
-            // This prevents leaves from falling off due to the physics calculation jolt
-            XYTetherJoint.SetCutBreakSuppressed(true);
+            bool anyVirtualCuts = false;
+            bool anyDMCCuts = false;
 
-            // CRITICAL: Suppress ALL Unity joints (FixedJoint, ConfigurableJoint, HingeJoint, etc.)
-            // This prevents joints connecting stem to crown from breaking during the cut
-            // PERF: Use suppression cycle for efficient multi-root suppression
-            JointCutSuppressor.BeginSuppressionCycle();
-            foreach (var root in roots)
-            {
-                if (root.activeInHierarchy)
-                {
-                    JointCutSuppressor.SuppressAllJoints(root);
-                }
-            }
-            JointCutSuppressor.EndSuppressionCycle();
-
-            foreach (var s in sessions)
-                if (s != null) s.suppressDetachEvents = true;
-
-            try
+            // ── PHASE 1: Virtual stem cuts (no suppression needed) ──
+            if (useVirtualStemCut && virtualStemCutter != null)
             {
                 foreach (var root in roots)
                 {
-                    if (!root.activeInHierarchy)
-                        continue;
+                    if (!root.activeInHierarchy) continue;
 
                     var targets = root.GetComponentsInChildren<MeshTarget>();
                     foreach (var target in targets)
                     {
-                        if (target == null)
-                            continue;
+                        if (target == null) continue;
 
-                        // Must actually have a mesh
+                        // Must have a mesh
                         var mf = target.GetComponent<MeshFilter>();
                         var smr = target.GetComponent<SkinnedMeshRenderer>();
-                        bool hasMesh =
-                            (mf != null && mf.sharedMesh != null) ||
-                            (smr != null && smr.sharedMesh != null);
+                        bool hasMesh = (mf != null && mf.sharedMesh != null) ||
+                                       (smr != null && smr.sharedMesh != null);
+                        if (!hasMesh) continue;
 
-                        if (!hasMesh)
-                            continue;
-
-                        // 1) Must belong to the stem hierarchy
+                        // Must belong to stem hierarchy
                         FlowerStemRuntime stemRuntime = target.GetComponentInParent<FlowerStemRuntime>();
-                        if (stemRuntime == null)
-                            continue;
+                        if (stemRuntime == null) continue;
 
-                        // 2) Must NOT be leaves / petals / crown
-                        if (target.GetComponent<FlowerPartRuntime>() != null)
-                            continue;
+                        // Must NOT be leaves / petals / crown
+                        if (target.GetComponent<FlowerPartRuntime>() != null) continue;
 
                         try
                         {
-                            Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreated);
+                            bool success = virtualStemCutter.PerformVirtualCut(
+                                target, stemRuntime,
+                                _lastPlanePoint, _lastPlaneNormal,
+                                DefaultMaterial);
+
+                            if (success)
+                            {
+                                anyVirtualCuts = true;
+
+                                // Fire sap effects
+                                var sap = stemRuntime.GetComponentInParent<FlowerSapController>();
+                                sap?.EmitStemCut(_lastPlanePoint, _lastPlaneNormal, stemRuntime);
+
+                                // Check for game over (stem too short)
+                                var session = previewSessionOverride;
+                                if (session == null)
+                                    session = stemRuntime.GetComponentInParent<FlowerSessionController>();
+                                if (session == null && sessions.Length > 0)
+                                    session = sessions[0];
+
+                                if (session != null)
+                                {
+                                    // Brief grace window for any minor physics flutter
+                                    session.StartCutGraceWindow();
+                                    StartCoroutine(DelayedGameOverCheck(session, 0.1f));
+                                }
+                            }
                         }
                         catch (System.Exception e)
                         {
                             if (debugLogs)
-                                Debug.LogWarning($"[PlaneBehaviour] Skipped cutting '{target.name}' due to error: {e.Message}", target);
+                                Debug.LogWarning($"[PlaneBehaviour] Virtual cut failed for '{target.name}': {e.Message}\n{e.StackTrace}", target);
                         }
                     }
                 }
             }
-            catch
+
+            // ── PHASE 2: DMC destructive cuts for non-stem targets ──
+            // (Also used as fallback if virtual cutter is disabled or missing)
+            bool needDMCPath = !useVirtualStemCut || virtualStemCutter == null;
+
+            // Collect non-stem targets (or all targets if virtual cut is off)
+            foreach (var root in roots)
             {
-                // If the code CRASHES here, we must unlock immediately so the game doesn't break.
-                XYTetherJoint.SetCutBreakSuppressed(false);
-                JointCutSuppressor.RestoreAllJoints();
-                foreach (var s in sessions) if (s != null) s.suppressDetachEvents = false;
-                throw;
+                if (!root.activeInHierarchy) continue;
+
+                var targets = root.GetComponentsInChildren<MeshTarget>();
+                foreach (var target in targets)
+                {
+                    if (target == null) continue;
+
+                    var mf = target.GetComponent<MeshFilter>();
+                    var smr = target.GetComponent<SkinnedMeshRenderer>();
+                    bool hasMesh = (mf != null && mf.sharedMesh != null) ||
+                                   (smr != null && smr.sharedMesh != null);
+                    if (!hasMesh) continue;
+
+                    FlowerStemRuntime stemRuntime = target.GetComponentInParent<FlowerStemRuntime>();
+
+                    // Skip stem targets if virtual cutter already handled them
+                    if (useVirtualStemCut && virtualStemCutter != null && stemRuntime != null)
+                    {
+                        if (target.GetComponent<FlowerPartRuntime>() == null)
+                            continue; // Already handled by virtual cutter above
+                    }
+
+                    // Non-stem target: use DMC destructive path
+                    if (!anyDMCCuts)
+                    {
+                        // First DMC cut: set up suppression (only needed for destructive path)
+                        XYTetherJoint.SetCutBreakSuppressed(true);
+                        JointCutSuppressor.BeginSuppressionCycle();
+                        foreach (var r in roots)
+                        {
+                            if (r.activeInHierarchy)
+                                JointCutSuppressor.SuppressAllJoints(r);
+                        }
+                        JointCutSuppressor.EndSuppressionCycle();
+                        foreach (var s in sessions)
+                            if (s != null) s.suppressDetachEvents = true;
+                    }
+
+                    anyDMCCuts = true;
+
+                    try
+                    {
+                        Cut(target, _lastPlanePoint, _lastPlaneNormal, null, OnCreatedNonStem);
+                    }
+                    catch (System.Exception e)
+                    {
+                        if (debugLogs)
+                            Debug.LogWarning($"[PlaneBehaviour] Skipped cutting '{target.name}' due to error: {e.Message}", target);
+                    }
+                }
             }
 
-            // 2. SCHEDULE UNLOCK
-            // We wait 0.3s to allow Async calculations + Physics Jolt to finish safely.
-            StartCoroutine(ReleaseLocksAfterDelay(0.3f, sessions));
+            // Release DMC locks if we used the destructive path
+            if (anyDMCCuts)
+            {
+                StartCoroutine(ReleaseLocksAfterDelay(0.3f, sessions));
+            }
         }
 
-        // --- NEW: Coroutine to hold the lock for a moment ---
+        // ───────────────────── Lock release (DMC path only) ─────────────────────
+
         private IEnumerator ReleaseLocksAfterDelay(float delay, FlowerSessionController[] sessions)
         {
-            // Wait for the cut calculation and the resulting physics jolt to settle
             yield return new WaitForSeconds(delay);
 
-            // 3. RELEASE LOCKS
             XYTetherJoint.SetCutBreakSuppressed(false);
-            
-            // CRITICAL: Restore Unity joint break forces
             JointCutSuppressor.RestoreAllJoints();
 
-            // Transition sessions to their internal grace timer (handles the tail end of effects)
             foreach (var s in sessions)
             {
                 if (s != null) s.StartCutGraceWindow();
             }
         }
+
+        // ───────────────────── Preview ─────────────────────
 
         /// <summary>
         /// Stage 1: preview – call this manually or just enable previewBeforeCut
@@ -194,7 +266,6 @@ namespace DynamicMeshCutter
             FlowerStemRuntime stem = previewStemOverride;
             if (stem == null)
             {
-                // PERF: Use cached stem instead of FindFirstObjectByType every frame
                 RefreshCachedReferencesIfNeeded();
                 stem = _cachedStem;
             }
@@ -211,52 +282,37 @@ namespace DynamicMeshCutter
             {
                 float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
                 float len = stem.CurrentLength;
-                Debug.Log($"[PlaneBehaviour] PREVIEW angle:{angle:F1}°, length:{len:F3}", stem);
+                Debug.Log($"[PlaneBehaviour] PREVIEW angle:{angle:F1}, length:{len:F3}", stem);
             }
         }
 
-        // ───────────────────── DMC callback ─────────────────────
-        // This is called once for each MeshTarget that was cut
-        void OnCreated(Info info, MeshCreationData cData)
+        // ───────────────────── DMC callback (non-stem targets only) ─────────────────────
+
+        /// <summary>
+        /// Callback for non-stem DMC cuts. Handles physics setup for cut pieces.
+        /// Stem-specific logic (rebinding, stem runtime updates) is removed since
+        /// stems now use VirtualStemCutter.
+        /// </summary>
+        void OnCreatedNonStem(Info info, MeshCreationData cData)
         {
             if (cData == null)
                 return;
 
-            // Let DMC move/offset the created objects first
             MeshCreation.TranslateCreatedObjects(info,
                                                  cData.CreatedObjects,
                                                  cData.CreatedTargets,
                                                  Separation);
 
-            // Source object (the thing that was cut)
-            GameObject sourceGO = info.MeshTarget != null
-                ? info.MeshTarget.gameObject
-                : null;
-
-            // Stem that owns this mesh
-            var stemRuntime = info.MeshTarget.GetComponentInParent<FlowerStemRuntime>();
-
             for (int i = 0; i < cData.CreatedTargets.Length; i++)
             {
                 var createdTarget = cData.CreatedTargets[i];
-                if (createdTarget == null)
-                    continue;
+                if (createdTarget == null) continue;
 
-                // Always operate on the physics root if present (Rigidbody lives here in your MeshCreation).
-                GameObject pieceRoot =
-                    (createdTarget.GameobjectRoot != null)
-                        ? createdTarget.GameobjectRoot
-                        : createdTarget.gameObject;
+                GameObject pieceRoot = (createdTarget.GameobjectRoot != null)
+                    ? createdTarget.GameobjectRoot
+                    : createdTarget.gameObject;
+                if (pieceRoot == null) continue;
 
-                if (pieceRoot == null)
-                    continue;
-
-                // If this cut belongs to a flower stem, MeshCreation.AnchorTopStemPiece() is now the single authority
-                // for "kept vs waste" + CollapseThreshold behavior. Do NOT override physics here.
-                if (stemRuntime != null)
-                    continue;
-
-                // Non-flower fallback (keeps original behavior for general DMC demo usage).
                 var rb = pieceRoot.GetComponent<Rigidbody>() ?? pieceRoot.AddComponent<Rigidbody>();
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
 
@@ -274,176 +330,10 @@ namespace DynamicMeshCutter
                     rb.constraints = RigidbodyConstraints.None;
                 }
             }
-
-
-
-            // ─────────────────────────────────────────────
-            // Inform the flower stem & session AFTER the cut
-            // ─────────────────────────────────────────────
-
-            var stem = info.MeshTarget != null
-                ? info.MeshTarget.GetComponentInParent<FlowerStemRuntime>()
-                : null;
-
-            if (stem == null)
-                stem = previewStemOverride;
-            if (stem == null)
-            {
-                // PERF: Use cached stem
-                RefreshCachedReferencesIfNeeded();
-                stem = _cachedStem;
-            }
-
-            if (stem != null)
-            {
-                Vector3 planePoint = info.Plane.WorldPosition;
-                Vector3 planeNormal = info.Plane.WorldNormal;
-
-                var session = previewSessionOverride;
-                if (session == null)
-                    session = stem.GetComponentInParent<FlowerSessionController>();
-                if (session == null && _cachedSessions != null && _cachedSessions.Length > 0)
-                    session = _cachedSessions[0]; // PERF: Use cached session
-
-                // 🔥 SAP HOOK: spray from both ends on straight cuts too
-                var sap = stem.GetComponentInParent<FlowerSapController>();
-                if (sap != null)
-                {
-                    // Pass 'stem' as 3rd arg
-                    sap.EmitStemCut(planePoint, planeNormal, stem);
-                }
-
-                try
-                {
-                    // CRITICAL: Start grace window BEFORE cut to prevent game over during cut process
-                    session?.StartCutGraceWindow();
-                    
-                    stem.ApplyCutFromPlane(planePoint, planeNormal);
-
-                    float angle = stem.GetCurrentCutAngleDeg(Vector3.up);
-                    float len = stem.CurrentLength;
-                    if (debugLogs)
-                        Debug.Log($"[PlaneBehaviour] Stem cut angle:{angle:F1}°, length:{len:F3}", stem);
-
-                    // rebind leaves/petals to nearest stem chunk FIRST (before checking game over)
-                    var rebinder = stem.GetComponentInParent<FlowerJointRebinder>();
-                    rebinder?.RebindAllPartsToClosestStemPiece();
-                    
-                    // Check for game over AFTER rebinding (gives system time to stabilize)
-                    // Use a small delay to ensure physics has settled
-                    if (session != null)
-                    {
-                        session.StartCoroutine(DelayedGameOverCheck(session, 0.1f));
-                    }
-                }
-                finally
-                {
-                    // Do NOT set false here. The Cut() function handles it via Grace Window.
-                }
-            }
         }
 
+        // ───────────────────── Utility ─────────────────────
 
-        void CopyComponentsFromSource(GameObject source, GameObject piece)
-        {
-            foreach (var comp in source.GetComponents<Component>())
-            {
-                // Skip core components already handled by DMC
-                if (comp is Transform || comp is MeshFilter || comp is MeshRenderer || comp is MeshTarget)
-                    continue;
-
-                // skip gameplay / interaction components on cut pieces.
-                if (comp is GrabPull
-                    || comp is FlowerPartRuntime
-                    || comp is FlowerStemRuntime
-                    || comp is XYTetherJoint
-                    || comp is InteractionEngagement
-                    || comp is FlowerJointRebinder
-                    || comp is FlowerGameBrain)
-                {
-                    continue;
-                }
-
-                // SPECIAL CASE: joints
-                if (comp is Joint joint)
-                {
-                    TryHandleJointOnCut(joint, source, piece);
-                    continue;
-                }
-
-                // Generic component copy – add as needed
-                var type = comp.GetType();
-                piece.AddComponent(type);
-            }
-        }
-
-        void TryHandleJointOnCut(Joint original, GameObject source, GameObject piece)
-        {
-            // only joints that OPT-IN via JointCutPolicy are affected by cutting
-            var policy = original.GetComponent<JointCutPolicy>();
-            if (policy == null)
-                return;  // no policy => leave this joint exactly as-is
-
-            var mode = policy.mode;
-
-            if (mode == JointSplitMode.DestroyOnCut)
-            {
-                if (Application.isPlaying)
-                    Destroy(original);
-                else
-                    DestroyImmediate(original);
-                return;
-            }
-
-            var pieceCollider = piece.GetComponent<Collider>();
-            if (pieceCollider == null)
-                return;
-
-            // Convert anchor to world space
-            Vector3 anchorWorld = original.transform.TransformPoint(original.anchor);
-
-            bool thisPieceHasAnchor = pieceCollider.bounds.Contains(anchorWorld);
-
-            // keep only anchor side
-            if (mode == JointSplitMode.KeepAnchorSideOnly && !thisPieceHasAnchor)
-                return;
-
-            // Custom hook
-            if (mode == JointSplitMode.CustomLogic)
-            {
-                policy?.OnCutCustom?.Invoke(original, source, piece);
-                return;
-            }
-
-            // Clone the joint onto this piece
-            var cloned = piece.AddComponent(original.GetType()) as Joint;
-            if (!cloned)
-                return;
-
-            cloned.anchor = original.anchor;
-            cloned.autoConfigureConnectedAnchor = original.autoConfigureConnectedAnchor;
-            cloned.connectedAnchor = original.connectedAnchor;
-            cloned.breakForce = original.breakForce;
-            cloned.breakTorque = original.breakTorque;
-            cloned.enableCollision = original.enableCollision;
-
-            var srcRb = source.GetComponent<Rigidbody>();
-
-            if (original.connectedBody != null && original.connectedBody != srcRb)
-                cloned.connectedBody = original.connectedBody;
-            else
-                cloned.connectedBody = null;
-
-            if (original is HingeJoint oH && cloned is HingeJoint cH)
-            {
-                cH.axis = oH.axis;
-                cH.useLimits = oH.useLimits;
-                cH.limits = oH.limits;
-                cH.useSpring = oH.useSpring;
-                cH.spring = oH.spring;
-            }
-        }
-        
         /// <summary>
         /// Delays game over check to allow physics to settle after a cut.
         /// </summary>
