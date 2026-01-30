@@ -440,7 +440,8 @@ public class XYTetherJoint : MonoBehaviour
                             | RigidbodyConstraints.FreezeRotationZ;
         }
 
-        _engagement = GetComponent<InteractionEngagement>();
+        _engagement = GetComponent<InteractionEngagement>()
+                   ?? GetComponentInParent<InteractionEngagement>();
 
         _partRuntime = GetComponent<FlowerPartRuntime>();
         _session = GetComponentInParent<FlowerSessionController>();
@@ -744,10 +745,9 @@ public class XYTetherJoint : MonoBehaviour
             return;
         }
 
-        if (onlyBreakWhenEngaged)
+        if (onlyBreakWhenEngaged && _engagement != null)
         {
-            bool isEngagedNow = (_engagement != null && _engagement.isEngaged);
-            if (!isEngagedNow)
+            if (!_engagement.isEngaged)
             {
                 if (debugLogs)
                     Debug.Log($"[XYTetherJoint] Suppressed break \"{reason}\" because not engaged.", this);
