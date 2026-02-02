@@ -68,6 +68,19 @@ public class SoftStemAnchor : MonoBehaviour
     [Tooltip("Max force the drive can apply.")]
     public float maxForce = 10000f;
 
+    [Header("Angular Damping")]
+    [Tooltip("If true, applies an angular drive to resist spinning (prevents wild rotation).")]
+    public bool useAngularDamping = true;
+
+    [Tooltip("Angular spring strength (resists rotation away from initial orientation).")]
+    public float angularSpring = 500f;
+
+    [Tooltip("Angular damper (reduces rotational velocity).")]
+    public float angularDamper = 80f;
+
+    [Tooltip("Max torque the angular drive can apply.")]
+    public float angularMaxForce = 5000f;
+
     [Header("Projection (stability)")]
     public bool useProjection = true;
     public float projectionDistance = 0.02f;
@@ -172,6 +185,22 @@ public class SoftStemAnchor : MonoBehaviour
         cj.angularXMotion = ConfigurableJointMotion.Free;
         cj.angularYMotion = ConfigurableJointMotion.Free;
         cj.angularZMotion = ConfigurableJointMotion.Free;
+
+        // Angular damping drive to resist wild spinning
+        if (useAngularDamping)
+        {
+            var angDrive = new JointDrive
+            {
+                positionSpring = Mathf.Max(0f, angularSpring),
+                positionDamper = Mathf.Max(0f, angularDamper),
+                maximumForce = Mathf.Max(0f, angularMaxForce)
+            };
+            cj.angularXDrive = angDrive;
+            cj.angularYZDrive = angDrive;
+            cj.rotationDriveMode = RotationDriveMode.XYAndZ;
+            // Target rotation = identity (relative to connected body) keeps it upright
+            cj.targetRotation = Quaternion.identity;
+        }
 
         // Spring back toward anchor
         var drive = new JointDrive

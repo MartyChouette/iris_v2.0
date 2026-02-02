@@ -64,6 +64,7 @@ public class ParametricBreathing : MonoBehaviour
     // Internal state
     private Vector3 initialScale;
     private Vector3 initialPos;
+    private FlowerPartRuntime _partRuntime;
 
     // Smooth dampener to handle the click transition
     private float currentIntensity = 1f;
@@ -75,10 +76,21 @@ public class ParametricBreathing : MonoBehaviour
 
         // Auto-find the GrabPull script if it's on the same object
         if (grabPull == null) grabPull = GetComponent<GrabPull>();
+
+        _partRuntime = GetComponent<FlowerPartRuntime>();
     }
 
     void Update()
     {
+        // Kill switch: stop breathing after detach (mirrors FlowerBreathing)
+        if (_partRuntime != null && !_partRuntime.isAttached)
+        {
+            transform.localScale = initialScale;
+            transform.localPosition = initialPos;
+            this.enabled = false;
+            return;
+        }
+
         // 1. CHECK INPUT (Click/Grab Detection)
         bool isClicked = false;
 

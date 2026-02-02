@@ -70,7 +70,7 @@ public class FlowerJointRebinder : MonoBehaviour
 
     [Header("Anchor Hold (Optional)")]
     [Tooltip("If true, uses SoftStemAnchor to give the held chunk a gentle sway instead of a rigid lock.")]
-    public bool useSoftStemAnchor = false;
+    public bool useSoftStemAnchor = true;
 
     [Tooltip("Optional reference to the SoftStemAnchor. Auto-resolves on this flower root if left null.")]
     public SoftStemAnchor softAnchor;
@@ -309,14 +309,37 @@ public class FlowerJointRebinder : MonoBehaviour
         if (isParentedToStem)
         {
             // CRITICAL: Don't make kinematic - this prevents attached joints from breaking!
-            // Keep dynamic but disable gravity and constrain position (not rotation, to allow some flex)
+            // Keep dynamic but disable gravity. Use SoftStemAnchor spring if available
+            // so the crown sways naturally; fall back to FreezePosition if not.
             held.isKinematic = false;
             held.useGravity = false;
-            held.constraints = RigidbodyConstraints.FreezePosition;
-            // Add drag to dampen any residual movement
-            held.linearDamping = 5f;
-            held.angularDamping = 5f;
-            LogYellow($"[Rebinder] HELD '{held.name}' already parented - DYNAMIC, gravity OFF, position frozen (joints can still break)", held);
+
+            if (useSoftStemAnchor)
+            {
+                if (softAnchor == null)
+                    softAnchor = flowerRoot != null
+                        ? flowerRoot.GetComponent<SoftStemAnchor>()
+                        : GetComponentInParent<SoftStemAnchor>();
+            }
+
+            if (useSoftStemAnchor && softAnchor != null)
+            {
+                // SoftStemAnchor spring holds position; no constraints needed.
+                // External forces (leaf pulls, physics) cause gentle sway.
+                held.constraints = RigidbodyConstraints.None;
+                held.linearDamping = 2f;
+                held.angularDamping = 2f;
+                softAnchor.AnchorHeldStem(held, newCutLocation);
+                LogYellow($"[Rebinder] HELD '{held.name}' parented + SoftStemAnchor at {newCutLocation} (DYNAMIC, gravity OFF, spring holds, sway enabled)", held);
+            }
+            else
+            {
+                // Fallback: rigid freeze (no sway)
+                held.constraints = RigidbodyConstraints.FreezePosition;
+                held.linearDamping = 5f;
+                held.angularDamping = 5f;
+                LogYellow($"[Rebinder] HELD '{held.name}' already parented - DYNAMIC, gravity OFF, position frozen (joints can still break)", held);
+            }
         }
         // Only use SoftStemAnchor if piece is NOT already parented (fallback case)
         else if (useSoftStemAnchor)
@@ -401,6 +424,64 @@ public class FlowerJointRebinder : MonoBehaviour
         RebindHingeJoints(hingeJoints, stemPieces, stemSet);
         RebindConfigJoints(configurableJoints, stemPieces, stemSet);
         RebindXYTetherJoints(xyJoints, stemPieces, stemSet);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // RELEASE HELD PIECE (for crown fall on stem-fail)
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Releases the held stem piece so it falls under gravity.
+    /// Called when the stem is cut too short and the crown should tumble dramatically.
+    /// </summary>
+    public void ReleaseHeldPieceForFall()
+    {
+        Rigidbody held = _lastHeld;
+
+        // Fallback: if _lastHeld was never set (virtual cut path), try the stemRuntime body directly
+        if (held == null && stemRuntime != null)
+            held = stemRuntime.GetComponent<Rigidbody>();
+
+        if (held == null)
+        {
+            LogYellowWarning("[Rebinder] ReleaseHeldPieceForFall: no held piece found.");
+            return;
+        }
+
+        LogYellow($"[Rebinder] ReleaseHeldPieceForFall: releasing '{held.name}' to fall.");
+
+        // 1) Release SoftStemAnchor joint if active
+        if (softAnchor != null)
+            softAnchor.ReleaseStem(held);
+
+        // 2) Destroy our anchor-hold joint if present
+        if (_anchorHoldJoint != null)
+        {
+            try { Destroy(_anchorHoldJoint); } catch { /* ignore */ }
+            _anchorHoldJoint = null;
+        }
+
+        // Also clean up the marker's joint reference
+        var marker = held.GetComponent<FlowerAnchorHoldMarker>();
+        if (marker != null && marker.joint != null)
+        {
+            try { Destroy(marker.joint); } catch { /* ignore */ }
+            marker.joint = null;
+        }
+
+        // 3) Unparent from stemRuntime so it's free in world space
+        if (stemRuntime != null && held.transform.IsChildOf(stemRuntime.transform))
+            held.transform.SetParent(null, true);
+
+        // 4) Enable gravity, clear constraints, make dynamic
+        held.isKinematic = false;
+        held.useGravity = true;
+        held.constraints = RigidbodyConstraints.None;
+        held.linearDamping = 0.05f;
+        held.angularDamping = 0.05f;
+        held.WakeUp();
+
+        LogYellow($"[Rebinder] ReleaseHeldPieceForFall: '{held.name}' is now free-falling (DYNAMIC, gravity ON, no constraints).");
     }
 
     // ─────────────────────────────────────────────────────────────

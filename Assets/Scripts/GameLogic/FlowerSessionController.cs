@@ -64,6 +64,9 @@ public class FlowerSessionController : MonoBehaviour
     public FlowerGameBrain brain;
     public FlowerTypeDefinition FlowerType;
 
+    [Tooltip("Joint rebinder for this flower. If null, auto-found via brain hierarchy.")]
+    public FlowerJointRebinder rebinder;
+
     [Header("Events")]
     public UnityEvent OnGameOver;
     public UnityEvent OnSuccessfulEvaluation;
@@ -141,6 +144,11 @@ public class FlowerSessionController : MonoBehaviour
         // Autofill brain for stability (avoids silent null wiring when prefabs drift).
         if (brain == null)
             brain = GetComponentInChildren<FlowerGameBrain>(true);
+
+        if (rebinder == null && brain != null)
+            rebinder = brain.GetComponentInParent<FlowerJointRebinder>();
+        if (rebinder == null)
+            rebinder = GetComponentInChildren<FlowerJointRebinder>(true);
     }
 
     private void OnDisable()
@@ -330,7 +338,66 @@ public class FlowerSessionController : MonoBehaviour
             && signedDelta < 0f
             && absDelta > brain.ideal.stemHardFailDelta)
         {
-            ForceGameOver("Stem cut too short (cut too high towards the crown).");
+            ReleaseCrownAndFall("Stem cut too short (cut too high towards the crown).");
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // CROWN RELEASE + FALL (dramatic stem-fail)
+    // ─────────────────────────────────────────────
+
+    [Header("Crown Fall Settings")]
+    [Tooltip("Seconds to wait for crownFailY to trigger game over before the safety-net timeout fires.")]
+    public float crownFallTimeout = 3f;
+
+    /// <summary>
+    /// Releases the crown/held piece so it falls under gravity, then waits for the
+    /// crownFailY failsafe (on FlowerPartRuntime) to trigger game over.
+    /// If the crown lands on geometry and crownFailY never fires, a safety-net
+    /// timeout calls ForceGameOver instead.
+    /// </summary>
+    public void ReleaseCrownAndFall(string reason, float fallTimeout = -1f)
+    {
+        if (sessionEnded || endRequested)
+            return;
+
+        if (fallTimeout < 0f)
+            fallTimeout = crownFallTimeout;
+
+        Debug.Log($"[FlowerSessionController] ReleaseCrownAndFall: {reason} (timeout={fallTimeout}s)", this);
+
+        // Release the held piece so it falls
+        if (rebinder != null)
+            rebinder.ReleaseHeldPieceForFall();
+        else
+            Debug.LogWarning("[FlowerSessionController] ReleaseCrownAndFall: no rebinder found, crown may not fall.", this);
+
+        // Start safety-net coroutine
+        if (gameObject.activeInHierarchy)
+            StartCoroutine(CoCrownFallTimeout(reason, fallTimeout));
+        else
+            ForceGameOver(reason); // can't start coroutine, fall back to immediate
+    }
+
+    private System.Collections.IEnumerator CoCrownFallTimeout(string reason, float timeout)
+    {
+        // Wait in real-time so slow-mo doesn't stretch the timeout
+        float elapsed = 0f;
+        while (elapsed < timeout)
+        {
+            // If crownFailY (or anything else) already ended the session, bail out
+            if (sessionEnded || endRequested)
+                yield break;
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        // Safety net: crown landed on something and crownFailY never fired
+        if (!sessionEnded && !endRequested)
+        {
+            Debug.Log($"[FlowerSessionController] CoCrownFallTimeout: safety-net triggered after {timeout}s. Forcing game over.", this);
+            ForceGameOver(reason);
         }
     }
 
