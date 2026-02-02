@@ -345,6 +345,26 @@ public class XYTetherJoint : MonoBehaviour
     public static bool cutBreakSuppressed = false;
     public static bool IsCutBreakSuppressed => cutBreakSuppressed;
 
+    /// <summary>
+    /// Reset cut suppression on domain reload (Enter Play Mode Options safety)
+    /// and on every scene load so a stuck flag can never persist across scenes.
+    /// </summary>
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        cutBreakSuppressed = false;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoadedResetSuppression;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoadedResetSuppression;
+    }
+
+    private static void OnSceneLoadedResetSuppression(
+        UnityEngine.SceneManagement.Scene scene,
+        UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (mode == UnityEngine.SceneManagement.LoadSceneMode.Single)
+            cutBreakSuppressed = false;
+    }
+
     public static void SetCutBreakSuppressed(bool on)
     {
         cutBreakSuppressed = on;

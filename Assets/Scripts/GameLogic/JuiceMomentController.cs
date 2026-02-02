@@ -582,6 +582,8 @@ public class JuiceMomentController : MonoBehaviour
         if (_currentRoutine != null)
         {
             StopCoroutine(_currentRoutine);
+            // Restore joint suppression state before resetting (the routine set it true).
+            XYTetherJoint.SetCutBreakSuppressed(_previousJointSuppression);
             ResetAll();
         }
 

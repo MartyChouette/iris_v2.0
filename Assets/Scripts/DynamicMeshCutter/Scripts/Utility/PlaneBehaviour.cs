@@ -244,7 +244,8 @@ namespace DynamicMeshCutter
 
         private IEnumerator ReleaseLocksAfterDelay(float delay, FlowerSessionController[] sessions)
         {
-            yield return new WaitForSeconds(delay);
+            // Use real-time so slow-mo / pause can't prevent the unlock from firing.
+            yield return new WaitForSecondsRealtime(delay);
 
             XYTetherJoint.SetCutBreakSuppressed(false);
             JointCutSuppressor.RestoreAllJoints();
@@ -252,6 +253,17 @@ namespace DynamicMeshCutter
             foreach (var s in sessions)
             {
                 if (s != null) s.StartCutGraceWindow();
+            }
+        }
+
+        private void OnDisable()
+        {
+            // Safety: if this component is disabled mid-cut (e.g. scissors unequipped),
+            // release suppression so joints don't stay permanently unbreakable.
+            if (XYTetherJoint.IsCutBreakSuppressed)
+            {
+                XYTetherJoint.SetCutBreakSuppressed(false);
+                JointCutSuppressor.RestoreAllJoints();
             }
         }
 
