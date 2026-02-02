@@ -80,7 +80,7 @@ public class JuiceMomentController : MonoBehaviour
     public Camera targetCamera;
 
     [Tooltip("Optional separate rig/parent for camera position shake & push.")]
-    public Transform cameraRig; // if null, we’ll move the camera itself
+    public Transform cameraRig; // if null, weï¿½ll move the camera itself
 
     [Tooltip("Global URP Volume with Bloom / Chromatic / MotionBlur overrides.")]
     public Volume postProcessVolume;
@@ -502,8 +502,8 @@ public class JuiceMomentController : MonoBehaviour
 
     Coroutine _currentRoutine;
 
-    float _originalTimeScale = 1f;
-    float _originalFixedDelta;
+    // Time-scale changes are routed through TimeScaleManager (PRIORITY_JUICE).
+    // No local save/restore needed.
 
     Transform _camTransform;
     Vector3 _camOriginalLocalPos;
@@ -533,9 +533,6 @@ public class JuiceMomentController : MonoBehaviour
             return;
         }
         Instance = this;
-
-        _originalTimeScale = Time.timeScale;
-        _originalFixedDelta = Time.fixedDeltaTime;
 
         if (!targetCamera) targetCamera = Camera.main;
         _camTransform = cameraRig != null ? cameraRig : targetCamera.transform;
@@ -734,7 +731,7 @@ public class JuiceMomentController : MonoBehaviour
             yield return null;
         }
 
-        // Restore time scale BEFORE slow-mo phase (we’ll re-apply)
+        // Restore time scale BEFORE slow-mo phase (weï¿½ll re-apply)
         ApplyTimeScale(prevScale);
         // Reset immediate camera shake and ripple for next phases (but keep FOV, PP to be blended in settle)
         ResetCamLocalPosition();
@@ -892,8 +889,7 @@ public class JuiceMomentController : MonoBehaviour
 
     private void ApplyTimeScale(float scale)
     {
-        Time.timeScale = scale;
-        Time.fixedDeltaTime = slowMo.baseFixedDeltaTime * scale;
+        TimeScaleManager.Set(TimeScaleManager.PRIORITY_JUICE, scale);
     }
 
     private void SetBehavioursEnabled(bool enabled)
@@ -1049,7 +1045,7 @@ public class JuiceMomentController : MonoBehaviour
 
     private void ResetAll()
     {
-        ApplyTimeScale(1f);
+        TimeScaleManager.Clear(TimeScaleManager.PRIORITY_JUICE);
         ResetCamLocalPosition();
         if (targetCamera != null) targetCamera.fieldOfView = _camOriginalFOV;
 

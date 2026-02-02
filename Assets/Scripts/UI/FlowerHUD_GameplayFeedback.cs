@@ -111,6 +111,13 @@ public class FlowerHUD_GameplayFeedback : MonoBehaviour
         if (session == null) session = FindFirstObjectByType<FlowerSessionController>();
         if (brain == null && session != null) brain = session.brain;
         if (brain == null) brain = FindFirstObjectByType<FlowerGameBrain>();
+
+        if (session == null)
+            Debug.LogError("[FlowerHUD_GameplayFeedback] No FlowerSessionController found. " +
+                "Wire the 'session' field in the Inspector.", this);
+        if (brain == null)
+            Debug.LogError("[FlowerHUD_GameplayFeedback] No FlowerGameBrain found. " +
+                "Wire the 'brain' field in the Inspector or ensure session.brain is set.", this);
     }
 
     void SetVisible(bool visible)

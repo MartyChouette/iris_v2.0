@@ -40,8 +40,8 @@ public class RRestart : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            // 1. IMPORTANT: Unpause the game before/during reload
-            Time.timeScale = 1.0f;
+            // Clear all time-scale requests before reload so the new scene starts clean.
+            TimeScaleManager.ClearAll();
 
             Scene currentScene = SceneManager.GetActiveScene();
             SceneManager.LoadScene(currentScene.name);

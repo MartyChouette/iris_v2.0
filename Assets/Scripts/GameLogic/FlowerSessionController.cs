@@ -128,8 +128,8 @@ public class FlowerSessionController : MonoBehaviour
     private bool _resultApplied = false;
     private string _resultAppliedStack = null;
 
-    private float _timeScaleBeforeSlowMo = 1f;
-    private bool _didModifyTimeScale = false;
+    // Time-scale requests are now managed by TimeScaleManager (priority-based).
+    // No local save/restore needed; the manager handles conflicts and scene-transition cleanup.
 
     private void Awake()
     {
@@ -145,12 +145,9 @@ public class FlowerSessionController : MonoBehaviour
 
     private void OnDisable()
     {
-        // Safety: if we got disabled mid slow-mo/pause, restore to prevent poisoning other scenes.
-        if (_didModifyTimeScale)
-        {
-            Time.timeScale = _timeScaleBeforeSlowMo;
-            _didModifyTimeScale = false;
-        }
+        // Safety: if we got disabled mid slow-mo/pause, release our time-scale request
+        // so it doesn't poison other scenes.
+        TimeScaleManager.Clear(TimeScaleManager.PRIORITY_GAME_OVER);
     }
 
     private void OnDestroy()
@@ -279,23 +276,20 @@ public class FlowerSessionController : MonoBehaviour
 
     private System.Collections.IEnumerator CoHandleForcedGameOver(FlowerGameBrain.EvaluationResult result)
     {
-        _timeScaleBeforeSlowMo = Time.timeScale;
-        _didModifyTimeScale = true;
-
         // Enter slow motion if requested.
-        if (forcedGameOverSlowMoScale > 0f && forcedGameOverSlowMoScale < _timeScaleBeforeSlowMo)
+        if (forcedGameOverSlowMoScale > 0f)
         {
-            Time.timeScale = forcedGameOverSlowMoScale;
+            TimeScaleManager.Set(TimeScaleManager.PRIORITY_GAME_OVER, forcedGameOverSlowMoScale);
         }
 
-        // Wait in real-time so slowTimeScale doesn't affect the delay.
+        // Wait in real-time so the slow-mo scale doesn't affect the delay.
         if (forcedGameOverSlowMoDuration > 0f)
         {
             yield return new WaitForSecondsRealtime(forcedGameOverSlowMoDuration);
         }
 
         // Fully pause gameplay while the grading screen is visible.
-        Time.timeScale = 0f;
+        TimeScaleManager.Set(TimeScaleManager.PRIORITY_GAME_OVER, 0f);
 
         ApplyResult(result);
     }

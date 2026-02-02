@@ -49,6 +49,13 @@ public class SapOnXYTether : MonoBehaviour
         _sap = GetComponentInParent<FlowerSapController>();
         _session = GetComponentInParent<FlowerSessionController>();
         _part = GetComponent<FlowerPartRuntime>();
+
+        if (_sap == null)
+            Debug.LogError($"[SapOnXYTether] No FlowerSapController found in parent hierarchy of '{name}'. " +
+                "Sap emission will be skipped on joint break.", this);
+        if (_session == null)
+            Debug.LogWarning($"[SapOnXYTether] No FlowerSessionController found in parent hierarchy of '{name}'. " +
+                "Suppression check will fall back to scene-wide find.", this);
     }
 
     private void OnEnable()

@@ -48,7 +48,7 @@ public class GameOverUI : MonoBehaviour
         if (root == null) return;
 
         root.gameObject.SetActive(true);
-        Time.timeScale = 0f;  // optional: pause game
+        TimeScaleManager.Set(TimeScaleManager.PRIORITY_GAME_OVER, 0f);
         StartCoroutine(FadeIn());
     }
 
@@ -67,13 +67,13 @@ public class GameOverUI : MonoBehaviour
     // Button hooks
     public void RestartLevel()
     {
-        Time.timeScale = 1f;
+        TimeScaleManager.ClearAll();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void QuitToTitle(string titleSceneName)
     {
-        Time.timeScale = 1f;
+        TimeScaleManager.ClearAll();
         SceneManager.LoadScene(titleSceneName);
     }
 }
