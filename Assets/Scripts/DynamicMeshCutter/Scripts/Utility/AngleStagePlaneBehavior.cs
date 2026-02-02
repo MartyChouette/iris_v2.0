@@ -58,6 +58,12 @@ namespace DynamicMeshCutter
         [Tooltip("Reference to the VirtualStemCutter component. If null, auto-found on this GameObject or parents.")]
         public VirtualStemCutter virtualStemCutter;
 
+        // PERF: Cache references to avoid expensive FindObjects calls
+        private FlowerStemRuntime _cachedStem;
+        private FlowerSessionController[] _cachedSessions;
+        private float _lastCacheTime = -999f;
+        private const float CACHE_REFRESH_INTERVAL = 2f;
+
         // ───────────────────── Cached plane (for other systems / UI) ─────────────────────
 
         private Vector3 _lastPlanePoint;
@@ -147,11 +153,24 @@ namespace DynamicMeshCutter
         /// <summary>
         /// Stage 1: preview – same idea as PlaneBehaviour.PreviewAgainstFlower.
         /// </summary>
+        private void RefreshCachedReferencesIfNeeded()
+        {
+            if (Time.time - _lastCacheTime > CACHE_REFRESH_INTERVAL)
+            {
+                _cachedStem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
+                _cachedSessions = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(FindObjectsSortMode.None);
+                _lastCacheTime = Time.time;
+            }
+        }
+
         public void PreviewAgainstFlower()
         {
             FlowerStemRuntime stem = previewStemOverride;
             if (stem == null)
-                stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
+            {
+                RefreshCachedReferencesIfNeeded();
+                stem = _cachedStem;
+            }
 
             if (stem == null)
                 return;
@@ -228,7 +247,11 @@ namespace DynamicMeshCutter
                             if (session == null)
                                 session = stemRuntime.GetComponentInParent<FlowerSessionController>();
                             if (session == null)
-                                session = UnityEngine.Object.FindFirstObjectByType<FlowerSessionController>();
+                            {
+                                RefreshCachedReferencesIfNeeded();
+                                if (_cachedSessions != null && _cachedSessions.Length > 0)
+                                    session = _cachedSessions[0];
+                            }
 
                             if (session != null)
                             {
@@ -256,15 +279,15 @@ namespace DynamicMeshCutter
             if (debugLogs)
                 Debug.Log("[AngleStagePlaneBehaviour] Using DMC destructive path (virtual cutter unavailable or failed).", this);
 
-            var sessions = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(FindObjectsSortMode.None);
+            RefreshCachedReferencesIfNeeded();
+            var sessions = _cachedSessions ?? System.Array.Empty<FlowerSessionController>();
 
             foreach (var s in sessions)
                 if (s != null) s.suppressDetachEvents = true;
 
             XYTetherJoint.SetCutBreakSuppressed(true);
 
-            var flowerRoots = UnityEngine.Object.FindObjectsByType<FlowerSessionController>(FindObjectsSortMode.None);
-            foreach (var session in flowerRoots)
+            foreach (var session in sessions)
             {
                 if (session != null && session.transform != null)
                 {
@@ -375,7 +398,11 @@ namespace DynamicMeshCutter
                 : null;
 
             if (stem == null) stem = previewStemOverride;
-            if (stem == null) stem = UnityEngine.Object.FindFirstObjectByType<FlowerStemRuntime>();
+            if (stem == null)
+            {
+                RefreshCachedReferencesIfNeeded();
+                stem = _cachedStem;
+            }
 
             if (stem != null)
             {
@@ -386,7 +413,11 @@ namespace DynamicMeshCutter
                 if (session == null)
                     session = stem.GetComponentInParent<FlowerSessionController>();
                 if (session == null)
-                    session = UnityEngine.Object.FindFirstObjectByType<FlowerSessionController>();
+                {
+                    RefreshCachedReferencesIfNeeded();
+                    if (_cachedSessions != null && _cachedSessions.Length > 0)
+                        session = _cachedSessions[0];
+                }
 
                 var sap = stem.GetComponentInParent<FlowerSapController>();
                 sap?.EmitStemCut(planePoint, planeNormal, stem);

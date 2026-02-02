@@ -44,7 +44,12 @@ public class TMP_FocusBlur : MonoBehaviour
     [Tooltip("If true, all vertices move together. If false, text looks like it's shredding.")]
     public bool preserveCharacterShape = false;
 
+    [Header("Performance")]
+    [Tooltip("Minimum seconds between mesh updates. 0.033 = ~30fps visual updates.")]
+    public float updateInterval = 0.033f;
+
     private TMP_Text textMesh;
+    private float _timeSinceUpdate;
 
     void Start()
     {
@@ -53,7 +58,12 @@ public class TMP_FocusBlur : MonoBehaviour
 
     void Update()
     {
-        // 1. Force TMP to generate the latest geometry 
+        // PERF: Throttle updates - mesh deformation doesn't need to run every frame
+        _timeSinceUpdate += Time.deltaTime;
+        if (_timeSinceUpdate < updateInterval) return;
+        _timeSinceUpdate = 0f;
+
+        // 1. Force TMP to generate the latest geometry
         // (Important so we don't drift away from the original shape over time)
         textMesh.ForceMeshUpdate();
 

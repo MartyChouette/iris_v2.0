@@ -37,7 +37,6 @@
  * @enddot
  */
 
-using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -128,6 +127,11 @@ public class FlowerJointRebinder : MonoBehaviour
     private ConfigurableJoint _anchorHoldJoint;
     private Rigidbody _anchorHeldBody;
 
+    // PERF: Reusable collections to avoid LINQ allocations in hot rebinding path
+    private readonly List<Rigidbody> _stemPieceBuffer = new(8);
+    private readonly List<Rigidbody> _fallingBuffer = new(8);
+    private readonly System.Text.StringBuilder _sb = new(256);
+
     // ─────────────────────────────────────────────────────────────
     // YELLOW LOG HELPERS
     // ─────────────────────────────────────────────────────────────
@@ -191,37 +195,40 @@ public class FlowerJointRebinder : MonoBehaviour
         if (stemRuntime == null) stemRuntime = flowerRoot.GetComponentInChildren<FlowerStemRuntime>();
         if (stemRuntime == null) return;
 
-        // 1) Collect stem piece RBs
-        // CRITICAL: Only get NEW cut pieces, NOT the original stem
-        var markers = FindObjectsByType<StemPieceMarker>(FindObjectsSortMode.None);
-        var stemPieces = markers
-            .Where(m => m != null && m.stemRuntime == stemRuntime)
-            .Select(m => m.GetComponent<Rigidbody>())
-            .Where(rb => rb != null)
-            .Distinct()
-            .ToArray();
+        // 1) Collect stem piece RBs using static registry (avoids FindObjectsByType)
+        var originalStemRb = stemRuntime.GetComponent<Rigidbody>();
+        _stemPieceBuffer.Clear();
+        var allMarkers = StemPieceMarker.All;
+        for (int i = 0; i < allMarkers.Count; i++)
+        {
+            var m = allMarkers[i];
+            if (m == null || m.stemRuntime != stemRuntime) continue;
+            var rb = m.GetComponent<Rigidbody>();
+            if (rb == null || rb == originalStemRb) continue;
+            if (!_stemPieceBuffer.Contains(rb))
+                _stemPieceBuffer.Add(rb);
+        }
 
-        // CRITICAL FIX: Don't fallback to GetComponentsInChildren - that includes the ORIGINAL stem!
-        // Only use pieces that have StemPieceMarker (these are the NEW cut pieces)
-        if (stemPieces.Length == 0)
+        if (_stemPieceBuffer.Count == 0)
         {
             LogYellowWarning("[Rebinder] No stem pieces found with StemPieceMarker! Cut pieces may not have been marked correctly.");
-            // Don't fallback - return early instead of including original stem
             return;
         }
-        
-        // CRITICAL: Exclude the original stem's Rigidbody if it somehow got in the list
-        var originalStemRb = stemRuntime.GetComponent<Rigidbody>();
-        if (originalStemRb != null)
-        {
-            stemPieces = stemPieces.Where(rb => rb != originalStemRb).ToArray();
-            LogYellow($"[Rebinder] Excluded original stem Rigidbody '{originalStemRb.name}' from cut pieces list");
-        }
-        
-        // DEBUG: Log what pieces we found
-        LogYellow($"[Rebinder] Found {stemPieces.Length} cut stem pieces: [{string.Join(", ", stemPieces.Select(r => r.name))}]");
 
-        if (stemPieces == null || stemPieces.Length == 0) return;
+        var stemPieces = _stemPieceBuffer.ToArray();
+
+        if (debugLogs)
+        {
+            _sb.Clear();
+            for (int i = 0; i < stemPieces.Length; i++)
+            {
+                if (i > 0) _sb.Append(", ");
+                _sb.Append(stemPieces[i].name);
+            }
+            LogYellow($"[Rebinder] Found {stemPieces.Length} cut stem pieces: [{_sb}]");
+        }
+
+        if (stemPieces.Length == 0) return;
 
         var stemSet = new HashSet<Rigidbody>(stemPieces);
 
@@ -267,9 +274,24 @@ public class FlowerJointRebinder : MonoBehaviour
 
         if (held == null) return;
 
-        var falling = stemPieces.Where(rb => rb != null && rb != held).ToArray();
+        _fallingBuffer.Clear();
+        for (int i = 0; i < stemPieces.Length; i++)
+        {
+            if (stemPieces[i] != null && stemPieces[i] != held)
+                _fallingBuffer.Add(stemPieces[i]);
+        }
+        var falling = _fallingBuffer.ToArray();
 
-        LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]");
+        if (debugLogs)
+        {
+            _sb.Clear();
+            for (int i = 0; i < falling.Length; i++)
+            {
+                if (i > 0) _sb.Append(", ");
+                _sb.Append(falling[i].name);
+            }
+            LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{_sb}]");
+        }
 
         // 2.5) Ensure HELD piece doesn't fall
         // Check if piece is already parented to stem (AnchorTopStemPiece already handled it)
@@ -656,7 +678,16 @@ public class FlowerJointRebinder : MonoBehaviour
 
         if (votes.Count == 0) return null;
 
-        var held = votes.OrderByDescending(kv => kv.Value).First().Key;
+        Rigidbody held = null;
+        int maxVotes = -1;
+        foreach (var kv in votes)
+        {
+            if (kv.Value > maxVotes)
+            {
+                maxVotes = kv.Value;
+                held = kv.Key;
+            }
+        }
 
         LogYellow($"[Rebinder] HELD picked by Crown joint votes: '{held.name}'");
 
@@ -700,9 +731,16 @@ public class FlowerJointRebinder : MonoBehaviour
         Transform tagged = null;
         try
         {
-            tagged = GameObject.FindGameObjectsWithTag("Crown")
-                .Select(go => go.transform)
-                .FirstOrDefault(t => t != null && flowerRoot != null && t.IsChildOf(flowerRoot));
+            var crownTagged = GameObject.FindGameObjectsWithTag("Crown");
+            for (int i = 0; i < crownTagged.Length; i++)
+            {
+                var t = crownTagged[i].transform;
+                if (t != null && flowerRoot != null && t.IsChildOf(flowerRoot))
+                {
+                    tagged = t;
+                    break;
+                }
+            }
         }
         catch
         {
@@ -726,9 +764,12 @@ public class FlowerJointRebinder : MonoBehaviour
         // Final fallback: name contains Crown
         if (flowerRoot != null)
         {
-            var byName = flowerRoot.GetComponentsInChildren<Transform>(true)
-                .FirstOrDefault(t => t != null && t.name.ToLower().Contains("crown"));
-            return byName;
+            var allTransforms = flowerRoot.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < allTransforms.Length; i++)
+            {
+                if (allTransforms[i] != null && allTransforms[i].name.IndexOf("crown", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    return allTransforms[i];
+            }
         }
 
         return null;
@@ -905,8 +946,16 @@ public class FlowerJointRebinder : MonoBehaviour
     {
         var result = new List<T>();
         if (rootA != null) result.AddRange(rootA.GetComponentsInChildren<T>(true));
-        if (stem != null) result.AddRange(stem.GetComponentsInChildren<T>(true));
-        return result.Distinct().ToArray();
+        if (stem != null)
+        {
+            var stemJoints = stem.GetComponentsInChildren<T>(true);
+            for (int i = 0; i < stemJoints.Length; i++)
+            {
+                if (!result.Contains(stemJoints[i]))
+                    result.Add(stemJoints[i]);
+            }
+        }
+        return result.ToArray();
     }
 
     private bool IsUnderStem(Transform t)
@@ -1034,9 +1083,18 @@ public class FlowerJointRebinder : MonoBehaviour
 
             cj.connectedBody = newBody;
         }
-        LogYellow($"[Rebinder] After RebindConfigJoints, Back joints connectedBody = " +
-                  $"{string.Join(", ", flowerRoot.GetComponentsInChildren<ConfigurableJoint>(true).Where(j => IsBackAnchor(j.transform)).Select(j => j.connectedBody ? j.connectedBody.name : "NULL"))}");
-
+        if (debugLogs)
+        {
+            _sb.Clear();
+            var allCj = flowerRoot.GetComponentsInChildren<ConfigurableJoint>(true);
+            for (int i = 0; i < allCj.Length; i++)
+            {
+                if (!IsBackAnchor(allCj[i].transform)) continue;
+                if (_sb.Length > 0) _sb.Append(", ");
+                _sb.Append(allCj[i].connectedBody ? allCj[i].connectedBody.name : "NULL");
+            }
+            LogYellow($"[Rebinder] After RebindConfigJoints, Back joints connectedBody = {_sb}");
+        }
     }
 
 

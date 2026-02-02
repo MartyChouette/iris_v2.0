@@ -59,6 +59,11 @@ public class SquishMove : MonoBehaviour
     private MeshRenderer meshRenderer;
     private JellyVertex[] jv;
     private Vector3[] vertexArray;
+    private Vector3[] _cachedOriginalVerts;
+
+    // PERF: Throttle RecalculateNormals - it's O(n) and doesn't need to run every physics frame
+    private int _normalRecalcCounter;
+    private const int NORMAL_RECALC_INTERVAL = 3; // every 3rd FixedUpdate
 
     private Camera cam;
     private bool isDragging = false;
@@ -128,9 +133,13 @@ public class SquishMove : MonoBehaviour
 
         meshRenderer = GetComponent<MeshRenderer>();
 
-        jv = new JellyVertex[meshClone.vertices.Length];
-        for (int i = 0; i < meshClone.vertices.Length; i++)
-            jv[i] = new JellyVertex(i, transform.TransformPoint(meshClone.vertices[i]));
+        // PERF: Cache original vertices once to avoid per-frame allocation from .vertices getter
+        _cachedOriginalVerts = originalMesh.vertices;
+        vertexArray = new Vector3[_cachedOriginalVerts.Length];
+
+        jv = new JellyVertex[_cachedOriginalVerts.Length];
+        for (int i = 0; i < _cachedOriginalVerts.Length; i++)
+            jv[i] = new JellyVertex(i, transform.TransformPoint(_cachedOriginalVerts[i]));
 
         lastWorldPos = transform.position;
     }
@@ -282,7 +291,8 @@ public class SquishMove : MonoBehaviour
         }
         lastWorldPos = transform.position;
 
-        vertexArray = originalMesh.vertices;
+        // PERF: Copy from cached original instead of allocating via .vertices getter each frame
+        System.Array.Copy(_cachedOriginalVerts, vertexArray, _cachedOriginalVerts.Length);
         for (int i = 0; i < jv.Length; i++)
         {
             Vector3 target = transform.TransformPoint(vertexArray[jv[i].ID]);
@@ -296,7 +306,12 @@ public class SquishMove : MonoBehaviour
         }
 
         meshClone.vertices = vertexArray;
-        meshClone.RecalculateNormals();
+        // PERF: Throttle RecalculateNormals - O(n) operation doesn't need to run every physics frame
+        if (++_normalRecalcCounter >= NORMAL_RECALC_INTERVAL)
+        {
+            _normalRecalcCounter = 0;
+            meshClone.RecalculateNormals();
+        }
     }
 
     // ────────────────────────── External tug API ──────────────────────────

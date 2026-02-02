@@ -52,60 +52,21 @@ PRESENTATION LAYER (FlowerGradingUI, FlowerHUD_GameplayFeedback)
 
 ## 2. Critical Issues & Recommendations
 
-### 2.1 HIGH PRIORITY - Time Scale Management
+### 2.1 ~~HIGH PRIORITY - Time Scale Management~~ RESOLVED
 
-**Issue:** `FlowerSessionController` directly modifies `Time.timeScale` for slow-motion effects. If the object is destroyed/disabled mid-flow, this can "poison" subsequent scenes.
+**Status:** Fixed in `TimeScaleManager.cs` (static priority-based system).
 
-**Current Mitigation:** `OnDisable()` restores time scale - but this is fragile.
+All 6 callers migrated to `TimeScaleManager.Set(priority, scale)` / `TimeScaleManager.Clear(priority)`:
+- FlowerSessionController, PauseMenuController, GameOverUI, RRestart, JuiceMomentController, FlowerGradingUI
+- Priority levels: PAUSE(0) > GAME_OVER(10) > JUICE(20)
+- Auto-clears on scene load via `[RuntimeInitializeOnLoadMethod]`
 
-**Location:** `FlowerSessionController.cs:280-301`
+### 2.2 ~~HIGH PRIORITY - Scene Auto-Find Brittleness~~ RESOLVED
 
-**Recommendation:** Create a dedicated `TimeManager` singleton:
-
-```csharp
-// Proposed: Assets/Scripts/Framework/TimeManager.cs
-public class TimeManager : MonoBehaviour
-{
-    public static TimeManager Instance { get; private set; }
-
-    private float _originalTimeScale = 1f;
-    private int _pauseRequestCount = 0;
-
-    public void RequestSlowMo(float scale, float duration, System.Action onComplete = null)
-    {
-        // Centralized time control with automatic restoration
-    }
-
-    public void RequestPause() { _pauseRequestCount++; UpdateTimeScale(); }
-    public void ReleasePause() { _pauseRequestCount = Mathf.Max(0, _pauseRequestCount - 1); UpdateTimeScale(); }
-}
-```
-
-### 2.2 HIGH PRIORITY - Scene Auto-Find Brittleness
-
-**Issue:** Several components use `FindFirstObjectByType<>()` which fails silently if multiple instances exist or none are found.
-
-**Locations:**
-- `FlowerSessionController.cs:142-143` - Auto-finds brain
-- `FlowerGradingUI.cs:109-118` - Auto-finds session controller
-
-**Recommendation:** Add explicit validation and warnings:
-
-```csharp
-// In Awake() or Start()
-if (brain == null)
-{
-    brain = GetComponentInChildren<FlowerGameBrain>(true);
-    if (brain == null)
-    {
-        var allBrains = FindObjectsByType<FlowerGameBrain>(FindObjectsSortMode.None);
-        if (allBrains.Length > 1)
-            Debug.LogError($"[{GetType().Name}] Multiple FlowerGameBrain instances found! Assign explicitly.", this);
-        else if (allBrains.Length == 0)
-            Debug.LogError($"[{GetType().Name}] No FlowerGameBrain found in scene!", this);
-    }
-}
-```
+**Status:** Fixed. Added `Debug.LogError` with actionable messages to all auto-find failure paths:
+- FlowerGradingUI, FlowerHUD_GameplayFeedback, FlowerHUD_DebugTelemetry, SapOnXYTether
+- Hot-path scene searches cached with refresh intervals in PlaneBehaviour, AngleStagePlaneBehaviour
+- StemPieceMarker uses static registry pattern (no FindObjectsByType needed)
 
 ### 2.3 MEDIUM PRIORITY - Memory Management
 
@@ -256,34 +217,20 @@ private void Update()
 - Grace window timers use simple float decrements
 - Comments warn about allocation-free hot paths
 
-### 4.2 Suggested Improvements
+### 4.2 Completed Optimizations (Phase 3)
 
-1. **Reduce GetComponent Calls:**
-   ```csharp
-   // Current (CuttingPlaneController.cs:530-532):
-   var part = col.GetComponentInParent<FlowerPartRuntime>();
-   var stem = col.GetComponentInParent<FlowerStemRuntime>();
+1. **SquishMove mesh deformation** - Cached original vertices (eliminated per-frame `.vertices` allocation), throttled `RecalculateNormals()` to every 3rd FixedUpdate
+2. **TMP_FocusBlur text effects** - Added configurable update interval (default 30fps) to throttle expensive `ForceMeshUpdate()` + `UpdateGeometry()`
+3. **FlowerJointRebinder LINQ removal** - Replaced all `.Where().Select().ToArray()` chains with manual loops and pre-allocated buffers
+4. **StemPieceMarker static registry** - Self-registering `OnEnable`/`OnDisable` pattern eliminates `FindObjectsByType` in rebinder
+5. **AngleStagePlaneBehaviour caching** - Cached stem and session references with 2-second refresh interval
 
-   // Better: Cache or use TryGetComponent
-   if (col.TryGetComponent<FlowerPartRuntime>(out var part)) { ... }
-   ```
+### 4.3 Remaining Suggestions
 
-2. **String Formatting in Logs:**
-   Even gated logs allocate strings:
-   ```csharp
-   // Current:
-   if (debugLogs)
-       Debug.Log($"[XYTetherJoint] stretch={stretch:F3}...");
-
-   // Better for release builds:
-   [System.Diagnostics.Conditional("UNITY_EDITOR")]
-   private void LogDebug(string msg) => Debug.Log(msg, this);
-   ```
-
-3. **Profile Target Platform:**
-   - Test on minimum-spec hardware
-   - Profile memory during particle bursts
-   - Watch for frame spikes on stem cuts
+1. **String formatting in gated logs** - Wrap in `[System.Diagnostics.Conditional("UNITY_EDITOR")]` for release builds
+2. **Material instance auditing** - SapDecal, BacklightPulse use `.material` creating instances. Consider MaterialPropertyBlock.
+3. **Coroutine WaitForSeconds pooling** - Cache common wait durations (0.1s, 0.3s)
+4. **Profile on target hardware** - Test minimum-spec, profile particle bursts, watch cut frame spikes
 
 ---
 
@@ -291,8 +238,9 @@ private void Update()
 
 ### 5.1 Must-Have Before Release
 
-- [ ] **Time scale safety:** Implement centralized TimeManager
-- [ ] **Scene validation:** Add explicit checks for required references on scene load
+- [x] **Time scale safety:** Centralized `TimeScaleManager` with priority system
+- [x] **Scene validation:** `Debug.LogError` on all auto-find failures + FlowerAutoSetup validation
+- [x] **Joint suppression safety:** Static reset on scene load, `WaitForSecondsRealtime`, `OnDisable` guard
 - [ ] **Memory profiling:** Run extended play sessions watching for leaks
 - [ ] **Error recovery:** Ensure game can recover from physics anomalies
 - [ ] **Save/Load system:** Currently sessions are ephemeral (OK for thesis, not for full game)
@@ -380,14 +328,23 @@ Iris v2.0 is a **well-architected thesis project** with:
 - Excellent documentation culture
 - Solid performance foundations
 
-**Primary areas for hardening:**
-1. Time scale management (prevents scene pollution)
-2. Memory leak auditing (historical concern)
-3. Scene reference validation (prevents silent failures)
-4. Legacy code cleanup (reduces maintenance burden)
+**Completed hardening (Feb 2026):**
+1. ~~Time scale management~~ - Centralized via `TimeScaleManager`
+2. ~~Scene reference validation~~ - `Debug.LogError` on all failures, static registries
+3. ~~Joint suppression safety~~ - Static reset, real-time coroutines, `OnDisable` guard
+4. ~~Performance hot paths~~ - Vertex caching, normal throttling, LINQ elimination, reference caching
 
-The codebase is **ready for thesis demonstration** with minor polish. For a commercial release, the robustness checklist items should be addressed, particularly save/load, analytics, and automated testing.
+**Remaining areas:**
+1. Memory leak auditing (historical concern)
+2. Legacy Obi Fluid code cleanup
+3. Input gating depth (movement over UI)
+4. Target hardware profiling
+
+The codebase is **ready for thesis demonstration** with solid stability foundations. For a commercial release, the robustness checklist items should be addressed, particularly save/load, analytics, and automated testing.
+
+See [LONGTERM_PLAN.md](LONGTERM_PLAN.md) for the full project roadmap.
 
 ---
 
 *Assessment generated for Iris v2.0 - Flower Trimming Game*
+*Last updated: February 2, 2026*
