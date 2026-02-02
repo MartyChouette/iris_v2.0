@@ -522,14 +522,6 @@ public class FlowerPartRuntime : MonoBehaviour
         Debug.Log($"[FlowerPartRuntime] '{PartId}' detached: {reason} (Reason={detachReason}, Permanent={permanent})", this);
 #endif
 
-        // Reduce leaf mass on detach so they feel lighter when thrown
-        if (kind == FlowerPartKind.Leaf)
-        {
-            var rb = GetComponent<Rigidbody>();
-            if (rb != null)
-                rb.mass = 0.1f;
-        }
-
         // The only true instant game over we want is when the crown is lost.
         // PERF: use cached layer index instead of string lookup every detach
         bool isCrownByLayer = (s_crownCoreLayer >= 0 && gameObject.layer == s_crownCoreLayer);
