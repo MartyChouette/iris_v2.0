@@ -30,9 +30,19 @@ using UnityEngine;
 public class StemPieceMarker : MonoBehaviour
 {
     public FlowerStemRuntime stemRuntime;
-    
+
     /// <summary>
     /// True if this is the kept piece (connected to crown), false if it's a falling piece.
     /// </summary>
     public bool isKeptPiece;
+
+    // PERF: Static registry avoids expensive FindObjectsByType calls in FlowerJointRebinder
+    private static readonly System.Collections.Generic.List<StemPieceMarker> s_all = new(16);
+    public static System.Collections.Generic.IReadOnlyList<StemPieceMarker> All => s_all;
+
+    private void OnEnable() => s_all.Add(this);
+    private void OnDisable() => s_all.Remove(this);
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatic() => s_all.Clear();
 }

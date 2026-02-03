@@ -345,6 +345,26 @@ public class XYTetherJoint : MonoBehaviour
     public static bool cutBreakSuppressed = false;
     public static bool IsCutBreakSuppressed => cutBreakSuppressed;
 
+    /// <summary>
+    /// Reset cut suppression on domain reload (Enter Play Mode Options safety)
+    /// and on every scene load so a stuck flag can never persist across scenes.
+    /// </summary>
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        cutBreakSuppressed = false;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoadedResetSuppression;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoadedResetSuppression;
+    }
+
+    private static void OnSceneLoadedResetSuppression(
+        UnityEngine.SceneManagement.Scene scene,
+        UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (mode == UnityEngine.SceneManagement.LoadSceneMode.Single)
+            cutBreakSuppressed = false;
+    }
+
     public static void SetCutBreakSuppressed(bool on)
     {
         cutBreakSuppressed = on;
@@ -399,6 +419,11 @@ public class XYTetherJoint : MonoBehaviour
     // ADDED: cache session for suppression check and clarity
     private FlowerSessionController _session;
 
+    // PERF: cached feedback responders (avoids GetComponent on every break)
+    private JointBreakAudioResponder _cachedAudio;
+    private JointBreakFluidResponder _cachedFluid;
+    private SapOnXYTether _cachedSapKind;
+
     /**
      * @brief Unity lifecycle setup for the tether’s Rigidbody constraints and cached references.
      *
@@ -440,10 +465,16 @@ public class XYTetherJoint : MonoBehaviour
                             | RigidbodyConstraints.FreezeRotationZ;
         }
 
-        _engagement = GetComponent<InteractionEngagement>();
+        _engagement = GetComponent<InteractionEngagement>()
+                   ?? GetComponentInParent<InteractionEngagement>();
 
         _partRuntime = GetComponent<FlowerPartRuntime>();
         _session = GetComponentInParent<FlowerSessionController>();
+
+        // PERF: cache feedback responders once instead of GetComponent on every break
+        _cachedAudio = GetComponent<JointBreakAudioResponder>();
+        _cachedFluid = GetComponent<JointBreakFluidResponder>();
+        _cachedSapKind = GetComponent<SapOnXYTether>();
     }
 
     /**
@@ -556,7 +587,7 @@ public class XYTetherJoint : MonoBehaviour
                     pluckTimer += dt;
                     if (pluckTimer >= pluckDwellSeconds)
                     {
-                        ForceBreak($"Pluck dwell (stretchNorm={stretchNorm:F2})");
+                        ForceBreak(debugLogs ? $"Pluck dwell (stretchNorm={stretchNorm:F2})" : "Pluck dwell");
                         return;
                     }
                 }
@@ -572,7 +603,7 @@ public class XYTetherJoint : MonoBehaviour
                     wasAbovePluckThreshold = true;
                 else if (wasAbovePluckThreshold && stretchNorm <= releasePopThresholdFraction)
                 {
-                    ForceBreak($"Release pop (stretchNorm={stretchNorm:F2})");
+                    ForceBreak(debugLogs ? $"Release pop (stretchNorm={stretchNorm:F2})" : "Release pop");
                     return;
                 }
             }
@@ -598,7 +629,7 @@ public class XYTetherJoint : MonoBehaviour
         {
             if (stretch > Mathf.Max(0.0001f, maxDistance))
             {
-                ForceBreak($"Stretch {stretch:F3} > {maxDistance:F3}");
+                ForceBreak(debugLogs ? $"Stretch {stretch:F3} > {maxDistance:F3}" : "Stretch");
                 return;
             }
         }
@@ -608,7 +639,7 @@ public class XYTetherJoint : MonoBehaviour
             float relSpeed = Dist(ApplySpace(vA - vB));
             if (relSpeed > relativeSpeedThreshold)
             {
-                ForceBreak($"RelativeSpeed {relSpeed:F2} > {relativeSpeedThreshold:F2}");
+                ForceBreak(debugLogs ? $"RelativeSpeed {relSpeed:F2} > {relativeSpeedThreshold:F2}" : "RelativeSpeed");
                 return;
             }
         }
@@ -618,7 +649,7 @@ public class XYTetherJoint : MonoBehaviour
             float ownSpeed = Dist(ApplySpace(vA));
             if (ownSpeed > ownSpeedThreshold)
             {
-                ForceBreak($"OwnSpeed {ownSpeed:F2} > {ownSpeedThreshold:F2}");
+                ForceBreak(debugLogs ? $"OwnSpeed {ownSpeed:F2} > {ownSpeedThreshold:F2}" : "OwnSpeed");
                 return;
             }
         }
@@ -627,7 +658,7 @@ public class XYTetherJoint : MonoBehaviour
         {
             if (absoluteTravel >= absoluteTravelThreshold)
             {
-                ForceBreak($"AbsoluteTravel {absoluteTravel:F2} ≥ {absoluteTravelThreshold:F2}");
+                ForceBreak(debugLogs ? $"AbsoluteTravel {absoluteTravel:F2} >= {absoluteTravelThreshold:F2}" : "AbsoluteTravel");
                 return;
             }
         }
@@ -636,7 +667,7 @@ public class XYTetherJoint : MonoBehaviour
         {
             if (relativeTravel >= relativeTravelThreshold)
             {
-                ForceBreak($"RelativeTravel {relativeTravel:F2} ≥ {relativeTravelThreshold:F2}");
+                ForceBreak(debugLogs ? $"RelativeTravel {relativeTravel:F2} >= {relativeTravelThreshold:F2}" : "RelativeTravel");
                 return;
             }
         }
@@ -705,7 +736,7 @@ public class XYTetherJoint : MonoBehaviour
             Debug.Log($"[XYTetherJoint] Joint broke by physics force = {force:F1}.", this);
 
         // Authoritative permanent detach state (prevents rebinder snapping back later)
-        MarkPartDetachedAuthoritative(isPlayerAction: false, reasonText: $"Physics JointBreak force={force:F1}");
+        MarkPartDetachedAuthoritative(isPlayerAction: false, reasonText: debugLogs ? $"Physics JointBreak force={force:F1}" : "Physics JointBreak");
 
         TriggerBreakAudio();
         TriggerBreakFluidOrDeterministicSap();
@@ -744,10 +775,9 @@ public class XYTetherJoint : MonoBehaviour
             return;
         }
 
-        if (onlyBreakWhenEngaged)
+        if (onlyBreakWhenEngaged && _engagement != null)
         {
-            bool isEngagedNow = (_engagement != null && _engagement.isEngaged);
-            if (!isEngagedNow)
+            if (!_engagement.isEngaged)
             {
                 if (debugLogs)
                     Debug.Log($"[XYTetherJoint] Suppressed break \"{reason}\" because not engaged.", this);
@@ -838,19 +868,18 @@ public class XYTetherJoint : MonoBehaviour
         var sap = FlowerSapController.Instance;
         if (sap == null) { TriggerBreakFluid(); return; }
 
-        // If you have a SapOnXYTether component, prefer it to decide kind and offset.
-        var sapKind = GetComponent<SapOnXYTether>();
+        // Use cached SapOnXYTether to decide kind and offset.
         Vector3 pos = transform.position;
-        if (sapKind != null) pos = transform.TransformPoint(sapKind.localOffset);
+        if (_cachedSapKind != null) pos = transform.TransformPoint(_cachedSapKind.localOffset);
 
         Vector3 from = connectedBody ? connectedBody.worldCenterOfMass : (pos - transform.up);
         Vector3 dir = (pos - from);
         if (dir.sqrMagnitude < 0.0001f) dir = transform.up;
         dir.Normalize();
 
-        if (sapKind != null)
+        if (_cachedSapKind != null)
         {
-            if (sapKind.partKind == SapOnXYTether.PartKind.Leaf) sap.EmitLeafTear(pos, dir);
+            if (_cachedSapKind.partKind == SapOnXYTether.PartKind.Leaf) sap.EmitLeafTear(pos, dir);
             else sap.EmitPetalTear(pos, dir);
         }
         else
@@ -875,16 +904,14 @@ public class XYTetherJoint : MonoBehaviour
     {
         if (!enableAudio) return;
 
-        var audio = GetComponent<JointBreakAudioResponder>();
-        if (audio != null)
-            audio.OnJointBroken();
+        if (_cachedAudio != null)
+            _cachedAudio.OnJointBroken();
     }
 
     private void TriggerBreakFluid()
     {
-        var fluid = GetComponent<JointBreakFluidResponder>();
-        if (fluid != null)
-            fluid.OnJointBroken();
+        if (_cachedFluid != null)
+            _cachedFluid.OnJointBroken();
     }
 
     // ───────────────────────── Public API ─────────────────────────

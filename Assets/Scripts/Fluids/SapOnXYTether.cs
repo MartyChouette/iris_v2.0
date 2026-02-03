@@ -49,6 +49,13 @@ public class SapOnXYTether : MonoBehaviour
         _sap = GetComponentInParent<FlowerSapController>();
         _session = GetComponentInParent<FlowerSessionController>();
         _part = GetComponent<FlowerPartRuntime>();
+
+        if (_sap == null)
+            Debug.LogError($"[SapOnXYTether] No FlowerSapController found in parent hierarchy of '{name}'. " +
+                "Sap emission will be skipped on joint break.", this);
+        if (_session == null)
+            Debug.LogWarning($"[SapOnXYTether] No FlowerSessionController found in parent hierarchy of '{name}'. " +
+                "Suppression check will fall back to scene-wide find.", this);
     }
 
     private void OnEnable()
@@ -67,9 +74,9 @@ public class SapOnXYTether : MonoBehaviour
         if (_sap == null) return;
 
         // --- FIX 1: SUPPRESSION CHECK ---
-        // If the session is currently suppressing events (due to a stem cut), 
+        // If the session is currently suppressing events (due to a stem cut),
         // DO NOT fire fluid. This fixes the "wrong moment" firing.
-        if (_session == null) _session = FindFirstObjectByType<FlowerSessionController>();
+        // PERF: _session is cached in Awake(); no scene search fallback needed.
         if (_session != null && _session.suppressDetachEvents) return;
 
         // --- FIX 2: ALREADY DETACHED CHECK ---

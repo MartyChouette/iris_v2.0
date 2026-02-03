@@ -37,7 +37,6 @@
  * @enddot
  */
 
-using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -71,7 +70,7 @@ public class FlowerJointRebinder : MonoBehaviour
 
     [Header("Anchor Hold (Optional)")]
     [Tooltip("If true, uses SoftStemAnchor to give the held chunk a gentle sway instead of a rigid lock.")]
-    public bool useSoftStemAnchor = false;
+    public bool useSoftStemAnchor = true;
 
     [Tooltip("Optional reference to the SoftStemAnchor. Auto-resolves on this flower root if left null.")]
     public SoftStemAnchor softAnchor;
@@ -127,6 +126,11 @@ public class FlowerJointRebinder : MonoBehaviour
     // We keep track of the joint we own so we never hijack unrelated joints.
     private ConfigurableJoint _anchorHoldJoint;
     private Rigidbody _anchorHeldBody;
+
+    // PERF: Reusable collections to avoid LINQ allocations in hot rebinding path
+    private readonly List<Rigidbody> _stemPieceBuffer = new(8);
+    private readonly List<Rigidbody> _fallingBuffer = new(8);
+    private readonly System.Text.StringBuilder _sb = new(256);
 
     // ─────────────────────────────────────────────────────────────
     // YELLOW LOG HELPERS
@@ -191,37 +195,40 @@ public class FlowerJointRebinder : MonoBehaviour
         if (stemRuntime == null) stemRuntime = flowerRoot.GetComponentInChildren<FlowerStemRuntime>();
         if (stemRuntime == null) return;
 
-        // 1) Collect stem piece RBs
-        // CRITICAL: Only get NEW cut pieces, NOT the original stem
-        var markers = FindObjectsByType<StemPieceMarker>(FindObjectsSortMode.None);
-        var stemPieces = markers
-            .Where(m => m != null && m.stemRuntime == stemRuntime)
-            .Select(m => m.GetComponent<Rigidbody>())
-            .Where(rb => rb != null)
-            .Distinct()
-            .ToArray();
+        // 1) Collect stem piece RBs using static registry (avoids FindObjectsByType)
+        var originalStemRb = stemRuntime.GetComponent<Rigidbody>();
+        _stemPieceBuffer.Clear();
+        var allMarkers = StemPieceMarker.All;
+        for (int i = 0; i < allMarkers.Count; i++)
+        {
+            var m = allMarkers[i];
+            if (m == null || m.stemRuntime != stemRuntime) continue;
+            var rb = m.GetComponent<Rigidbody>();
+            if (rb == null || rb == originalStemRb) continue;
+            if (!_stemPieceBuffer.Contains(rb))
+                _stemPieceBuffer.Add(rb);
+        }
 
-        // CRITICAL FIX: Don't fallback to GetComponentsInChildren - that includes the ORIGINAL stem!
-        // Only use pieces that have StemPieceMarker (these are the NEW cut pieces)
-        if (stemPieces.Length == 0)
+        if (_stemPieceBuffer.Count == 0)
         {
             LogYellowWarning("[Rebinder] No stem pieces found with StemPieceMarker! Cut pieces may not have been marked correctly.");
-            // Don't fallback - return early instead of including original stem
             return;
         }
-        
-        // CRITICAL: Exclude the original stem's Rigidbody if it somehow got in the list
-        var originalStemRb = stemRuntime.GetComponent<Rigidbody>();
-        if (originalStemRb != null)
-        {
-            stemPieces = stemPieces.Where(rb => rb != originalStemRb).ToArray();
-            LogYellow($"[Rebinder] Excluded original stem Rigidbody '{originalStemRb.name}' from cut pieces list");
-        }
-        
-        // DEBUG: Log what pieces we found
-        LogYellow($"[Rebinder] Found {stemPieces.Length} cut stem pieces: [{string.Join(", ", stemPieces.Select(r => r.name))}]");
 
-        if (stemPieces == null || stemPieces.Length == 0) return;
+        var stemPieces = _stemPieceBuffer.ToArray();
+
+        if (debugLogs)
+        {
+            _sb.Clear();
+            for (int i = 0; i < stemPieces.Length; i++)
+            {
+                if (i > 0) _sb.Append(", ");
+                _sb.Append(stemPieces[i].name);
+            }
+            LogYellow($"[Rebinder] Found {stemPieces.Length} cut stem pieces: [{_sb}]");
+        }
+
+        if (stemPieces.Length == 0) return;
 
         var stemSet = new HashSet<Rigidbody>(stemPieces);
 
@@ -267,9 +274,24 @@ public class FlowerJointRebinder : MonoBehaviour
 
         if (held == null) return;
 
-        var falling = stemPieces.Where(rb => rb != null && rb != held).ToArray();
+        _fallingBuffer.Clear();
+        for (int i = 0; i < stemPieces.Length; i++)
+        {
+            if (stemPieces[i] != null && stemPieces[i] != held)
+                _fallingBuffer.Add(stemPieces[i]);
+        }
+        var falling = _fallingBuffer.ToArray();
 
-        LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{string.Join(", ", falling.Select(r => r.name))}]");
+        if (debugLogs)
+        {
+            _sb.Clear();
+            for (int i = 0; i < falling.Length; i++)
+            {
+                if (i > 0) _sb.Append(", ");
+                _sb.Append(falling[i].name);
+            }
+            LogYellow($"[Rebinder] HELD='{held.name}', FALLING=[{_sb}]");
+        }
 
         // 2.5) Ensure HELD piece doesn't fall
         // Check if piece is already parented to stem (AnchorTopStemPiece already handled it)
@@ -287,14 +309,37 @@ public class FlowerJointRebinder : MonoBehaviour
         if (isParentedToStem)
         {
             // CRITICAL: Don't make kinematic - this prevents attached joints from breaking!
-            // Keep dynamic but disable gravity and constrain position (not rotation, to allow some flex)
+            // Keep dynamic but disable gravity. Use SoftStemAnchor spring if available
+            // so the crown sways naturally; fall back to FreezePosition if not.
             held.isKinematic = false;
             held.useGravity = false;
-            held.constraints = RigidbodyConstraints.FreezePosition;
-            // Add drag to dampen any residual movement
-            held.linearDamping = 5f;
-            held.angularDamping = 5f;
-            LogYellow($"[Rebinder] HELD '{held.name}' already parented - DYNAMIC, gravity OFF, position frozen (joints can still break)", held);
+
+            if (useSoftStemAnchor)
+            {
+                if (softAnchor == null)
+                    softAnchor = flowerRoot != null
+                        ? flowerRoot.GetComponent<SoftStemAnchor>()
+                        : GetComponentInParent<SoftStemAnchor>();
+            }
+
+            if (useSoftStemAnchor && softAnchor != null)
+            {
+                // SoftStemAnchor spring holds position; no constraints needed.
+                // External forces (leaf pulls, physics) cause gentle sway.
+                held.constraints = RigidbodyConstraints.None;
+                held.linearDamping = 2f;
+                held.angularDamping = 2f;
+                softAnchor.AnchorHeldStem(held, newCutLocation);
+                LogYellow($"[Rebinder] HELD '{held.name}' parented + SoftStemAnchor at {newCutLocation} (DYNAMIC, gravity OFF, spring holds, sway enabled)", held);
+            }
+            else
+            {
+                // Fallback: rigid freeze (no sway)
+                held.constraints = RigidbodyConstraints.FreezePosition;
+                held.linearDamping = 5f;
+                held.angularDamping = 5f;
+                LogYellow($"[Rebinder] HELD '{held.name}' already parented - DYNAMIC, gravity OFF, position frozen (joints can still break)", held);
+            }
         }
         // Only use SoftStemAnchor if piece is NOT already parented (fallback case)
         else if (useSoftStemAnchor)
@@ -379,6 +424,64 @@ public class FlowerJointRebinder : MonoBehaviour
         RebindHingeJoints(hingeJoints, stemPieces, stemSet);
         RebindConfigJoints(configurableJoints, stemPieces, stemSet);
         RebindXYTetherJoints(xyJoints, stemPieces, stemSet);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // RELEASE HELD PIECE (for crown fall on stem-fail)
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Releases the held stem piece so it falls under gravity.
+    /// Called when the stem is cut too short and the crown should tumble dramatically.
+    /// </summary>
+    public void ReleaseHeldPieceForFall()
+    {
+        Rigidbody held = _lastHeld;
+
+        // Fallback: if _lastHeld was never set (virtual cut path), try the stemRuntime body directly
+        if (held == null && stemRuntime != null)
+            held = stemRuntime.GetComponent<Rigidbody>();
+
+        if (held == null)
+        {
+            LogYellowWarning("[Rebinder] ReleaseHeldPieceForFall: no held piece found.");
+            return;
+        }
+
+        LogYellow($"[Rebinder] ReleaseHeldPieceForFall: releasing '{held.name}' to fall.");
+
+        // 1) Release SoftStemAnchor joint if active
+        if (softAnchor != null)
+            softAnchor.ReleaseStem(held);
+
+        // 2) Destroy our anchor-hold joint if present
+        if (_anchorHoldJoint != null)
+        {
+            try { Destroy(_anchorHoldJoint); } catch { /* ignore */ }
+            _anchorHoldJoint = null;
+        }
+
+        // Also clean up the marker's joint reference
+        var marker = held.GetComponent<FlowerAnchorHoldMarker>();
+        if (marker != null && marker.joint != null)
+        {
+            try { Destroy(marker.joint); } catch { /* ignore */ }
+            marker.joint = null;
+        }
+
+        // 3) Unparent from stemRuntime so it's free in world space
+        if (stemRuntime != null && held.transform.IsChildOf(stemRuntime.transform))
+            held.transform.SetParent(null, true);
+
+        // 4) Enable gravity, clear constraints, make dynamic
+        held.isKinematic = false;
+        held.useGravity = true;
+        held.constraints = RigidbodyConstraints.None;
+        held.linearDamping = 0.05f;
+        held.angularDamping = 0.05f;
+        held.WakeUp();
+
+        LogYellow($"[Rebinder] ReleaseHeldPieceForFall: '{held.name}' is now free-falling (DYNAMIC, gravity ON, no constraints).");
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -656,7 +759,16 @@ public class FlowerJointRebinder : MonoBehaviour
 
         if (votes.Count == 0) return null;
 
-        var held = votes.OrderByDescending(kv => kv.Value).First().Key;
+        Rigidbody held = null;
+        int maxVotes = -1;
+        foreach (var kv in votes)
+        {
+            if (kv.Value > maxVotes)
+            {
+                maxVotes = kv.Value;
+                held = kv.Key;
+            }
+        }
 
         LogYellow($"[Rebinder] HELD picked by Crown joint votes: '{held.name}'");
 
@@ -700,9 +812,16 @@ public class FlowerJointRebinder : MonoBehaviour
         Transform tagged = null;
         try
         {
-            tagged = GameObject.FindGameObjectsWithTag("Crown")
-                .Select(go => go.transform)
-                .FirstOrDefault(t => t != null && flowerRoot != null && t.IsChildOf(flowerRoot));
+            var crownTagged = GameObject.FindGameObjectsWithTag("Crown");
+            for (int i = 0; i < crownTagged.Length; i++)
+            {
+                var t = crownTagged[i].transform;
+                if (t != null && flowerRoot != null && t.IsChildOf(flowerRoot))
+                {
+                    tagged = t;
+                    break;
+                }
+            }
         }
         catch
         {
@@ -726,9 +845,12 @@ public class FlowerJointRebinder : MonoBehaviour
         // Final fallback: name contains Crown
         if (flowerRoot != null)
         {
-            var byName = flowerRoot.GetComponentsInChildren<Transform>(true)
-                .FirstOrDefault(t => t != null && t.name.ToLower().Contains("crown"));
-            return byName;
+            var allTransforms = flowerRoot.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < allTransforms.Length; i++)
+            {
+                if (allTransforms[i] != null && allTransforms[i].name.IndexOf("crown", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    return allTransforms[i];
+            }
         }
 
         return null;
@@ -905,8 +1027,16 @@ public class FlowerJointRebinder : MonoBehaviour
     {
         var result = new List<T>();
         if (rootA != null) result.AddRange(rootA.GetComponentsInChildren<T>(true));
-        if (stem != null) result.AddRange(stem.GetComponentsInChildren<T>(true));
-        return result.Distinct().ToArray();
+        if (stem != null)
+        {
+            var stemJoints = stem.GetComponentsInChildren<T>(true);
+            for (int i = 0; i < stemJoints.Length; i++)
+            {
+                if (!result.Contains(stemJoints[i]))
+                    result.Add(stemJoints[i]);
+            }
+        }
+        return result.ToArray();
     }
 
     private bool IsUnderStem(Transform t)
@@ -1034,9 +1164,18 @@ public class FlowerJointRebinder : MonoBehaviour
 
             cj.connectedBody = newBody;
         }
-        LogYellow($"[Rebinder] After RebindConfigJoints, Back joints connectedBody = " +
-                  $"{string.Join(", ", flowerRoot.GetComponentsInChildren<ConfigurableJoint>(true).Where(j => IsBackAnchor(j.transform)).Select(j => j.connectedBody ? j.connectedBody.name : "NULL"))}");
-
+        if (debugLogs)
+        {
+            _sb.Clear();
+            var allCj = flowerRoot.GetComponentsInChildren<ConfigurableJoint>(true);
+            for (int i = 0; i < allCj.Length; i++)
+            {
+                if (!IsBackAnchor(allCj[i].transform)) continue;
+                if (_sb.Length > 0) _sb.Append(", ");
+                _sb.Append(allCj[i].connectedBody ? allCj[i].connectedBody.name : "NULL");
+            }
+            LogYellow($"[Rebinder] After RebindConfigJoints, Back joints connectedBody = {_sb}");
+        }
     }
 
 

@@ -267,6 +267,9 @@ public class FlowerPartRuntime : MonoBehaviour
     // Internal guard so we only trigger the fall failsafe once.
     private bool _crownFallFailTriggered = false;
 
+    // PERF: cached layer index (avoids string lookup on every detach)
+    private static int s_crownCoreLayer = -2; // -2 = not yet resolved
+
     /**
  * @brief Unity lifecycle hook for initial wiring and safety setup.
  *
@@ -289,6 +292,10 @@ public class FlowerPartRuntime : MonoBehaviour
 
     private void Awake()
     {
+        // PERF: resolve CrownCore layer once (static, shared across all instances)
+        if (s_crownCoreLayer == -2)
+            s_crownCoreLayer = LayerMask.NameToLayer("CrownCore");
+
         // Auto-wire session / brain if not set in inspector.
         if (session == null)
             session = GetComponentInParent<FlowerSessionController>();
@@ -494,7 +501,9 @@ public class FlowerPartRuntime : MonoBehaviour
         // Ignore detach events while the session is in a cut/rebind grace window.
         if (ShouldSuppressDetachEvents())
         {
+#if UNITY_EDITOR
             Debug.Log($"[FlowerPartRuntime] Detach '{PartId}' skipped during cut grace: {reason}", this);
+#endif
             return;
         }
 
@@ -509,26 +518,18 @@ public class FlowerPartRuntime : MonoBehaviour
         if (permanent)
             permanentlyDetached = true;
 
+#if UNITY_EDITOR
         Debug.Log($"[FlowerPartRuntime] '{PartId}' detached: {reason} (Reason={detachReason}, Permanent={permanent})", this);
-
-        bool triggerInstantFail = false;
-        string failReason = "";
+#endif
 
         // The only true instant game over we want is when the crown is lost.
-        int crownLayer = LayerMask.NameToLayer("CrownCore");
-        bool isCrownByLayer = (crownLayer >= 0 && gameObject.layer == crownLayer);
+        // PERF: use cached layer index instead of string lookup every detach
+        bool isCrownByLayer = (s_crownCoreLayer >= 0 && gameObject.layer == s_crownCoreLayer);
         bool isCrownByKind = (kind == FlowerPartKind.Crown);
 
-        if (isCrownByLayer || isCrownByKind)
+        if ((isCrownByLayer || isCrownByKind) && session != null)
         {
-            triggerInstantFail = true;
-            failReason = "Crown detached.";
+            session.ForceGameOver("Crown detached.");
         }
-
-        if (triggerInstantFail && session != null)
-        {
-            session.ForceGameOver(failReason);
-        }
-        // else: no other parts cause immediate failure here.
     }
 }

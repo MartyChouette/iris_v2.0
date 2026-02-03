@@ -112,10 +112,14 @@ public class FlowerGradingUI : MonoBehaviour
         {
             session = FindFirstObjectByType<FlowerSessionController>();
 
-            if (debugLogs)
+            if (session != null)
             {
-                if (session != null) Debug.Log("[FlowerGradingUI] Auto-found FlowerSessionController on " + session.gameObject.name, this);
-                else Debug.LogWarning("[FlowerGradingUI] No FlowerSessionController found in scene. OnResult will never fire.", this);
+                if (debugLogs) Debug.Log("[FlowerGradingUI] Auto-found FlowerSessionController on " + session.gameObject.name, this);
+            }
+            else
+            {
+                Debug.LogError("[FlowerGradingUI] No FlowerSessionController found in scene. " +
+                    "OnResult will never fire. Wire the 'session' field in the Inspector.", this);
             }
         }
 
@@ -217,8 +221,8 @@ public class FlowerGradingUI : MonoBehaviour
     public void HideAndResume()
     {
         SetVisible(false, instant: true);
-        // If you pause time during grading, resume here.
-        // Time.timeScale = 1f;
+        // Release the game-over pause so gameplay can resume.
+        TimeScaleManager.Clear(TimeScaleManager.PRIORITY_GAME_OVER);
     }
 
     private void SetVisible(bool visible, bool instant)

@@ -181,7 +181,7 @@ public class PauseMenuController : MonoBehaviour
             return;
 
         _isPaused = true;
-        Time.timeScale = 0f;
+        TimeScaleManager.Set(TimeScaleManager.PRIORITY_PAUSE, 0f);
 
         if (pauseRoot != null)
             pauseRoot.SetActive(true);
@@ -207,7 +207,7 @@ public class PauseMenuController : MonoBehaviour
             return;
 
         _isPaused = false;
-        Time.timeScale = 1f;
+        TimeScaleManager.Clear(TimeScaleManager.PRIORITY_PAUSE);
 
         if (pauseRoot != null)
             pauseRoot.SetActive(false);
@@ -286,7 +286,7 @@ public class PauseMenuController : MonoBehaviour
         if (debugLogs)
             Debug.Log("[PauseMenuController] RestartLevel called.", this);
 
-        Time.timeScale = 1f;
+        TimeScaleManager.ClearAll();
         var current = SceneManager.GetActiveScene();
         SceneManager.LoadScene(current.buildIndex);
     }
@@ -302,7 +302,7 @@ public class PauseMenuController : MonoBehaviour
             return;
         }
 
-        Time.timeScale = 1f;
+        TimeScaleManager.ClearAll();
         SceneManager.LoadScene(mainMenuSceneName);
     }
 
@@ -323,7 +323,7 @@ public class PauseMenuController : MonoBehaviour
         if (debugLogs)
             Debug.Log("[PauseMenuController] QuitGame called.", this);
 
-        Time.timeScale = 1f;
+        TimeScaleManager.ClearAll();
         Application.Quit();
     }
 }

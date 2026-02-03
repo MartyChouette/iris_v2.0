@@ -56,6 +56,7 @@ public class SafeBreathing : MonoBehaviour
     private Vector3 initialLocalPos;
     private XYTetherJoint tether;
     private float tetherBaseMaxDist;
+    private FlowerPartRuntime _partRuntime;
 
     void Start()
     {
@@ -71,10 +72,21 @@ public class SafeBreathing : MonoBehaviour
         {
             tetherBaseMaxDist = tether.maxDistance;
         }
+
+        _partRuntime = GetComponent<FlowerPartRuntime>();
     }
 
     void Update()
     {
+        // Kill switch: stop breathing after detach (mirrors FlowerBreathing)
+        if (_partRuntime != null && !_partRuntime.isAttached)
+        {
+            transform.localScale = initialScale;
+            transform.localPosition = initialLocalPos;
+            this.enabled = false;
+            return;
+        }
+
         // 1. Calculate Sine Wave
         float t = Time.time + timeOffset;
         float freq = beatsPerMinute / 60f * Mathf.PI * 2f;

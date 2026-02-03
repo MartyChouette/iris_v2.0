@@ -86,6 +86,13 @@ public class FlowerHUD_DebugTelemetry : MonoBehaviour
         if (brain == null && session != null) brain = session.brain;
         if (brain == null) brain = FindFirstObjectByType<FlowerGameBrain>();
 
+        if (session == null)
+            Debug.LogError("[FlowerHUD_DebugTelemetry] No FlowerSessionController found. " +
+                "Wire the 'session' field in the Inspector.", this);
+        if (brain == null)
+            Debug.LogError("[FlowerHUD_DebugTelemetry] No FlowerGameBrain found. " +
+                "Wire the 'brain' field in the Inspector or ensure session.brain is set.", this);
+
         if (debugLogs)
             Debug.Log($"[FlowerHUD_DebugTelemetry] Wired session={(session ? session.name : "null")} brain={(brain ? brain.name : "null")}", this);
     }
