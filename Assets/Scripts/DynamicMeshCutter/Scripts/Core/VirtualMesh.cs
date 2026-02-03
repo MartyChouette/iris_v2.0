@@ -97,6 +97,11 @@ namespace DynamicMeshCutter
         public Dictionary<int, Vector3[]> DynamicGroups;
         public Dictionary<int, Bounds> AdjustedBounds; //new bounds for cut off rigidbodies
 
+        /// Overall AABB of all vertices (local/mesh-space).
+        public Bounds MeshBounds;
+        /// True after ComputeBounds() has run (Bounds is a value type that defaults to zero).
+        public bool HasMeshBounds;
+
         private int _subMeshCount;
         private int[][] _subMeshIndices;
 
@@ -220,6 +225,43 @@ namespace DynamicMeshCutter
             //        bounds.Encapsulate(vertices[i]);
             //    }
             //}
+        }
+
+        /// <summary>
+        /// Compute overall mesh bounds and per-group bounds from vertex data.
+        /// Safe to call from a background thread (struct math only, no Unity API).
+        /// </summary>
+        public void ComputeBounds()
+        {
+            // --- Overall mesh bounds ---
+            if (Vertices == null || Vertices.Length == 0)
+                return;
+
+            // Initialize from first vertex to avoid inflated bounds around origin
+            Bounds mb = new Bounds(Vertices[0], Vector3.zero);
+            for (int i = 1; i < Vertices.Length; i++)
+                mb.Encapsulate(Vertices[i]);
+
+            MeshBounds = mb;
+            HasMeshBounds = true;
+
+            // --- Per-group bounds (populates AdjustedBounds) ---
+            if (DynamicGroups == null || DynamicGroups.Count == 0)
+                return;
+
+            AdjustedBounds = new Dictionary<int, Bounds>(DynamicGroups.Count);
+            foreach (var kvp in DynamicGroups)
+            {
+                Vector3[] groupVerts = kvp.Value;
+                if (groupVerts == null || groupVerts.Length == 0)
+                    continue;
+
+                Bounds gb = new Bounds(groupVerts[0], Vector3.zero);
+                for (int i = 1; i < groupVerts.Length; i++)
+                    gb.Encapsulate(groupVerts[i]);
+
+                AdjustedBounds[kvp.Key] = gb;
+            }
         }
 
         /**

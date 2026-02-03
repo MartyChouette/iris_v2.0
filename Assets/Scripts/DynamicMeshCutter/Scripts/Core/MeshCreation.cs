@@ -82,6 +82,13 @@ namespace DynamicMeshCutter
                 if (vMesh.Vertices.Length < vertexCreationThreshold)
                     continue;
 
+                // Reject dust-sized pieces before allocating any Unity objects
+                if (vMesh.HasMeshBounds && vMesh.MeshBounds.size.magnitude < 0.005f)
+                {
+                    Debug.Log($"[MeshCreation] Skipping dust-sized piece {i}: bounds magnitude {vMesh.MeshBounds.size.magnitude:F5} < 0.005");
+                    continue;
+                }
+
                 int bt = info.BT[i]; // bottom(0) / top(1) flag
 
                 Transform parent = null;
@@ -641,8 +648,10 @@ namespace DynamicMeshCutter
             filter.mesh = mesh;
             renderer.materials = materials;
 
-            // Center parent at mesh bounds center
-            Vector3 worldCenter = renderer.bounds.center;
+            // Center parent at mesh bounds center (prefer pre-computed bounds)
+            Vector3 worldCenter = vMesh.HasMeshBounds
+                ? root.transform.TransformPoint(vMesh.MeshBounds.center)
+                : renderer.bounds.center;
             parent.transform.position = worldCenter;
 
             root.transform.SetParent(parent, true);
