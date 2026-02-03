@@ -19,6 +19,10 @@ public class FlowerStemRuntime : MonoBehaviour
     [Tooltip("The dynamic end of the stem (the cut point). This MUST be moved by the cut logic to the new cut location.")]
     public Transform StemTip;    // Was stemEnd
 
+    [Header("Spline (Optional)")]
+    [Tooltip("If assigned, stem queries use the spline centerline instead of a straight line.")]
+    public StemSplineGenerator splineGenerator;
+
     [Header("Cut angle reference")]
     [Tooltip("Object whose forward = plane normal. Used for angle measurement.")]
     public Transform cutNormalRef;
@@ -72,10 +76,19 @@ public class FlowerStemRuntime : MonoBehaviour
 
         // 3. Store last cut height for instant fail
         lastCutHeight = planePoint.y;
+
+        // 4. Rebuild spline to match the now-shorter stem
+        if (splineGenerator != null)
+            splineGenerator.RegenerateAfterCut();
     }
 
     public Vector3 GetClosestPointOnStem(Vector3 worldPoint)
     {
+        // Spline path: use curved centerline when available
+        if (splineGenerator != null)
+            return splineGenerator.GetNearestPointOnSpline(worldPoint, out _);
+
+        // Fallback: straight line projection
         if (StemAnchor == null || StemTip == null)
             return transform.position;
 

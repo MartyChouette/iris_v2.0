@@ -35,7 +35,7 @@ using UnityEngine.EventSystems;
  *
  * ## SCENE / PREFAB AUTHORING REQUIREMENTS
  * - **Hierarchy:** `activeScissorsRoot` must be the PARENT of the `PlaneBehaviour` to ensure offsets apply to the cut.
- * - **Splines:** If `useSplinePath` is true, `targetSplineContainer` must be assigned.
+ * - **Splines:** If `useSplinePath` is true, `targetStemSpline` must be assigned.
  *
  * ## HIERARCHY + TRANSFORM TRUTH (MOST COMMON BUG SOURCE)
  * **Transform of Truth:** The Station is the anchor.
@@ -93,12 +93,12 @@ public class ScissorStation : MonoBehaviour
     [Tooltip("Rotation offset applied to the active scissors when equipped.")]
     public Vector3 toolRotationOffset = Vector3.zero;
 
-    [Header("Future: Spline Pathing")]
+    [Header("Spline Pathing")]
     [Tooltip("If true, scissors will constrain to the referenced spline instead of free mouse movement.")]
     public bool useSplinePath = false;
 
-    [Tooltip("The spline container (future implementation) the scissors should follow.")]
-    public GameObject targetSplineContainer; // Placeholder for SplineContainer type
+    [Tooltip("The stem spline generator the scissors should follow.")]
+    public StemSplineGenerator targetStemSpline;
 
     // ─────────────────────────────────────────
     // TOOL REFERENCES (WHAT GETS ENABLED)
@@ -222,12 +222,6 @@ public class ScissorStation : MonoBehaviour
 
     private void Update()
     {
-        // FUTURE: Spline Pathing Logic
-        if (isEquipped && useSplinePath)
-        {
-            UpdateSplinePosition();
-        }
-
         if (isBusy) return;
         if (!Input.GetMouseButtonDown(mouseButton)) return;
 
@@ -240,16 +234,6 @@ public class ScissorStation : MonoBehaviour
         }
 
         TryHandleClick();
-    }
-
-    /// <summary>
-    /// Placeholder for future spline following logic.
-    /// </summary>
-    private void UpdateSplinePosition()
-    {
-        // TODO: Implement spline projection here.
-        // Vector3 newPos = SplineUtility.GetNearestPoint(targetSplineContainer...);
-        // activeScissorsRoot.transform.position = newPos + toolPositionOffset;
     }
 
     private void TryHandleClick()
@@ -353,6 +337,12 @@ public class ScissorStation : MonoBehaviour
 
         if (planeController != null)
         {
+            // Wire spline reference so scissors follow the stem curve
+            if (useSplinePath && targetStemSpline != null)
+                planeController.stemSpline = targetStemSpline;
+            else
+                planeController.stemSpline = null;
+
             planeController.SetToolEnabled(true);
 
             if (suppressCutUntilReleased)

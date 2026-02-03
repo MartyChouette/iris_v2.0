@@ -80,6 +80,17 @@ public class CuttingPlaneController : MonoBehaviour
     public ScissorsVisualController scissorsVisuals;
 
     // ─────────────────────────────────────────────────────────────
+    // Spline constraint (optional)
+    // ─────────────────────────────────────────────────────────────
+
+    [Header("Stem Spline (Optional)")]
+    [Tooltip("When assigned, scissors follow this spline instead of the Y-rail.")]
+    public StemSplineGenerator stemSpline;
+
+    [Tooltip("Speed at which mouse delta drives the spline t parameter.")]
+    [SerializeField] float splineTSpeed = 0.003f;
+
+    // ─────────────────────────────────────────────────────────────
     // Movement / authored pose
     // ─────────────────────────────────────────────────────────────
 
@@ -224,6 +235,9 @@ public class CuttingPlaneController : MonoBehaviour
     private float _targetY;
     private float _yVel;
 
+    /// <summary>Normalized position along the stem spline (0 = anchor, 1 = tip).</summary>
+    private float _splineT = 0.5f;
+
     private float _cutArmedAtTime = -999f;
 
 
@@ -353,7 +367,7 @@ public class CuttingPlaneController : MonoBehaviour
         if (_planeTransform == null) return;
 
         // ─────────────────────────────────────────────────────────────
-        // MOVEMENT: Y ONLY. X/Z LOCKED. THIS SCRIPT NEVER TOUCHES ROTATION.
+        // MOVEMENT
         // ─────────────────────────────────────────────────────────────
 
         bool useAxis = false;
@@ -368,44 +382,72 @@ public class CuttingPlaneController : MonoBehaviour
             case ControlMode.Touchscreen: useMouseDelta = true; break;
         }
 
-        // Axis-based Y movement (optional)
-        if (useAxis)
+        // ── Spline-following mode ──
+        if (stemSpline != null)
         {
-            float axis = ReadAxis(moveYAction);
-            if (Mathf.Abs(axis) > 0.0001f)
-                _targetY += axis * axisMoveSpeed * Time.deltaTime;
+            float delta = 0f;
+
+            if (useAxis)
+            {
+                float axis = ReadAxis(moveYAction);
+                if (Mathf.Abs(axis) > 0.0001f)
+                    delta += axis * axisMoveSpeed * Time.deltaTime * splineTSpeed * 10f;
+            }
+
+            if (useMouseDelta && useMouseHeight)
+            {
+                float dy = 0f;
+                if (Mouse.current != null)
+                    dy = Mouse.current.delta.ReadValue().y;
+                else
+                    dy = Input.GetAxisRaw("Mouse Y");
+
+                float mult = (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed) ? fastMultiplier : 1f;
+                float accel = 1f + Mathf.Abs(dy) * accelPerPixel;
+
+                delta += dy * splineTSpeed * mult * accel;
+            }
+
+            _splineT = Mathf.Clamp01(_splineT + delta);
+
+            Vector3 worldPos = stemSpline.EvaluateWorld(_splineT);
+            _poseTransform.position = worldPos;
+        }
+        // ── Fallback: Y-rail mode (original behavior) ──
+        else
+        {
+            if (useAxis)
+            {
+                float axis = ReadAxis(moveYAction);
+                if (Mathf.Abs(axis) > 0.0001f)
+                    _targetY += axis * axisMoveSpeed * Time.deltaTime;
+            }
+
+            if (useMouseDelta && useMouseHeight)
+            {
+                float dy = 0f;
+                if (Mouse.current != null)
+                    dy = Mouse.current.delta.ReadValue().y;
+                else
+                    dy = Input.GetAxisRaw("Mouse Y");
+
+                float mult = (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed) ? fastMultiplier : 1f;
+                float accel = 1f + Mathf.Abs(dy) * accelPerPixel;
+
+                _targetY += dy * mouseYWorldPerPixel * mult * accel;
+            }
+
+            float minY = _authoredStartLocalY + minYOffset;
+            float maxY = _authoredStartLocalY + maxYOffset;
+            _targetY = Mathf.Clamp(_targetY, minY, maxY);
+
+            Vector3 lp = _poseTransform.localPosition;
+            lp.x = _lockedLocalX;
+            lp.z = _lockedLocalZ;
+            lp.y = Mathf.SmoothDamp(lp.y, _targetY, ref _yVel, ySmoothTime);
+            _poseTransform.localPosition = lp;
         }
 
-        // Mouse vertical delta -> Y movement (optional)
-        if (useMouseDelta && useMouseHeight)
-        {
-            float dy = 0f;
-
-            // Prefer New Input System mouse delta
-            if (Mouse.current != null)
-                dy = Mouse.current.delta.ReadValue().y;
-            else
-                dy = Input.GetAxisRaw("Mouse Y"); // fallback
-
-            float mult = (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed) ? fastMultiplier : 1f;
-            float accel = 1f + Mathf.Abs(dy) * accelPerPixel;
-
-            _targetY += dy * mouseYWorldPerPixel * mult * accel;
-        }
-        // Clamp relative to authored LOCAL pose
-        float minY = _authoredStartLocalY + minYOffset;
-        float maxY = _authoredStartLocalY + maxYOffset;
-        _targetY = Mathf.Clamp(_targetY, minY, maxY);
-
-        // Smooth glide (LOCAL)
-        Vector3 lp = _poseTransform.localPosition;
-        lp.x = _lockedLocalX;
-        lp.z = _lockedLocalZ;
-        lp.y = Mathf.SmoothDamp(lp.y, _targetY, ref _yVel, ySmoothTime);
-        _poseTransform.localPosition = lp;
-
-
- 
 
         // ─────────────────────────────────────────────────────────────
         // CUT LOGIC
