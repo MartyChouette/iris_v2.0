@@ -350,6 +350,7 @@ namespace DynamicMeshCutter
                 subIndices[i] = dynamicMesh.SubIndices[i].ToArray();
 
             vm.SetIndices(subIndices);
+            vm.ComputeBounds();
             return vm;
         }
     }

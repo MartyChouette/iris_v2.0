@@ -908,11 +908,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 750943f2f6ee34251bf4f14e270e2508, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Obi::Obi.ObiFluidBuiltInRendererFeature
-  passes:
-  - {fileID: 11400000, guid: 19c28312b2d804273a1e22439c99f4c1, type: 2}
-  refractionDownsample: 1
-  thicknessDownsample: 1
-  foamFadeDepth: 1
 --- !u!1 &348233546
 GameObject:
   m_ObjectHideFlags: 0
@@ -6864,7 +6859,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &599411888
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7339,6 +7334,42 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 28d8d3c9714b4c742abd15f1c80a58b5, type: 3}
+--- !u!1 &706797315 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1707971043889358780, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+  m_PrefabInstance: {fileID: 8426878410151901395}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &706797316 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 980246482983634666, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+  m_PrefabInstance: {fileID: 8426878410151901395}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &706797317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 706797315}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbfff1eb0d8b0ab44916514858848eeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoftStemAnchor
+  worldAnchorTransform: {fileID: 706797316}
+  autoCreateAnchor: 1
+  defaultAnchorPoint: {fileID: 706797316}
+  linearLimit: 0.03
+  spring: 3000
+  damper: 150
+  maxForce: 10000
+  useAngularDamping: 1
+  angularSpring: 500
+  angularDamper: 80
+  angularMaxForce: 5000
+  useProjection: 1
+  projectionDistance: 0.02
+  debugLogs: 0
 --- !u!1 &750509605
 GameObject:
   m_ObjectHideFlags: 0
@@ -7640,10 +7671,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a73c5f0db94c7d4295f75589235ec82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerSapController
-  emitterPrefab: {fileID: 4615614034825461725, guid: ffe4fc008102b44409c86d32f25782f8, type: 3}
-  initialPoolSize: 25
-  maxPoolSize: 50
-  poolRoot: {fileID: 1805550389}
   stemEndOffset: 0
   stemTopBurst:
     speed: 6
@@ -8724,12 +8751,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6757b231cedd544c583ef8aeaf773b2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Obi::Obi.ObiCollider
-  thickness: 0
-  inverted: 0
-  material: {fileID: 0}
-  filter: -65535
-  m_SourceCollider: {fileID: 1073396783}
-  m_DistanceField: {fileID: 0}
 --- !u!114 &1073396788
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8742,7 +8763,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62359d80fdc0e4315ab6331b78ec5b90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Obi::Obi.ObiRigidbody
-  kinematicForParticles: 0
 --- !u!54 &1073396789
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9179,6 +9199,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1183960621}
   - component: {fileID: 1183960623}
+  - component: {fileID: 1183960624}
   m_Layer: 0
   m_Name: PlaneCutter
   m_TagString: Untagged
@@ -9249,7 +9270,7 @@ MonoBehaviour:
   goreIntensity: 1
   planePoseRootOverride: {fileID: 2106927617}
   _toolEnabled: 0
-  togglePlaneBehaviourWithTool: 1
+  togglePlaneBehaviourWithTool: 0
   preventInstantCutOnEnable: 1
   cutArmDelay: 0.12
   requireReleaseAfterEnable: 1
@@ -9257,6 +9278,22 @@ MonoBehaviour:
   drawDetectionGizmo: 1
   detectionGizmoColor: {r: 1, g: 0, b: 0, a: 0.25}
   _suppressCutUntilRelease: 1
+--- !u!114 &1183960624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1183960620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd93b939ebbc1c74eac83f1274f1e8df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VirtualStemCutter
+  cutFaceMaterial: {fileID: -2813467912831258332, guid: cd353f4b259411f439a6e66723a8b6a7, type: 3}
+  separation: 0.02
+  fallingPieceLifetime: 10
+  debugLogs: 1
 --- !u!1 &1197206685
 GameObject:
   m_ObjectHideFlags: 0
@@ -11457,7 +11494,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1805550389}
-  - component: {fileID: 1805550388}
   m_Layer: 11
   m_Name: Fluids_Physics_Solver
   m_TagString: Untagged
@@ -11465,156 +11501,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1805550388
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1805550387}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d174fab52f0c4b8399f25d5c3ea524c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  simulateWhenInvisible: 1
-  m_Backend: 1
-  substeps: 1
-  maxStepsPerFrame: 1
-  synchronization: 2
-  parameters:
-    mode: 0
-    interpolation: 0
-    gravity: {x: 0, y: -6, z: 0}
-    ambientWind: {x: 0, y: 0, z: 0}
-    foamGravityScale: 1
-    damping: 0
-    maxAnisotropy: 3
-    sleepThreshold: 0
-    maxVelocity: 80
-    maxAngularVelocity: 10
-    collisionMargin: 0.001
-    maxDepenetration: 10
-    colliderCCD: 1
-    particleCCD: 0
-    shockPropagation: 0
-    surfaceCollisionIterations: 8
-    surfaceCollisionTolerance: 0.005
-    diffusionMask: {x: 1, y: 1, z: 1, w: 1}
-  m_MaxSurfaceChunks: 32768
-  maxQueryResults: 8192
-  maxFoamParticles: 8192
-  maxParticleNeighbors: 128
-  maxParticleContacts: 4
-  useLimits: 0
-  killOffLimitsParticles: 0
-  boundaryLimits:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 5, y: 5, z: 5}
-  gravity: {x: 0, y: -9.81, z: 0}
-  gravitySpace: 0
-  ambientWind: {x: 0, y: 0, z: 0}
-  windSpace: 1
-  foamSubsteps: 1
-  foamMinNeighbors: 3
-  foamCollisions: 0
-  maxFoamVelocityStretch: 0.3
-  foamRadiusScale: 1
-  foamFade: {x: 0.05, y: 0.8}
-  foamAccelAgingRange: {x: 0.5, y: 0.8}
-  foamAccelAging: 4
-  foamVolumeDensity: 0.1
-  foamAmbientDensity: 0.02
-  foamScatterColor: {r: 0.8, g: 0.75, b: 0.7, a: 1}
-  foamAmbientColor: {r: 0.4, g: 0.5, b: 0.6, a: 1}
-  worldLinearInertiaScale: 0
-  worldAngularInertiaScale: 0
-  synchronousSpatialQueries: 0
-  distanceConstraintParameters:
-    evaluationOrder: 0
-    iterations: 2
-    SORFactor: 1
-    enabled: 0
-  bendingConstraintParameters:
-    evaluationOrder: 1
-    iterations: 1
-    SORFactor: 1
-    enabled: 0
-  particleCollisionConstraintParameters:
-    evaluationOrder: 0
-    iterations: 6
-    SORFactor: 1
-    enabled: 0
-  particleFrictionConstraintParameters:
-    evaluationOrder: 1
-    iterations: 1
-    SORFactor: 1
-    enabled: 1
-  collisionConstraintParameters:
-    evaluationOrder: 0
-    iterations: 2
-    SORFactor: 1
-    enabled: 1
-  frictionConstraintParameters:
-    evaluationOrder: 1
-    iterations: 1
-    SORFactor: 1
-    enabled: 1
-  skinConstraintParameters:
-    evaluationOrder: 0
-    iterations: 3
-    SORFactor: 1
-    enabled: 0
-  volumeConstraintParameters:
-    evaluationOrder: 1
-    iterations: 3
-    SORFactor: 1
-    enabled: 0
-  shapeMatchingConstraintParameters:
-    evaluationOrder: 1
-    iterations: 3
-    SORFactor: 1
-    enabled: 0
-  tetherConstraintParameters:
-    evaluationOrder: 1
-    iterations: 2
-    SORFactor: 1
-    enabled: 0
-  pinConstraintParameters:
-    evaluationOrder: 1
-    iterations: 3
-    SORFactor: 1
-    enabled: 0
-  pinholeConstraintParameters:
-    evaluationOrder: 1
-    iterations: 1
-    SORFactor: 1
-    enabled: 1
-  stitchConstraintParameters:
-    evaluationOrder: 1
-    iterations: 1
-    SORFactor: 1
-    enabled: 0
-  densityConstraintParameters:
-    evaluationOrder: 1
-    iterations: 2
-    SORFactor: 1
-    enabled: 1
-  stretchShearConstraintParameters:
-    evaluationOrder: 0
-    iterations: 3
-    SORFactor: 1
-    enabled: 0
-  bendTwistConstraintParameters:
-    evaluationOrder: 0
-    iterations: 3
-    SORFactor: 1
-    enabled: 0
-  chainConstraintParameters:
-    evaluationOrder: 0
-    iterations: 3
-    SORFactor: 1
-    enabled: 0
 --- !u!4 &1805550389
 Transform:
   m_ObjectHideFlags: 0
@@ -11767,6 +11653,8 @@ MonoBehaviour:
   previewBeforeCut: 1
   previewStemOverride: {fileID: 1579737614232624721}
   previewSessionOverride: {fileID: 6656573071170535816}
+  useVirtualStemCut: 1
+  virtualStemCutter: {fileID: 1183960624}
 --- !u!1 &1843476846
 GameObject:
   m_ObjectHideFlags: 0
@@ -13219,7 +13107,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1707971043889358780, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 706797317}
   m_SourcePrefab: {fileID: 100100000, guid: 8095a0ae50f1ef547bd78b6d12c98fcd, type: 3}
 --- !u!114 &8426878410151901396 stripped
 MonoBehaviour:
