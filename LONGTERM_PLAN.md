@@ -2,7 +2,7 @@
 
 **Project:** Iris v2.0 - Contemplative Flower Trimming Game (Thesis)
 **Engine:** Unity 6.0.3 with URP
-**Last Updated:** February 2, 2026
+**Last Updated:** February 3, 2026
 
 ---
 
@@ -41,6 +41,26 @@
   - Validation mode to check existing setups
   - Full undo support
   - Access: Window > Iris > Flower Auto Setup
+
+### Phase 5: Newspaper Personals Dating Minigame (Done)
+- [x] **DatePersonalDefinition** (`Assets/Scripts/Dating/DatePersonalDefinition.cs`)
+  - ScriptableObject data container for one date character (name, ad text, arrival time, portrait, character prefab)
+- [x] **PersonalListing** (`Assets/Scripts/Dating/PersonalListing.cs`)
+  - Per-listing state machine: Available → BeingCircled → Circled
+  - Populates TMP labels from definition in Awake
+- [x] **MarkerController** (`Assets/Scripts/Dating/MarkerController.cs`)
+  - Mouse-driven Sharpie marker following cursor on newspaper surface via raycast
+  - Circle-drawing coroutine: ~48 points, Perlin-noise wobble, ellipse variation, 30° overshoot, 0.6s ease-in-out animation
+  - Mouse release cancels partial circle and resets listing
+  - Inline InputAction fallback (same pattern as SimpleTestCharacter)
+- [x] **NewspaperManager** (`Assets/Scripts/Dating/NewspaperManager.cs`)
+  - Scene-scoped singleton (Browsing → Calling → Waiting → DateArrived)
+  - 2s calling overlay, countdown timer, arrival notification
+  - UnityEvent OnDateArrived for downstream hooks
+- [x] **NewspaperDatingSceneBuilder** (`Assets/Editor/NewspaperDatingSceneBuilder.cs`)
+  - Editor tool: Window > Iris > Build Newspaper Dating Scene
+  - Generates: desk, newspaper with world-space Canvas + 4 sample listings, marker system with LineRenderer, screen-space UI overlay
+  - Auto-creates "Newspaper" physics layer and DatePersonalDefinition assets
 
 ---
 
@@ -92,7 +112,8 @@
 | Fluids/VFX | FlowerSapController, SapParticleController, SapDecalPool |
 | UI | FlowerGradingUI, FlowerHUD_GameplayFeedback, FlowerHUD_DebugTelemetry |
 | Audio | AudioManager, JointBreakAudioResponder |
-| Data | IdealFlowerDefinition, FlowerTypeDefinition |
+| Data | IdealFlowerDefinition, FlowerTypeDefinition, DatePersonalDefinition |
+| Dating Minigame | NewspaperManager, MarkerController, PersonalListing |
 
 ### Creating a New Flower Level (Quick Start)
 1. Import your flower model into the scene
