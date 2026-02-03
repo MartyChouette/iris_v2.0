@@ -111,7 +111,7 @@ public class NewspaperManager : MonoBehaviour
         // Show calling UI
         if (callingUI != null) callingUI.SetActive(true);
         if (callingText != null)
-            callingText.SetText("Calling {0}...", _selectedDefinition.characterName);
+            callingText.text = $"Calling {_selectedDefinition.characterName}...";
 
         yield return new WaitForSeconds(callingDuration);
 
@@ -137,7 +137,7 @@ public class NewspaperManager : MonoBehaviour
 
         if (arrivedUI != null) arrivedUI.SetActive(true);
         if (arrivedText != null)
-            arrivedText.SetText("{0} has arrived!", _selectedDefinition.characterName);
+            arrivedText.text = $"{_selectedDefinition.characterName} has arrived!";
 
         OnDateArrived?.Invoke();
     }
