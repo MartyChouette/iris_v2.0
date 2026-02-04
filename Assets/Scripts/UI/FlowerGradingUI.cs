@@ -160,30 +160,33 @@ public class FlowerGradingUI : MonoBehaviour
         if (happyRoot != null) happyRoot.SetActive(isGood);
         if (sadRoot != null) sadRoot.SetActive(!isGood);
 
+        Color goodColor = AccessibilitySettings.GetHappyColor();
+        Color badColor = AccessibilitySettings.GetSadColor();
+
         if (titleLabel != null)
         {
             if (isGood)
             {
                 titleLabel.text = eval.isGameOver ? "Beautiful, But Doomed" : "Lovely Trim";
-                titleLabel.color = happyColor;
+                titleLabel.color = goodColor;
             }
             else
             {
                 titleLabel.text = eval.isGameOver ? "Fatal Cut" : "Botched Trim";
-                titleLabel.color = sadColor;
+                titleLabel.color = badColor;
             }
         }
 
         if (scoreLabel != null)
         {
             scoreLabel.text = $"Score: {finalScore}";
-            scoreLabel.color = isGood ? happyColor : sadColor;
+            scoreLabel.color = isGood ? goodColor : badColor;
         }
 
         if (daysLabel != null)
         {
             daysLabel.text = $"Days: {daysAlive}";
-            daysLabel.color = isGood ? happyColor : sadColor;
+            daysLabel.color = isGood ? goodColor : badColor;
         }
 
         if (reasonLabel != null)

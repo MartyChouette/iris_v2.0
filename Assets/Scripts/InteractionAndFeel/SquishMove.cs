@@ -63,7 +63,7 @@ public class SquishMove : MonoBehaviour
 
     // PERF: Throttle RecalculateNormals - it's O(n) and doesn't need to run every physics frame
     private int _normalRecalcCounter;
-    private const int NORMAL_RECALC_INTERVAL = 3; // every 3rd FixedUpdate
+    [HideInInspector] public int normalRecalcInterval = 3;
 
     private Camera cam;
     private bool isDragging = false;
@@ -307,7 +307,7 @@ public class SquishMove : MonoBehaviour
 
         meshClone.vertices = vertexArray;
         // PERF: Throttle RecalculateNormals - O(n) operation doesn't need to run every physics frame
-        if (++_normalRecalcCounter >= NORMAL_RECALC_INTERVAL)
+        if (++_normalRecalcCounter >= normalRecalcInterval)
         {
             _normalRecalcCounter = 0;
             meshClone.RecalculateNormals();
