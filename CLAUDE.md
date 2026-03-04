@@ -6,6 +6,8 @@ Iris v2.0 is a contemplative flower-trimming game (thesis project). Unity 6.0.3,
 
 A secondary **newspaper personals dating minigame** is in progress: player looks down at a desk, circles a personal ad with a Sharpie, calls the date, waits on a countdown timer.
 
+A **bookcase browsing minigame** lets the player stand in front of a bookcase, look around with the mouse (cursor visible), tiptoe/crouch to reach shelves, hover to highlight book spines, and click to pull out and read 3 pages.
+
 ## Build & Run
 
 - **Engine:** Unity 6.0.3 with Universal Render Pipeline
@@ -20,6 +22,7 @@ A secondary **newspaper personals dating minigame** is in progress: player looks
 | Window > Iris > Flower Auto Setup | `Assets/Editor/FlowerAutoSetup.cs` | Auto-wires flower components from a model |
 | Window > Iris > Build Camera Test Scene | `Assets/Editor/CameraTestSceneBuilder.cs` | Generates Cinemachine camera test room |
 | Window > Iris > Build Newspaper Dating Scene | `Assets/Editor/NewspaperDatingSceneBuilder.cs` | Generates newspaper dating desk scene |
+| Window > Iris > Build Bookcase Browsing Scene | `Assets/Editor/BookcaseSceneBuilder.cs` | Generates bookcase browsing room scene |
 
 ## Code Conventions
 
@@ -41,6 +44,7 @@ A secondary **newspaper personals dating minigame** is in progress: player looks
 | `TimeScaleManager` | Static utility | `Assets/Scripts/Framework/TimeScaleManager.cs` |
 | `HorrorCameraManager` | Scene-scoped | `Assets/Scripts/Camera/HorrorCameraManager.cs` |
 | `NewspaperManager` | Scene-scoped | `Assets/Scripts/Dating/NewspaperManager.cs` |
+| `BookInteractionManager` | Scene-scoped | `Assets/Scripts/Bookcase/BookInteractionManager.cs` |
 
 ## Script Directory Map
 
@@ -55,6 +59,7 @@ A secondary **newspaper personals dating minigame** is in progress: player looks
 | `Scripts/DynamicMeshCutter/` | Mesh cutting engine (DMC) |
 | `Scripts/Tags/` | Marker components (StemPieceMarker, LeafAttachmentMarker, etc.) |
 | `Scripts/Dating/` | Newspaper personals minigame: DatePersonalDefinition, PersonalListing, MarkerController, NewspaperManager |
+| `Scripts/Bookcase/` | Bookcase browsing minigame: BookDefinition, BookVolume, BookcaseBrowseCamera, BookInteractionManager |
 | `Scripts/Prototype_LivingRoom_Scripts/` | Legacy living room prototype (not active) |
 
 ## Dating Minigame Architecture
@@ -75,6 +80,25 @@ UnityEvent OnDateArrived
 - `DatePersonalDefinition` — ScriptableObject per character (name, ad text, arrival time)
 - Circle drawn via LineRenderer with Perlin-noise wobble for hand-drawn look
 - "Newspaper" physics layer for marker raycasting
+
+## Bookcase Minigame Architecture
+
+```
+BookcaseBrowseCamera (mouse screen position → yaw/pitch, Space/Ctrl → height)
+       │
+BookInteractionManager (Browsing → Pulling → Reading → PuttingBack)
+       │ raycast onto "Books" layer
+       ▼
+BookVolume (OnShelf → PullingOut → Reading → PuttingBack → OnShelf)
+       │ coroutine animation to/from ReadingAnchor
+       ▼
+Pages (3 world-space TMP quads, populated from BookDefinition)
+```
+
+- `BookDefinition` — ScriptableObject per book (title, author, 3 page texts, spine color, dimensions)
+- `BookcaseBrowseCamera` — cursor-visible look (screen position mapped to rotation), tiptoe/crouch height
+- Hover: instant color tint + 3cm slide; pull-out/put-back: smoothstep coroutines (0.25s/0.2s)
+- "Books" physics layer for interaction raycasting
 
 ## Roadmap Reference
 
